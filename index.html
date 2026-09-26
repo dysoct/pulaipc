@@ -149,19 +149,37 @@
             background-color: #ff5252;
             color: white;
         }
-        /* Search Bar Section - Placed right above game list */
+        /* Search Bar Section */
         .search-container {
             margin-bottom: 15px;
+            position: relative;
+            display: flex;
+            align-items: center;
         }
         .search-box {
             width: 100%;
-            padding: 12px 15px;
+            padding: 12px 38px 12px 15px;
             font-size: 16px;
             border-radius: 6px;
             border: 1px solid #333;
             background: #1a1a1a;
             color: #fff;
             box-sizing: border-box;
+        }
+        .clear-search-btn {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 20px;
+            cursor: pointer;
+            display: none;
+            padding: 0;
+            line-height: 1;
+        }
+        .clear-search-btn:hover {
+            color: #fff;
         }
         /* Top Mode Toggles */
         .modes-container {
@@ -450,7 +468,7 @@
                     <option value="LITE">LITE (RM230)</option>
                 </select>
 
-                <!-- SD Card Source Selector (Bring Own vs Buy) - Only visible on Full Jailbreak -->
+                <!-- SD Card Source Selector (Bring Own vs Buy) -->
                 <select id="sdSourceSelect" class="sd-source-select" onchange="updateSdLimit()">
                     <option value="own">Bring Own SD Card</option>
                     <option value="buy">Purchase New SD Card</option>
@@ -477,7 +495,7 @@
                 </div>
             </div>
 
-            <!-- Mode Selection Checkboxes with Tooltips - Only visible on Full Jailbreak -->
+            <!-- Mode Selection Checkboxes with Tooltips -->
             <div id="jailbreakModesContainer" class="modes-container">
                 <div class="mode-wrapper">
                     <label class="mode-checkbox-label">
@@ -505,9 +523,10 @@
             </div>
         </div>
 
-        <!-- Search Bar - Positioned correctly right above the game list -->
+        <!-- Search Bar with Clear Button -->
         <div class="search-container">
             <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search games in library..." onkeyup="filterGames()">
+            <button id="clearSearchBtn" class="clear-search-btn" onclick="clearSearch()" title="Clear search">&times;</button>
         </div>
 
         <div id="statusMsg" class="status-msg"></div>
@@ -591,7 +610,7 @@
         
         toggleServiceFields();
         updateSdLimit();
-        renderGames(typeof games !== 'undefined' ? games : []);
+        filterGames(); // Renders list respecting any initial filter
     };
 
     function savePhone() {
@@ -613,7 +632,6 @@
             modelSelect.style.display = 'none';
             sdSourceSelect.style.display = 'none';
             jailbreakModesContainer.style.display = 'none';
-            // Reset mode checkboxes when switching to games_only
             document.getElementById('androidModeCheck').checked = false;
             document.getElementById('linuxModeCheck').checked = false;
         }
@@ -672,7 +690,7 @@
             partitionPerMode = 20;
         }
 
-        let totalDeduction = (serviceType === 'jailbreak') ? baseSystemOverhead : 2; // Minimal overhead for games_only
+        let totalDeduction = (serviceType === 'jailbreak') ? baseSystemOverhead : 2;
         if (serviceType === 'jailbreak') {
             if (androidChecked.checked) totalDeduction += partitionPerMode;
             if (linuxChecked.checked) totalDeduction += partitionPerMode;
@@ -710,7 +728,7 @@
             document.getElementById('androidModeCheck').checked = false;
             document.getElementById('linuxModeCheck').checked = false;
             updateSdLimit();
-            renderGames(games);
+            filterGames();
             document.getElementById('statusMsg').style.color = '#ff5252';
             document.getElementById('statusMsg').innerText = 'Selections cleared.';
         }
@@ -777,7 +795,29 @@
         } else {
             selectedGames.delete(name);
         }
-        renderGames(games);
+        // Maintain search filter instead of resetting to full list
+        filterGames();
+    }
+
+    function filterGames() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const clearBtn = document.getElementById('clearSearchBtn');
+        
+        if (query.length > 0) {
+            clearBtn.style.display = 'block';
+        } else {
+            clearBtn.style.display = 'none';
+        }
+
+        const sourceList = typeof games !== 'undefined' ? games : [];
+        const filtered = sourceList.filter(g => g.name.toLowerCase().includes(query));
+        renderGames(filtered);
+    }
+
+    function clearSearch() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('clearSearchBtn').style.display = 'none';
+        filterGames();
     }
 
     function calculatePriceDetails(count, totalGameSizeGb) {
@@ -805,7 +845,7 @@
 
         let effectiveCount = count;
         if (serviceType === 'jailbreak') {
-            effectiveCount = Math.max(0, count - 3); // 3 free games for full jailbreak
+            effectiveCount = Math.max(0, count - 3);
         }
 
         let countTierPrice = 0;
@@ -815,7 +855,7 @@
             countTierPrice = effectiveCount * 3.0; 
             targetGbLimit = 125; 
         } else if (effectiveCount <= 20) {
-            countTierPrice = 50; // Exactly RM50 flat up to 20 games
+            countTierPrice = 50; 
             targetGbLimit = 240; 
         } else if (effectiveCount <= 40) {
             countTierPrice = 50 + (effectiveCount - 20) * 1.5; 
@@ -861,12 +901,6 @@
         document.getElementById('selectedSize').innerText = totalGamesSize.toFixed(1);
         document.getElementById('remainderSize').innerText = remainderSize.toFixed(1);
         document.getElementById('selectedPrice').innerText = `RM${Math.round(details.price)}`;
-    }
-
-    function filterGames() {
-        const query = document.getElementById('searchInput').value.toLowerCase();
-        const filtered = games.filter(g => g.name.toLowerCase().includes(query));
-        renderGames(filtered);
     }
 
     async function fetchExistingOrder() {
@@ -926,7 +960,7 @@
 
                 toggleServiceFields();
                 updateSdLimit();
-                renderGames(games);
+                filterGames();
                 statusMsg.style.color = '#00e676';
                 statusMsg.innerText = `Loaded previous order! (${selectedGames.size} games found)`;
             } else {
@@ -987,7 +1021,7 @@
 
     function removeGameFromCart(gameName) {
         selectedGames.delete(gameName);
-        renderGames(games);
+        filterGames();
         
         if (selectedGames.size === 0 && !document.getElementById('androidModeCheck').checked && !document.getElementById('linuxModeCheck').checked && document.getElementById('serviceTypeSelect').value === 'games_only') {
             closeCartModal();
