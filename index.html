@@ -175,19 +175,6 @@
             cursor: pointer;
         }
         /* Tooltip style for mode benefits */
-        .info-icon {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            background: #333;
-            color: #00e676;
-            text-align: center;
-            border-radius: 50%;
-            font-size: 11px;
-            line-height: 16px;
-            cursor: pointer;
-            margin-left: 4px;
-        }
         .mode-tooltip {
             display: none;
             position: absolute;
@@ -215,6 +202,7 @@
             padding: 8px 10px;
             border-radius: 4px;
             border: 1px solid #222;
+            line-height: 1.5;
         }
         .status-msg {
             text-align: center;
@@ -454,7 +442,7 @@
 
                 <div class="phone-group">
                     <input type="text" id="phoneInput" class="phone-input" maxlength="4" placeholder="e.g. 5678" oninput="savePhone()">
-                    <span class="input-hint">Last 4 digits phone</span>
+                    <span class="input-hint">Last 4 digits phone no</span>
                 </div>
 
                 <div class="btn-group">
@@ -953,17 +941,19 @@
         usableStorageLimit = maxSdSize - totalDeduction;
         document.getElementById('maxUsableLabel').innerText = usableStorageLimit;
 
-        // Render breakdown message
-        let breakdownText = `SD Card: ${maxSdSize}GB | Base System: -${baseSystemOverhead}GB`;
-        if (androidChecked.checked) breakdownText += ` | Android Mode: -${partitionPerMode}GB`;
-        if (linuxChecked.checked) breakdownText += ` | Linux Mode: -${partitionPerMode}GB`;
-        breakdownText += ` 👉 <strong>Available for Games: ${usableStorageLimit} GB</strong>`;
-        document.getElementById('storageBreakdown').innerHTML = breakdownText;
-
-        // Re-check current selections against new usable limit
+        // Calculate current selected games size
         let currentGamesSize = 0;
         selectedGames.forEach(size => { currentGamesSize += size; });
 
+        // Render detailed breakdown message including selected games total vs usable limit
+        let breakdownText = `SD Card: ${maxSdSize}GB | Base System: -${baseSystemOverhead}GB`;
+        if (androidChecked.checked) breakdownText += ` | Android: -${partitionPerMode}GB`;
+        if (linuxChecked.checked) breakdownText += ` | Linux: -${partitionPerMode}GB`;
+        breakdownText += `<br>📊 <strong>Selected Games: ${currentGamesSize.toFixed(1)} GB</strong> / Usable Limit: <strong>${usableStorageLimit} GB</strong>`;
+        
+        document.getElementById('storageBreakdown').innerHTML = breakdownText;
+
+        // Re-check current selections against new usable limit
         if (currentGamesSize > usableStorageLimit) {
             alert(`Warning: Your selected games total (${currentGamesSize.toFixed(1)} GB) exceeds your updated usable game storage (${usableStorageLimit} GB). Please remove some games.`);
         }
@@ -1023,7 +1013,7 @@
             `;
             container.appendChild(card);
         });
-        updateCartSummary();
+        updateSdLimit();
     }
 
     function handleCheckboxChange(event, name, size, checkbox) {
