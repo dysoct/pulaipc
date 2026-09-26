@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pulai PC - Game Selector</title>
+    <title>Pulai PC Jailbreak Service</title>
     <!-- Include Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -429,7 +429,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Pulai PC Game Selector</h1>
+        <h1>Pulai PC Jailbreak Service</h1>
         <div class="instructions">
             1. Choose your <strong>Service Type, Console Model & SD Card Size</strong> upfront.<br>
             2. Tick your games below within your available usable space, then review and save!
@@ -816,6 +816,17 @@
 
         const sourceList = typeof games !== 'undefined' ? games : [];
         const filtered = sourceList.filter(g => g.name.toLowerCase().includes(query));
+
+        // Sort so that selected games bubble up to the top
+        filtered.sort((a, b) => {
+            const aSelected = selectedGames.has(a.name) ? 1 : 0;
+            const bSelected = selectedGames.has(b.name) ? 1 : 0;
+            if (aSelected !== bSelected) {
+                return bSelected - aSelected; // Selected items come first
+            }
+            return a.name.localeCompare(b.name); // Alphabetical fallback
+        });
+
         renderGames(filtered);
     }
 
