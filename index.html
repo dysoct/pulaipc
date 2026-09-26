@@ -488,7 +488,7 @@
     <div class="checkout-bar">
         <div class="checkout-info" onclick="openCartModal()">
             🛒 <span id="selectedCount" style="color: #00e676; font-weight: bold;">0</span> games 
-            (<span id="selectedSize" style="color: #00e676;">0</span> / <span id="maxUsableLabel">0</span> GB Usable) | 
+            (<span id="selectedSize" style="color: #00e676; font-weight: bold;">0</span> GB / <span id="maxUsableLabel">0</span> GB Usable) | 
             <span id="selectedPrice" style="color: #00e676; font-weight: bold;">RM0</span>
             <br><span style="font-size: 12px; color: #aaa;">Tap here to review & add remarks</span>
         </div>
@@ -1211,7 +1211,7 @@
             warningBox.style.display = 'none';
         }
 
-        document.getElementById('modalTotal').innerText = `${count} games (${totalGamesSize.toFixed(1)} / ${usableStorageLimit} GB Usable) | Total: RM${Math.round(details.price)}`;
+        document.getElementById('modalTotal').innerHTML = `${count} games (<span style="color:#00e676;">${totalGamesSize.toFixed(1)} GB</span> / ${usableStorageLimit} GB Usable) | Total: <strong style="color:#00e676;">RM${Math.round(details.price)}</strong>`;
         document.getElementById('cartModal').style.display = 'flex';
     }
 
@@ -1316,5 +1316,4 @@
     </script>
 </body>
 </html>
-
 
