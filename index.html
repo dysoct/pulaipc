@@ -243,6 +243,42 @@
             margin-bottom: 15px;
             min-height: 20px;
         }
+        /* Jailbreak Notice Box (Replaces game list initially for jailbreak) */
+        .jailbreak-notice-card {
+            background: #1a2e22;
+            border: 1px solid #00e676;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .jailbreak-notice-card h3 {
+            margin-top: 0;
+            color: #00e676;
+            font-size: 18px;
+        }
+        .jailbreak-notice-card p {
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        .browse-games-btn {
+            background-color: #00e676;
+            color: #121212;
+            border: none;
+            padding: 10px 20px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .browse-games-btn:hover {
+            background-color: #00c853;
+        }
+        .game-section-wrapper {
+            display: block;
+        }
         .game-list {
             display: grid;
             gap: 10px;
@@ -432,7 +468,7 @@
         <h1>Pulai PC Jailbreak Service</h1>
         <div class="instructions">
             1. Choose your <strong>Service Type, Console Model & SD Card Size</strong> upfront.<br>
-            2. Tick your games below within your available usable space, then review and save!
+            2. Select your games if needed, then review and save!
         </div>
 
         <!-- Pricing Guide Dropdown -->
@@ -529,15 +565,25 @@
             </div>
         </div>
 
-        <!-- Search Bar with Clear Button -->
-        <div class="search-container">
-            <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search games in library..." onkeyup="filterGames()">
-            <button id="clearSearchBtn" class="clear-search-btn" onclick="clearSearch()" title="Clear search">&times;</button>
+        <!-- Jailbreak Notice Card (Shown by default on Full Jailbreak) -->
+        <div id="jailbreakNoticeCard" class="jailbreak-notice-card">
+            <h3>🎁 You get 3 Free Games with your Full Jailbreak!</h3>
+            <p>Your jailbreak service package includes up to 3 free games of your choice. You can also add more games to fill up your SD card if you'd like.</p>
+            <button class="browse-games-btn" onclick="revealGameSection()">Browse & Choose Games</button>
         </div>
 
-        <div id="statusMsg" class="status-msg"></div>
+        <!-- Game Section Wrapper (Search Bar & Game List) -->
+        <div id="gameSectionWrapper" class="game-section-wrapper" style="display: none;">
+            <!-- Search Bar Section -->
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search games in library..." onkeyup="filterGames()">
+                <button id="clearSearchBtn" class="clear-search-btn" onclick="clearSearch()" title="Clear search">&times;</button>
+            </div>
 
-        <div id="gameList" class="game-list"></div>
+            <div id="statusMsg" class="status-msg"></div>
+
+            <div id="gameList" class="game-list"></div>
+        </div>
     </div>
 
     <!-- Sticky Bottom Checkout Bar -->
@@ -616,7 +662,7 @@
         
         toggleServiceFields();
         updateSdLimit();
-        filterGames(); // Renders list respecting any initial filter
+        filterGames();
     };
 
     function savePhone() {
@@ -629,19 +675,39 @@
         const modelSelect = document.getElementById('consoleModelSelect');
         const sdSourceSelect = document.getElementById('sdSourceSelect');
         const jailbreakModesContainer = document.getElementById('jailbreakModesContainer');
+        const jailbreakNoticeCard = document.getElementById('jailbreakNoticeCard');
+        const gameSectionWrapper = document.getElementById('gameSectionWrapper');
         
         if (serviceType === 'jailbreak') {
             modelSelect.style.display = 'block';
             sdSourceSelect.style.display = 'block';
             jailbreakModesContainer.style.display = 'flex';
+            
+            // If no games are selected yet, keep the notice card visible and game section hidden
+            if (selectedGames.size === 0) {
+                jailbreakNoticeCard.style.display = 'block';
+                gameSectionWrapper.style.display = 'none';
+            } else {
+                jailbreakNoticeCard.style.display = 'none';
+                gameSectionWrapper.style.display = 'block';
+            }
         } else {
             modelSelect.style.display = 'none';
             sdSourceSelect.style.display = 'none';
             jailbreakModesContainer.style.display = 'none';
             document.getElementById('androidModeCheck').checked = false;
             document.getElementById('linuxModeCheck').checked = false;
+            
+            // For games_only, always show game list immediately
+            jailbreakNoticeCard.style.display = 'none';
+            gameSectionWrapper.style.display = 'block';
         }
         updateSdLimit();
+    }
+
+    function revealGameSection() {
+        document.getElementById('jailbreakNoticeCard').style.display = 'none';
+        document.getElementById('gameSectionWrapper').style.display = 'block';
     }
 
     function updateSdLimit() {
@@ -733,15 +799,20 @@
             selectedGames.clear();
             document.getElementById('androidModeCheck').checked = false;
             document.getElementById('linuxModeCheck').checked = false;
+            toggleServiceFields();
             updateSdLimit();
             filterGames();
-            document.getElementById('statusMsg').style.color = '#ff5252';
-            document.getElementById('statusMsg').innerText = 'Selections cleared.';
+            const statusMsg = document.getElementById('statusMsg');
+            if (statusMsg) {
+                statusMsg.style.color = '#ff5252';
+                statusMsg.innerText = 'Selections cleared.';
+            }
         }
     }
 
     function renderGames(list) {
         const container = document.getElementById('gameList');
+        if (!container) return;
         container.innerHTML = '';
 
         if (!list || list.length === 0) {
@@ -805,7 +876,10 @@
     }
 
     function filterGames() {
-        const query = document.getElementById('searchInput').value.toLowerCase();
+        const searchInput = document.getElementById('searchInput');
+        if (!searchInput) return;
+
+        const query = searchInput.value.toLowerCase();
         const clearBtn = document.getElementById('clearSearchBtn');
         
         if (query.length > 0) {
@@ -817,14 +891,13 @@
         const sourceList = typeof games !== 'undefined' ? games : [];
         const filtered = sourceList.filter(g => g.name.toLowerCase().includes(query));
 
-        // Sort so that selected games bubble up to the top
         filtered.sort((a, b) => {
             const aSelected = selectedGames.has(a.name) ? 1 : 0;
             const bSelected = selectedGames.has(b.name) ? 1 : 0;
             if (aSelected !== bSelected) {
-                return bSelected - aSelected; // Selected items come first
+                return bSelected - aSelected; 
             }
-            return a.name.localeCompare(b.name); // Alphabetical fallback
+            return a.name.localeCompare(b.name); 
         });
 
         renderGames(filtered);
@@ -929,8 +1002,10 @@
             return;
         }
 
-        statusMsg.style.color = '#2196F3';
-        statusMsg.innerText = 'Searching for your order...';
+        if (statusMsg) {
+            statusMsg.style.color = '#2196F3';
+            statusMsg.innerText = 'Searching for your order...';
+        }
 
         try {
             const { data, error } = await supabaseClient
@@ -977,25 +1052,32 @@
                 toggleServiceFields();
                 updateSdLimit();
                 filterGames();
-                statusMsg.style.color = '#00e676';
-                statusMsg.innerText = `Loaded previous order! (${selectedGames.size} games found)`;
+                
+                // If they loaded an order with games, ensure game section is visible
+                if (selectedGames.size > 0) {
+                    revealGameSection();
+                }
+
+                if (statusMsg) {
+                    statusMsg.style.color = '#00e676';
+                    statusMsg.innerText = `Loaded previous order! (${selectedGames.size} games found)`;
+                }
             } else {
-                statusMsg.style.color = '#ff5252';
-                statusMsg.innerText = 'No existing order found for this 4-digit ID.';
+                if (statusMsg) {
+                    statusMsg.style.color = '#ff5252';
+                    statusMsg.innerText = 'No existing order found for this 4-digit ID.';
+                }
             }
         } catch (err) {
             console.error(err);
-            statusMsg.style.color = '#ff5252';
-            statusMsg.innerText = 'Failed to lookup order.';
+            if (statusMsg) {
+                statusMsg.style.color = '#ff5252';
+                statusMsg.innerText = 'Failed to lookup order.';
+            }
         }
     }
 
     function openCartModal() {
-        if (selectedGames.size === 0 && !document.getElementById('androidModeCheck').checked && !document.getElementById('linuxModeCheck').checked && document.getElementById('serviceTypeSelect').value === 'games_only') {
-            alert('Please select at least one game or service mode first!');
-            return;
-        }
-
         const modalBody = document.getElementById('cartModalBody');
         modalBody.innerHTML = '';
 
@@ -1038,12 +1120,7 @@
     function removeGameFromCart(gameName) {
         selectedGames.delete(gameName);
         filterGames();
-        
-        if (selectedGames.size === 0 && !document.getElementById('androidModeCheck').checked && !document.getElementById('linuxModeCheck').checked && document.getElementById('serviceTypeSelect').value === 'games_only') {
-            closeCartModal();
-        } else {
-            openCartModal();
-        }
+        openCartModal();
     }
 
     async function submitOrUpdateOrder() {
@@ -1117,7 +1194,10 @@
 
             alert('Order updated and saved successfully!');
             closeCartModal();
-            document.getElementById('statusMsg').innerText = 'Order successfully updated in system!';
+            const statusMsg = document.getElementById('statusMsg');
+            if (statusMsg) {
+                statusMsg.innerText = 'Order successfully updated in system!';
+            }
 
         } catch (err) {
             console.error(err);
