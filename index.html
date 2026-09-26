@@ -302,8 +302,34 @@
             margin-bottom: 10px;
             display: none;
         }
-        .remarks-container {
+        /* Dual Mode Selection Box */
+        .modes-section {
+            background: #252525;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            padding: 12px;
             margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        .modes-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #00e676;
+            margin-bottom: 8px;
+        }
+        .mode-checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            cursor: pointer;
+            margin-bottom: 6px;
+        }
+        .mode-checkbox-label:last-child {
+            margin-bottom: 0;
+        }
+        .remarks-container {
+            margin-top: 5px;
             display: flex;
             flex-direction: column;
             gap: 5px;
@@ -322,11 +348,11 @@
             font-size: 14px;
             box-sizing: border-box;
             resize: vertical;
-            min-height: 50px;
+            min-height: 45px;
         }
         .modal-footer {
             border-top: 1px solid #333;
-            padding-top: 15px;
+            padding-top: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -359,7 +385,7 @@
                 </div>
             </div>
             <p style="font-size: 12px; color: #888; margin-top: 10px; margin-bottom: 0; text-align: center;">
-                * Pricing is primarily based on game count with a reasonable tolerance buffer. Games are restricted based on your SD card capacity.
+                * Additional Android/Linux modes are available for 128GB+ cards at +RM30 each.
             </p>
         </details>
 
@@ -397,7 +423,7 @@
             ðŸ›’ <span id="selectedCount" style="color: #00e676; font-weight: bold;">0</span> games
             (<span id="selectedSize" style="color: #00e676;">0</span> / <span id="maxSdLabel">256</span> GB) |
             <span id="selectedPrice" style="color: #00e676; font-weight: bold;">RM0</span>
-            <br><span style="font-size: 12px; color: #aaa;">Tap here to review & add remarks</span>
+            <br><span style="font-size: 12px; color: #aaa;">Tap here to review & add modes</span>
         </div>
         <button class="submit-btn" onclick="openCartModal()">Review & Submit</button>
     </div>
@@ -406,7 +432,7 @@
     <div id="cartModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Your Selected Games</h2>
+                <h2>Your Selection & Add-ons</h2>
                 <button class="close-modal" onclick="closeCartModal()">&times;</button>
             </div>
             <div id="cartModalBody" class="modal-body"></div>
@@ -415,9 +441,22 @@
                 âš ï¸ <strong>Size Tolerance Alert:</strong> Your total storage size has exceeded the standard buffer limit for this game count tier. Pricing has adjusted accordingly.
             </div>
 
+            <!-- Additional Modes Setup -->
+            <div class="modes-section">
+                <div class="modes-title">ðŸ§ðŸ¤– Additional System Modes (128GB+ SD Cards only)</div>
+                <label class="mode-checkbox-label">
+                    <input type="checkbox" id="androidModeCheck" onchange="updateCartSummary()">
+                    <span>Android Mode (+10GB or +16GB partition) â€” <strong>+RM30</strong></span>
+                </label>
+                <label class="mode-checkbox-label">
+                    <input type="checkbox" id="linuxModeCheck" onchange="updateCartSummary()">
+                    <span>Linux Mode (+10GB or +16GB partition) â€” <strong>+RM30</strong></span>
+                </label>
+            </div>
+
             <div class="remarks-container">
-                <label for="orderRemarks">Remarks / Notes (e.g. "GTA Trilogy has 3 games"):</label>
-                <textarea id="orderRemarks" class="remarks-input" placeholder="Optional: mention trilogies, specific requests, etc."></textarea>
+                <label for="orderRemarks">Remarks / Notes (Optional):</label>
+                <textarea id="orderRemarks" class="remarks-input" placeholder="e.g. mention trilogies, specific requests..."></textarea>
             </div>
 
             <div class="modal-footer">
@@ -807,23 +846,44 @@
         document.getElementById('maxSdLabel').innerText = maxSdSize;
 
         // Re-check current total size against new SD limit
-        let currentTotalSize = 0;
-        selectedGames.forEach(size => { currentTotalSize += size; });
+        let currentTotalSize = calculateTotalStorage();
 
         if (currentTotalSize > maxSdSize) {
-            alert(`Warning: Your selected games total (${currentTotalSize} GB) exceeds your new SD card capacity (${maxSdSize} GB). Please remove some games.`);
+            alert(`Warning: Your selected games and system modes total (${currentTotalSize.toFixed(1)} GB) exceeds your new SD card capacity (${maxSdSize} GB). Please remove some items.`);
         }
         updateCartSummary();
     }
 
     function clearAllSelections() {
         if (selectedGames.size === 0) return;
-        if (confirm('Are you sure you want to clear all selected games?')) {
+        if (confirm('Are you sure you want to clear all selected games and modes?')) {
             selectedGames.clear();
+            document.getElementById('androidModeCheck').checked = false;
+            document.getElementById('linuxModeCheck').checked = false;
             renderGames(games);
             document.getElementById('statusMsg').style.color = '#ff5252';
             document.getElementById('statusMsg').innerText = 'Selections cleared.';
         }
+    }
+
+    // Calculates total size including games and mode partitions
+    function calculateTotalStorage() {
+        let gameSize = 0;
+        selectedGames.forEach(size => { gameSize += size; });
+
+        let partitionSize = 0;
+        const androidSelected = document.getElementById('androidModeCheck').checked;
+        const linuxSelected = document.getElementById('linuxModeCheck').checked;
+
+        if (androidSelected || linuxSelected) {
+            if (maxSdSize >= 128) {
+                // 10GB for 128GB cards, 16GB for 256GB and above
+                const pSize = (maxSdSize === 128) ? 10 : 16;
+                if (androidSelected) partitionSize += pSize;
+                if (linuxSelected) partitionSize += pSize;
+            }
+        }
+        return gameSize + partitionSize;
     }
 
     function renderGames(list) {
@@ -842,12 +902,10 @@
             card.onclick = (e) => {
                 if (e.target.tagName !== 'INPUT') {
                     const cb = card.querySelector('input');
-                    // Calculate prospective size if checked
-                    let currentTotal = 0;
-                    selectedGames.forEach(s => currentTotal += s);
+                    let currentTotal = calculateTotalStorage();
 
                     if (!isSelected && (currentTotal + game.size > maxSdSize)) {
-                        alert(`Cannot add "${game.name}" (${game.size} GB). It exceeds your ${maxSdSize} GB SD card capacity! Please choose a smaller game or clear some space.`);
+                        alert(`Cannot add "${game.name}" (${game.size} GB). It exceeds your ${maxSdSize} GB SD card capacity!`);
                         return;
                     }
 
@@ -869,8 +927,7 @@
     }
 
     function handleCheckboxChange(event, name, size, checkbox) {
-        let currentTotal = 0;
-        selectedGames.forEach(s => currentTotal += s);
+        let currentTotal = calculateTotalStorage();
 
         if (checkbox.checked && (currentTotal + size > maxSdSize)) {
             alert(`Cannot add "${name}" (${size} GB). It exceeds your ${maxSdSize} GB SD card capacity!`);
@@ -894,7 +951,7 @@
     // ==========================================
     // 2. SMART TOLERANCE PRICING LOGIC
     // ==========================================
-    function calculatePriceDetails(count, totalSizeGb) {
+    function calculatePriceDetails(count, totalGameSizeGb) {
         if (count <= 0) return { price: 0, exceeded: false };
 
         let countTierPrice = 0;
@@ -911,42 +968,57 @@
             targetGbLimit = 460;
         } else {
             countTierPrice = 80 + (count - 40) * 2.0;
-            targetGbLimit = totalSizeGb;
+            targetGbLimit = totalGameSizeGb;
         }
 
         let sizeTierPrice = 0;
-        if (totalSizeGb <= 100) {
-            sizeTierPrice = (totalSizeGb / 100) * 30;
-        } else if (totalSizeGb <= 200) {
-            sizeTierPrice = 30 + ((totalSizeGb - 100) / 100) * 20;
-        } else if (totalSizeGb <= 400) {
-            sizeTierPrice = 50 + ((totalSizeGb - 200) / 200) * 30;
+        if (totalGameSizeGb <= 100) {
+            sizeTierPrice = (totalGameSizeGb / 100) * 30;
+        } else if (totalGameSizeGb <= 200) {
+            sizeTierPrice = 30 + ((totalGameSizeGb - 100) / 100) * 20;
+        } else if (totalGameSizeGb <= 400) {
+            sizeTierPrice = 50 + ((totalGameSizeGb - 200) / 200) * 30;
         } else {
-            sizeTierPrice = 80 + ((totalSizeGb - 400) / 100) * 20;
+            sizeTierPrice = 80 + ((totalGameSizeGb - 400) / 100) * 20;
         }
 
         let finalPrice = countTierPrice;
         let isExceeded = false;
 
-        if (totalSizeGb > targetGbLimit && sizeTierPrice > countTierPrice) {
+        if (totalGameSizeGb > targetGbLimit && sizeTierPrice > countTierPrice) {
             finalPrice = sizeTierPrice;
             isExceeded = true;
         }
+
+        // Add extra modes pricing (+RM30 each)
+        if (document.getElementById('androidModeCheck').checked) finalPrice += 30;
+        if (document.getElementById('linuxModeCheck').checked) finalPrice += 30;
 
         return { price: finalPrice, exceeded: isExceeded };
     }
 
     function updateCartSummary() {
-        const count = selectedGames.size;
-        let totalSize = 0;
-        selectedGames.forEach(size => {
-            totalSize += size;
-        });
+        // Enforce SD Card restriction rule for Android/Linux modes (128GB+ only)
+        if (maxSdSize < 128) {
+            if (document.getElementById('androidModeCheck').checked) {
+                document.getElementById('androidModeCheck').checked = false;
+                alert('Android Mode requires an SD card size of 128GB or larger.');
+            }
+            if (document.getElementById('linuxModeCheck').checked) {
+                document.getElementById('linuxModeCheck').checked = false;
+                alert('Linux Mode requires an SD card size of 128GB or larger.');
+            }
+        }
 
-        const details = calculatePriceDetails(count, totalSize);
+        const count = selectedGames.size;
+        let gameOnlySize = 0;
+        selectedGames.forEach(size => { gameOnlySize += size; });
+
+        let totalCombinedSize = calculateTotalStorage();
+        const details = calculatePriceDetails(count, gameOnlySize);
 
         document.getElementById('selectedCount').innerText = count;
-        document.getElementById('selectedSize').innerText = totalSize.toFixed(1);
+        document.getElementById('selectedSize').innerText = totalCombinedSize.toFixed(1);
         document.getElementById('selectedPrice').innerText = `RM${Math.round(details.price)}`;
     }
 
@@ -994,6 +1066,15 @@
                     document.getElementById('orderRemarks').value = data[0].remarks;
                 }
 
+                if (data[0].sd_card_size) {
+                    document.getElementById('sdCardSelect').value = data[0].sd_card_size;
+                    maxSdSize = parseInt(data[0].sd_card_size);
+                }
+
+                document.getElementById('androidModeCheck').checked = !!data[0].android_mode;
+                document.getElementById('linuxModeCheck').checked = !!data[0].linux_mode;
+
+                updateSdLimit();
                 renderGames(games);
                 statusMsg.style.color = '#00e676';
                 statusMsg.innerText = `Loaded previous order! (${selectedGames.size} games found)`;
@@ -1012,8 +1093,8 @@
     // 4. CART MODAL CONTROLS
     // ==========================================
     function openCartModal() {
-        if (selectedGames.size === 0) {
-            alert('Please select at least one game first!');
+        if (selectedGames.size === 0 && !document.getElementById('androidModeCheck').checked && !document.getElementById('linuxModeCheck').checked) {
+            alert('Please select at least one game or system mode first!');
             return;
         }
 
@@ -1030,11 +1111,16 @@
             modalBody.appendChild(item);
         });
 
-        const count = selectedGames.size;
-        let totalSize = 0;
-        selectedGames.forEach(size => { totalSize += size; });
+        if (selectedGames.size === 0) {
+            modalBody.innerHTML = '<p style="text-align:center; color:#888; margin:5px 0;">No individual games selected (Only Add-on modes).</p>';
+        }
 
-        const details = calculatePriceDetails(count, totalSize);
+        const count = selectedGames.size;
+        let gameOnlySize = 0;
+        selectedGames.forEach(size => { gameOnlySize += size; });
+
+        let totalCombinedSize = calculateTotalStorage();
+        const details = calculatePriceDetails(count, gameOnlySize);
 
         const warningBox = document.getElementById('sizeWarningBox');
         if (details.exceeded) {
@@ -1043,7 +1129,7 @@
             warningBox.style.display = 'none';
         }
 
-        document.getElementById('modalTotal').innerText = `${count} games (${totalSize.toFixed(1)} / ${maxSdSize} GB) | Total: RM${Math.round(details.price)}`;
+        document.getElementById('modalTotal').innerText = `${count} games (${totalCombinedSize.toFixed(1)} / ${maxSdSize} GB) | Total: RM${Math.round(details.price)}`;
         document.getElementById('cartModal').style.display = 'flex';
     }
 
@@ -1055,7 +1141,7 @@
         selectedGames.delete(gameName);
         renderGames(games);
 
-        if (selectedGames.size === 0) {
+        if (selectedGames.size === 0 && !document.getElementById('androidModeCheck').checked && !document.getElementById('linuxModeCheck').checked) {
             closeCartModal();
         } else {
             openCartModal();
@@ -1073,7 +1159,7 @@
             return;
         }
 
-        if (selectedGames.size === 0) {
+        if (selectedGames.size === 0 && !document.getElementById('androidModeCheck').checked && !document.getElementById('linuxModeCheck').checked) {
             alert('Your selection is empty!');
             return;
         }
@@ -1085,36 +1171,51 @@
         const gameNamesArray = Array.from(selectedGames.keys());
         const remarksText = document.getElementById('orderRemarks').value.trim();
 
+        let gameOnlySize = 0;
+        selectedGames.forEach(size => { gameOnlySize += size; });
+
+        let totalCombinedSize = calculateTotalStorage();
+        const details = calculatePriceDetails(selectedGames.size, gameOnlySize);
+        const finalPrice = Math.round(details.price);
+
+        const androidSelected = document.getElementById('androidModeCheck').checked;
+        const linuxSelected = document.getElementById('linuxModeCheck').checked;
+
         try {
             const { data: existing } = await supabaseClient
                 .from('orders')
-                .select('id')
+                .select('id, created_at')
                 .eq('phone_ending', phone);
 
+            const nowIso = new Date().toISOString();
             let error;
+
+            // Payload tracking standard fields, timestamps, and new system modes
+            const orderData = {
+                phone_ending: phone,
+                games: gameNamesArray,
+                total_games: selectedGames.size,
+                remarks: remarksText,
+                sd_card_size: maxSdSize,
+                total_size_gb: totalCombinedSize,
+                estimated_price: finalPrice,
+                android_mode: androidSelected,
+                linux_mode: linuxSelected,
+                status: 'Pending',
+                updated_at: nowIso
+            };
 
             if (existing && existing.length > 0) {
                 const { error: updateError } = await supabaseClient
                     .from('orders')
-                    .update({
-                        games: gameNamesArray,
-                        total_games: selectedGames.size,
-                        remarks: remarksText,
-                        created_at: new Date()
-                    })
+                    .update(orderData)
                     .eq('phone_ending', phone);
                 error = updateError;
             } else {
+                orderData.created_at = nowIso; // Set initial creation time only on insert
                 const { error: insertError } = await supabaseClient
                     .from('orders')
-                    .insert([
-                        {
-                            phone_ending: phone,
-                            games: gameNamesArray,
-                            total_games: selectedGames.size,
-                            remarks: remarksText
-                        }
-                    ]);
+                    .insert([orderData]);
                 error = insertError;
             }
 
