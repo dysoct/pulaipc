@@ -26,7 +26,8 @@
         .top-bar {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
         }
         .search-box, .phone-input {
             padding: 12px;
@@ -39,10 +40,32 @@
         }
         .search-box {
             flex: 2;
+            min-width: 200px;
         }
         .phone-input {
             flex: 1;
             text-align: center;
+            min-width: 120px;
+        }
+        .lookup-btn {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .lookup-btn:hover {
+            background-color: #1976D2;
+        }
+        .status-msg {
+            text-align: center;
+            font-size: 14px;
+            color: #00e676;
+            margin-bottom: 15px;
+            min-height: 20px;
         }
         .game-list {
             display: grid;
@@ -202,7 +225,9 @@
         <div class="top-bar">
             <input type="text" id="searchInput" class="search-box" placeholder="Search games..." onkeyup="filterGames()">
             <input type="text" id="phoneInput" class="phone-input" maxlength="4" placeholder="Last 4 Digits" oninput="savePhone()">
+            <button class="lookup-btn" onclick="fetchExistingOrder()">Load My Order</button>
         </div>
+        <div id="statusMsg" class="status-msg"></div>
 
         <div id="gameList" class="game-list"></div>
     </div>
@@ -210,7 +235,7 @@
     <!-- Sticky Bottom Checkout Bar -->
     <div class="checkout-bar">
         <div class="checkout-info" onclick="openCartModal()">
-            🛒 Selected: <span id="selectedCount" style="color: #00e676; font-weight: bold;">0</span> games (Tap to edit)
+            🛒 Selected: <span id="selectedCount" style="color: #00e676; font-weight: bold;">0</span> games (Tap to review)
         </div>
         <button class="submit-btn" onclick="openCartModal()">Review & Submit</button>
     </div>
@@ -222,12 +247,10 @@
                 <h2>Your Selected Games</h2>
                 <button class="close-modal" onclick="closeCartModal()">&times;</button>
             </div>
-            <div id="cartModalBody" class="modal-body">
-                <!-- Dynamically populated selected items -->
-            </div>
+            <div id="cartModalBody" class="modal-body"></div>
             <div class="modal-footer">
                 <span id="modalTotal" style="color: #888; font-size: 14px;">0 games total</span>
-                <button class="submit-btn" onclick="submitOrderToSupabase()">Confirm & Submit Order</button>
+                <button class="submit-btn" onclick="submitOrUpdateOrder()">Save Changes</button>
             </div>
         </div>
     </div>
@@ -649,7 +672,51 @@
     }
 
     // ==========================================
-    // 2. CART MODAL CONTROLS
+    // 2. FETCH / RECALL EXISTING ORDER
+    // ==========================================
+    async function fetchExistingOrder() {
+        const phone = document.getElementById('phoneInput').value.trim();
+        const statusMsg = document.getElementById('statusMsg');
+
+        if (phone.length !== 4) {
+            alert('Please enter your exact last 4 digits first!');
+            document.getElementById('phoneInput').focus();
+            return;
+        }
+
+        statusMsg.style.color = '#2196F3';
+        statusMsg.innerText = 'Searching for your order...';
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('orders')
+                .select('*')
+                .eq('phone_ending', phone)
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                // Populate selectedGames set with recalled games
+                selectedGames.clear();
+                data[0].games.forEach(g => selectedGames.add(g));
+                renderGames(games);
+                statusMsg.style.color = '#00e676';
+                statusMsg.innerText = `Loaded previous order! (${selectedGames.size} games found)`;
+            } else {
+                statusMsg.style.color = '#ff5252';
+                statusMsg.innerText = 'No existing order found for this 4-digit ID.';
+            }
+        } catch (err) {
+            console.error(err);
+            statusMsg.style.color = '#ff5252';
+            statusMsg.innerText = 'Failed to lookup order.';
+        }
+    }
+
+    // ==========================================
+    // 3. CART MODAL CONTROLS
     // ==========================================
     function openCartModal() {
         if (selectedGames.size === 0) {
@@ -680,22 +747,22 @@
 
     function removeGameFromCart(gameName) {
         selectedGames.delete(gameName);
-        renderGames(games); // Refreshes main list checkboxes and counter
+        renderGames(games);
         
         if (selectedGames.size === 0) {
             closeCartModal();
         } else {
-            openCartModal(); // Refresh modal contents
+            openCartModal();
         }
     }
 
     // ==========================================
-    // 3. SUBMIT TO SUPABASE DATABASE
+    // 4. UPSERT (UPDATE OR INSERT) ORDER
     // ==========================================
-    async function submitOrderToSupabase() {
+    async function submitOrUpdateOrder() {
         const phone = document.getElementById('phoneInput').value.trim();
         if (phone.length !== 4) {
-            alert('Please enter the last 4 digits of your phone number at the top!');
+            alert('Please enter your 4-digit phone ID at the top!');
             document.getElementById('phoneInput').focus();
             return;
         }
@@ -706,37 +773,58 @@
         }
 
         const btn = document.querySelector('#cartModal .submit-btn');
-        btn.innerText = 'Submitting...';
+        btn.innerText = 'Saving...';
         btn.disabled = true;
 
         try {
-            const { data, error } = await supabaseClient
+            // Check if an order already exists for this phone ending
+            const { data: existing } = await supabaseClient
                 .from('orders')
-                .insert([
-                    { 
-                        phone_ending: phone, 
+                .select('id')
+                .eq('phone_ending', phone);
+
+            let error;
+
+            if (existing && existing.length > 0) {
+                // UPDATE existing order row
+                const { error: updateError } = await supabaseClient
+                    .from('orders')
+                    .update({ 
                         games: Array.from(selectedGames),
-                        total_games: selectedGames.size 
-                    }
-                ]);
+                        total_games: selectedGames.size,
+                        created_at: new Date() // refreshes timestamp
+                    })
+                    .eq('phone_ending', phone);
+                error = updateError;
+            } else {
+                // INSERT new order row
+                const { error: insertError } = await supabaseClient
+                    .from('orders')
+                    .insert([
+                        { 
+                            phone_ending: phone, 
+                            games: Array.from(selectedGames),
+                            total_games: selectedGames.size 
+                        }
+                    ]);
+                error = insertError;
+            }
 
             if (error) throw error;
 
-            alert('Order submitted successfully!');
-            selectedGames.clear();
+            alert('Order updated and saved successfully!');
             closeCartModal();
-            renderGames(games);
+            document.getElementById('statusMsg').innerText = 'Order successfully updated in system!';
 
         } catch (err) {
             console.error(err);
-            alert('Failed to submit order. Check console for details.');
+            alert('Failed to save order. Check console for details.');
         } finally {
-            btn.innerText = 'Confirm & Submit Order';
+            btn.innerText = 'Save Changes';
             btn.disabled = false;
         }
     }
     </script>
 </body>
 </html>
-
 
