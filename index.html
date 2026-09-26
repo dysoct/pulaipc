@@ -120,8 +120,9 @@
             z-index: 100;
         }
         .checkout-info {
-            font-size: 16px;
+            font-size: 15px;
             cursor: pointer;
+            line-height: 1.4;
         }
         .submit-btn {
             background-color: #00e676;
@@ -235,7 +236,10 @@
     <!-- Sticky Bottom Checkout Bar -->
     <div class="checkout-bar">
         <div class="checkout-info" onclick="openCartModal()">
-            🛒 Selected: <span id="selectedCount" style="color: #00e676; font-weight: bold;">0</span> games (Tap to review)
+            🛒 <span id="selectedCount" style="color: #00e676; font-weight: bold;">0</span> games 
+            (<span id="selectedSize" style="color: #00e676;">0</span> GB) | 
+            <span id="selectedPrice" style="color: #00e676; font-weight: bold;">RM0</span>
+            <br><span style="font-size: 12px; color: #aaa;">Tap here to review/edit</span>
         </div>
         <button class="submit-btn" onclick="openCartModal()">Review & Submit</button>
     </div>
@@ -604,7 +608,7 @@
       { name: "Zombie Army Trilogy", size: 3.98 }
     ];
 
-    let selectedGames = new Set();
+    let selectedGames = new Map(); // Stores game name -> size mapping
 
     window.onload = function() {
         const savedPhone = localStorage.getItem('userPhone4');
@@ -636,33 +640,66 @@
                 if (e.target.tagName !== 'INPUT') {
                     const cb = card.querySelector('input');
                     cb.checked = !cb.checked;
-                    toggleGame(game.name, cb.checked);
+                    toggleGame(game.name, game.size, cb.checked);
                 }
             };
 
             card.innerHTML = `
                 <div class="game-info">
-                    <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleGame('${game.name.replace(/'/g, "\\'")}', this.checked)">
+                    <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleGame('${game.name.replace(/'/g, "\\'")}', ${game.size}, this.checked)">
                     <span class="game-title">${game.name}</span>
                 </div>
                 <span class="game-size">${game.size} GB</span>
             `;
             container.appendChild(card);
         });
-        updateCartCount();
+        updateCartSummary();
     }
 
-    function toggleGame(name, isChecked) {
+    function toggleGame(name, size, isChecked) {
         if (isChecked) {
-            selectedGames.add(name);
+            selectedGames.set(name, size);
         } else {
             selectedGames.delete(name);
         }
         renderGames(games);
     }
 
-    function updateCartCount() {
-        document.getElementById('selectedCount').innerText = selectedGames.size;
+    // ==========================================
+    // 2. PRICING & SUMMARY CALCULATION
+    // ==========================================
+    function calculatePrice(count) {
+        if (count <= 0) return 0;
+        
+        // Exact tier matches
+        if (count === 10) return 30;
+        if (count === 20) return 50;
+        if (count === 40) return 80;
+
+        // Dynamic tiered scaling
+        if (count < 10) {
+            return count * 3.0; // RM3 per game below 10
+        } else if (count > 10 && count < 20) {
+            return 30 + (count - 10) * 2.0; // Transitioning smoothly between 10 (RM30) and 20 (RM50)
+        } else if (count > 20 && count < 40) {
+            return 50 + (count - 20) * 1.5; // Transitioning between 20 (RM50) and 40 (RM80)
+        } else {
+            return 80 + (count - 40) * 2.0; // Above 40 games
+        }
+    }
+
+    function updateCartSummary() {
+        const count = selectedGames.size;
+        let totalSize = 0;
+        selectedGames.forEach(size => {
+            totalSize += size;
+        });
+
+        const price = calculatePrice(count);
+
+        document.getElementById('selectedCount').innerText = count;
+        document.getElementById('selectedSize').innerText = totalSize.toFixed(1);
+        document.getElementById('selectedPrice').innerText = `RM${Math.round(price)}`;
     }
 
     function filterGames() {
@@ -672,7 +709,7 @@
     }
 
     // ==========================================
-    // 2. FETCH / RECALL EXISTING ORDER
+    // 3. FETCH / RECALL EXISTING ORDER
     // ==========================================
     async function fetchExistingOrder() {
         const phone = document.getElementById('phoneInput').value.trim();
@@ -698,9 +735,12 @@
             if (error) throw error;
 
             if (data && data.length > 0) {
-                // Populate selectedGames set with recalled games
                 selectedGames.clear();
-                data[0].games.forEach(g => selectedGames.add(g));
+                data[0].games.forEach(gameName => {
+                    const found = games.find(g => g.name === gameName);
+                    const size = found ? found.size : 0;
+                    selectedGames.set(gameName, size);
+                });
                 renderGames(games);
                 statusMsg.style.color = '#00e676';
                 statusMsg.innerText = `Loaded previous order! (${selectedGames.size} games found)`;
@@ -716,7 +756,7 @@
     }
 
     // ==========================================
-    // 3. CART MODAL CONTROLS
+    // 4. CART MODAL CONTROLS
     // ==========================================
     function openCartModal() {
         if (selectedGames.size === 0) {
@@ -727,17 +767,19 @@
         const modalBody = document.getElementById('cartModalBody');
         modalBody.innerHTML = '';
 
-        selectedGames.forEach(gameName => {
+        selectedGames.forEach((size, gameName) => {
             const item = document.createElement('div');
             item.className = 'cart-item';
             item.innerHTML = `
-                <span>${gameName}</span>
+                <span>${gameName} <span style="color:#00e676; font-size:0.85em;">(${size} GB)</span></span>
                 <button class="remove-btn" onclick="removeGameFromCart('${gameName.replace(/'/g, "\\'")}')">Remove</button>
             `;
             modalBody.appendChild(item);
         });
 
-        document.getElementById('modalTotal').innerText = `${selectedGames.size} games total`;
+        const count = selectedGames.size;
+        const price = Math.round(calculatePrice(count));
+        document.getElementById('modalTotal').innerText = `${count} games total | Price: RM${price}`;
         document.getElementById('cartModal').style.display = 'flex';
     }
 
@@ -757,7 +799,7 @@
     }
 
     // ==========================================
-    // 4. UPSERT (UPDATE OR INSERT) ORDER
+    // 5. UPSERT (UPDATE OR INSERT) ORDER
     // ==========================================
     async function submitOrUpdateOrder() {
         const phone = document.getElementById('phoneInput').value.trim();
@@ -776,8 +818,9 @@
         btn.innerText = 'Saving...';
         btn.disabled = true;
 
+        const gameNamesArray = Array.from(selectedGames.keys());
+
         try {
-            // Check if an order already exists for this phone ending
             const { data: existing } = await supabaseClient
                 .from('orders')
                 .select('id')
@@ -786,24 +829,22 @@
             let error;
 
             if (existing && existing.length > 0) {
-                // UPDATE existing order row
                 const { error: updateError } = await supabaseClient
                     .from('orders')
                     .update({ 
-                        games: Array.from(selectedGames),
+                        games: gameNamesArray,
                         total_games: selectedGames.size,
-                        created_at: new Date() // refreshes timestamp
+                        created_at: new Date()
                     })
                     .eq('phone_ending', phone);
                 error = updateError;
             } else {
-                // INSERT new order row
                 const { error: insertError } = await supabaseClient
                     .from('orders')
                     .insert([
                         { 
                             phone_ending: phone, 
-                            games: Array.from(selectedGames),
+                            games: gameNamesArray,
                             total_games: selectedGames.size 
                         }
                     ]);
