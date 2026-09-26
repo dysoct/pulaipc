@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pulai PC - Game List</title>
+    <!-- Include Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -11,6 +13,7 @@
             color: #ffffff;
             margin: 0;
             padding: 20px;
+            padding-bottom: 100px;
         }
         .container {
             max-width: 900px;
@@ -20,16 +23,26 @@
             text-align: center;
             color: #00e676;
         }
-        .search-box {
-            width: 100%;
-            padding: 12px;
+        .top-bar {
+            display: flex;
+            gap: 10px;
             margin-bottom: 20px;
+        }
+        .search-box, .phone-input {
+            padding: 12px;
             font-size: 16px;
             border-radius: 6px;
             border: 1px solid #333;
             background: #1e1e1e;
             color: #fff;
             box-sizing: border-box;
+        }
+        .search-box {
+            flex: 2;
+        }
+        .phone-input {
+            flex: 1;
+            text-align: center;
         }
         .game-list {
             display: grid;
@@ -43,6 +56,17 @@
             justify-content: space-between;
             align-items: center;
             border: 1px solid #2a2a2a;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .game-card.selected {
+            border-color: #00e676;
+            background: #1a2e22;
+        }
+        .game-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
         .game-title {
             font-weight: 600;
@@ -51,16 +75,72 @@
             color: #00e676;
             font-size: 0.9em;
         }
+        input[type="checkbox"] {
+            transform: scale(1.3);
+            accent-color: #00e676;
+            cursor: pointer;
+        }
+        /* Sticky Checkout Bar */
+        .checkout-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #1e1e1e;
+            border-top: 1px solid #333;
+            padding: 15px 20px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.5);
+        }
+        .checkout-info {
+            font-size: 16px;
+        }
+        .submit-btn {
+            background-color: #00e676;
+            color: #121212;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .submit-btn:hover {
+            background-color: #00c853;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Pulai PC Game List</h1>
-        <input type="text" id="searchInput" class="search-box" placeholder="Search games..." onkeyup="filterGames()">
+        
+        <div class="top-bar">
+            <input type="text" id="searchInput" class="search-box" placeholder="Search games..." onkeyup="filterGames()">
+            <input type="text" id="phoneInput" class="phone-input" maxlength="4" placeholder="Last 4 Digits" oninput="savePhone()">
+        </div>
+
         <div id="gameList" class="game-list"></div>
     </div>
 
+    <!-- Sticky Bottom Checkout Bar -->
+    <div class="checkout-bar">
+        <div class="checkout-info">
+            Selected: <span id="selectedCount" style="color: #00e676; font-weight: bold;">0</span> games
+        </div>
+        <button class="submit-btn" onclick="submitOrderToSupabase()">Submit Order</button>
+    </div>
+
     <script>
+    // ==========================================
+    // 1. SUPABASE CONFIGURATION
+    // ==========================================
+    const SUPABASE_URL = 'https://mwxndccwzkcsyvslucjg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13eG5kY2N3emtjc3l2c2x1Y2pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0MTY1MjksImV4cCI6MjEwNTk5MjUyOX0.61NvDZ6cPnxLqoxJ4tr-H729a99h_XOAZDXo3zfx25g';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     // AUTOMATICALLY GENERATED DATASET - DO NOT EDIT MANUALLY
     const games = [
       { name: "1-2-Switch", size: 1.39 },
@@ -402,6 +482,21 @@
       { name: "Zombie Army Trilogy", size: 3.98 }
     ];
 
+    let selectedGames = new Set();
+
+    window.onload = function() {
+        const savedPhone = localStorage.getItem('userPhone4');
+        if (savedPhone) {
+            document.getElementById('phoneInput').value = savedPhone;
+        }
+        renderGames(games);
+    };
+
+    function savePhone() {
+        const phone = document.getElementById('phoneInput').value;
+        localStorage.setItem('userPhone4', phone);
+    }
+
     function renderGames(list) {
         const container = document.getElementById('gameList');
         container.innerHTML = '';
@@ -412,14 +507,40 @@
         }
 
         list.forEach(game => {
+            const isSelected = selectedGames.has(game.name);
             const card = document.createElement('div');
-            card.className = 'game-card';
+            card.className = `game-card ${isSelected ? 'selected' : ''}`;
+            card.onclick = (e) => {
+                if (e.target.tagName !== 'INPUT') {
+                    const cb = card.querySelector('input');
+                    cb.checked = !cb.checked;
+                    toggleGame(game.name, cb.checked);
+                }
+            };
+
             card.innerHTML = `
-                <span class="game-title">${game.name}</span>
+                <div class="game-info">
+                    <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleGame('${game.name.replace(/'/g, "\\'")}', this.checked)">
+                    <span class="game-title">${game.name}</span>
+                </div>
                 <span class="game-size">${game.size} GB</span>
             `;
             container.appendChild(card);
         });
+        updateCartCount();
+    }
+
+    function toggleGame(name, isChecked) {
+        if (isChecked) {
+            selectedGames.add(name);
+        } else {
+            selectedGames.delete(name);
+        }
+        renderGames(games);
+    }
+
+    function updateCartCount() {
+        document.getElementById('selectedCount').innerText = selectedGames.size;
     }
 
     function filterGames() {
@@ -428,12 +549,53 @@
         renderGames(filtered);
     }
 
-    // Initial Render
-    renderGames(games);
+    // ==========================================
+    // 2. SUBMIT TO SUPABASE DATABASE
+    // ==========================================
+    async function submitOrderToSupabase() {
+        const phone = document.getElementById('phoneInput').value.trim();
+        if (phone.length !== 4) {
+            alert('Please enter the last 4 digits of your phone number!');
+            document.getElementById('phoneInput').focus();
+            return;
+        }
+
+        if (selectedGames.size === 0) {
+            alert('Please select at least one game first!');
+            return;
+        }
+
+        const btn = document.querySelector('.submit-btn');
+        btn.innerText = 'Submitting...';
+        btn.disabled = true;
+
+        try {
+            // Insert row into your Supabase 'orders' table
+            const { data, error } = await supabaseClient
+                .from('orders')
+                .insert([
+                    { 
+                        phone_ending: phone, 
+                        games: Array.from(selectedGames),
+                        total_games: selectedGames.size 
+                    }
+                ]);
+
+            if (error) throw error;
+
+            alert('Order submitted successfully to database!');
+            selectedGames.clear();
+            renderGames(games);
+
+        } catch (err) {
+            console.error(err);
+            alert('Failed to submit order. Check console for details.');
+        } finally {
+            btn.innerText = 'Submit Order';
+            btn.disabled = false;
+        }
+    }
     </script>
 </body>
 </html>
-
-
-
 
