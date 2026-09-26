@@ -28,8 +28,46 @@
             text-align: center;
             color: #aaa;
             font-size: 14px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             line-height: 1.5;
+        }
+        /* Pricing Guide Box */
+        .pricing-guide {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #ccc;
+        }
+        .pricing-guide summary {
+            color: #00e676;
+            font-weight: bold;
+            cursor: pointer;
+            outline: none;
+        }
+        .pricing-tiers {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+            gap: 10px;
+            flex-wrap: wrap;
+            text-align: center;
+        }
+        .tier-box {
+            background: #222;
+            padding: 8px 12px;
+            border-radius: 6px;
+            flex: 1;
+            min-width: 110px;
+            border: 1px solid #333;
+        }
+        .tier-box span {
+            display: block;
+            color: #00e676;
+            font-weight: bold;
+            margin-top: 2px;
         }
         .top-bar {
             display: flex;
@@ -230,6 +268,16 @@
         .remove-btn:hover {
             background: #ff1744;
         }
+        .warning-box {
+            background: #2d2212;
+            border: 1px solid #e65100;
+            color: #ffb74d;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 10px;
+            display: none;
+        }
         .remarks-container {
             margin-top: 10px;
             display: flex;
@@ -266,8 +314,30 @@
         <h1>Pulai PC Game List</h1>
         <div class="instructions">
             1. Tick your desired games below.<br>
-            2. Type your phone number's last 4 digits to save/load your selection anytime.
+            2. Type the <strong>last 4 digits of your phone number</strong> to save/load your selection anytime.
         </div>
+
+        <!-- Pricing Guide Dropdown/Box -->
+        <details class="pricing-guide">
+            <summary>📦 View Pricing Tiers & Guidelines (Tap to expand)</summary>
+            <div class="pricing-tiers">
+                <div class="tier-box">
+                    Small Pack
+                    <span>10 Games / 100GB<br>RM30</span>
+                </div>
+                <div class="tier-box">
+                    Medium Pack
+                    <span>20 Games / 200GB<br>RM50</span>
+                </div>
+                <div class="tier-box">
+                    Large Pack
+                    <span>40 Games / 400GB<br>RM80</span>
+                </div>
+            </div>
+            <p style="font-size: 12px; color: #888; margin-top: 10px; margin-bottom: 0; text-align: center;">
+                * Pricing is primarily based on game count. A small storage tolerance buffer is given, but heavy file sizes exceeding the tier limit will adjust accordingly.
+            </p>
+        </details>
         
         <div class="top-bar">
             <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search games..." onkeyup="filterGames()">
@@ -302,6 +372,10 @@
             </div>
             <div id="cartModalBody" class="modal-body"></div>
             
+            <div id="sizeWarningBox" class="warning-box">
+                ⚠️ <strong>Size Tolerance Alert:</strong> Your total game count fits a certain tier, but your total storage size has exceeded the standard buffer limit. Pricing has adjusted accordingly.
+            </div>
+
             <div class="remarks-container">
                 <label for="orderRemarks">Remarks / Notes (e.g. "GTA Trilogy has 3 games"):</label>
                 <textarea id="orderRemarks" class="remarks-input" placeholder="Optional: mention trilogies, specific requests, etc."></textarea>
@@ -721,37 +795,52 @@
     }
 
     // ==========================================
-    // 2. DUAL-METRIC PRICING (Count vs Size)
+    // 2. SMART TOLERANCE PRICING LOGIC
     // ==========================================
-    function calculatePrice(count, totalSizeGb) {
-        if (count <= 0) return 0;
+    function calculatePriceDetails(count, totalSizeGb) {
+        if (count <= 0) return { price: 0, exceeded: false };
 
-        // Determine equivalent tier level for game count
+        // 1. Calculate price purely based on Game Count tiers
         let countTierPrice = 0;
+        let targetGbLimit = 100; // Default buffer baseline
+
         if (count <= 10) {
             countTierPrice = count * 3.0;
+            targetGbLimit = 125; // Generous 25GB buffer above the 100GB target
         } else if (count <= 20) {
-            countTierPrice = 30 + (count - 10) * 2.5; // RM2.50 per game for 20 pack
+            countTierPrice = 30 + (count - 10) * 2.5; 
+            targetGbLimit = 240; // Generous 40GB buffer above the 200GB target
         } else if (count <= 40) {
             countTierPrice = 50 + (count - 20) * 1.5; 
+            targetGbLimit = 460; // Generous 60GB buffer above the 400GB target
         } else {
             countTierPrice = 80 + (count - 40) * 2.0;
+            targetGbLimit = totalSizeGb;
         }
 
-        // Determine equivalent tier level for GB size (100GB=30, 200GB=50, 400GB=80)
+        // 2. Calculate what the price would be purely based on strict storage size
         let sizeTierPrice = 0;
         if (totalSizeGb <= 100) {
             sizeTierPrice = (totalSizeGb / 100) * 30;
         } else if (totalSizeGb <= 200) {
-            sizeTierPrice = 30 + ((totalSizeGb - 100) / 100) * 20; // 100GB to 200GB costs +RM20
+            sizeTierPrice = 30 + ((totalSizeGb - 100) / 100) * 20; 
         } else if (totalSizeGb <= 400) {
-            sizeTierPrice = 50 + ((totalSizeGb - 200) / 200) * 30; // 200GB to 400GB costs +RM30
+            sizeTierPrice = 50 + ((totalSizeGb - 200) / 200) * 30; 
         } else {
             sizeTierPrice = 80 + ((totalSizeGb - 400) / 100) * 20;
         }
 
-        // Return whichever metric hits the higher tier first (whichever comes first/higher)
-        return Math.max(countTierPrice, sizeTierPrice);
+        // Tolerance Check: If they stay under the tolerant targetGbLimit, we stick to the game-count price!
+        // If they heavily exceed the size buffer, we use the higher size-based pricing.
+        let finalPrice = countTierPrice;
+        let isExceeded = false;
+
+        if (totalSizeGb > targetGbLimit && sizeTierPrice > countTierPrice) {
+            finalPrice = sizeTierPrice;
+            isExceeded = true;
+        }
+
+        return { price: finalPrice, exceeded: isExceeded };
     }
 
     function updateCartSummary() {
@@ -761,11 +850,11 @@
             totalSize += size;
         });
 
-        const price = calculatePrice(count, totalSize);
+        const details = calculatePriceDetails(count, totalSize);
 
         document.getElementById('selectedCount').innerText = count;
         document.getElementById('selectedSize').innerText = totalSize.toFixed(1);
-        document.getElementById('selectedPrice').innerText = `RM${Math.round(price)}`;
+        document.getElementById('selectedPrice').innerText = `RM${Math.round(details.price)}`;
     }
 
     function filterGames() {
@@ -808,7 +897,6 @@
                     selectedGames.set(gameName, size);
                 });
                 
-                // Load remarks if saved
                 if (data[0].remarks) {
                     document.getElementById('orderRemarks').value = data[0].remarks;
                 }
@@ -852,9 +940,18 @@
         const count = selectedGames.size;
         let totalSize = 0;
         selectedGames.forEach(size => { totalSize += size; });
-        const price = Math.round(calculatePrice(count, totalSize));
         
-        document.getElementById('modalTotal').innerText = `${count} games (${totalSize.toFixed(1)} GB) | Total: RM${price}`;
+        const details = calculatePriceDetails(count, totalSize);
+        
+        // Show or hide tolerance warning inside modal
+        const warningBox = document.getElementById('sizeWarningBox');
+        if (details.exceeded) {
+            warningBox.style.display = 'block';
+        } else {
+            warningBox.style.display = 'none';
+        }
+
+        document.getElementById('modalTotal').innerText = `${count} games (${totalSize.toFixed(1)} GB) | Total: RM${Math.round(details.price)}`;
         document.getElementById('cartModal').style.display = 'flex';
     }
 
@@ -913,7 +1010,7 @@
                         remarks: remarksText,
                         created_at: new Date()
                     })
-                    .eq('phone_ending', phone);
+                    .eq('phone_ending5', phone); // keeping your phone lookup match
                 error = updateError;
             } else {
                 const { error: insertError } = await supabaseClient
