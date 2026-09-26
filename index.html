@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pulai PC Game Selector</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f8fafc;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --border: #334155;
+      --muted: #94a3b8;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 16px;
+      padding-bottom: 140px;
+    }
+    .header { text-align: center; margin-bottom: 16px; }
+    .header h1 { margin: 0 0 4px 0; font-size: 1.4rem; color: #60a5fa; }
+    .header p { color: var(--muted); font-size: 0.85rem; margin: 0; }
+    
+    .customer-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .customer-box label { font-size: 0.85rem; color: var(--muted); display: block; margin-bottom: 6px; }
+    .input-row { display: flex; gap: 8px; }
+    .phone-input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      color: var(--text);
+      font-size: 1rem;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+    .btn-secondary {
+      background: #334155;
+      color: #fff;
+      border: none;
+      padding: 0 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    
+    .search-box {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      font-size: 0.95rem;
+      box-sizing: border-box;
+      margin-bottom: 12px;
+    }
+    
+    .game-list { display: flex; flex-direction: column; gap: 8px; }
+    
+    .game-item {
+      display: flex;
+      align-items: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .game-item input { width: 18px; height: 18px; margin-right: 12px; accent-color: var(--accent); }
+    .game-info { display: flex; justify-content: space-between; width: 100%; align-items: center; }
+    .game-title { font-weight: 500; font-size: 0.9rem; }
+    .game-size { color: var(--muted); font-size: 0.8rem; white-space: nowrap; margin-left: 8px; }
+    
+    .footer-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.4);
+      z-index: 100;
+    }
+    .stats-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .stats-text { font-size: 0.85rem; color: var(--muted); }
+    .stats-text strong { color: #f8fafc; }
+    .price-text { font-size: 1.1rem; font-weight: bold; color: #4ade80; }
+    .action-row { display: flex; gap: 8px; }
+    .btn-primary {
+      flex: 1;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .btn-save { background: #059669; }
+    .warning-banner {
+      background: #7f1d1d;
+      color: #fca5a5;
+      font-size: 0.8rem;
+      padding: 6px 10px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      display: none;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Pulai PC Game Selector</h1>
+    <p>Select games & save list with your Phone No. ID</p>
+  </div>
+
+  <div class="customer-box">
+    <label for="phoneInput">Enter Last 4 Digits of Phone No. to Save/Load Order:</label>
+    <div class="input-row">
+      <input type="number" id="phoneInput" class="phone-input" placeholder="e.g. 8821" maxlength="4">
+      <button class="btn-secondary" onclick="loadOrder()">Load Saved</button>
+    </div>
+  </div>
+
+  <input type="text" id="search" class="search-box" placeholder="Search game title..." oninput="filterGames()">
+
+  <div class="game-list" id="gameList"></div>
+
+  <div class="footer-bar">
+    <div id="storageWarning" class="warning-banner"></div>
+    <div class="stats-row">
+      <div class="stats-text">
+        Games: <strong id="gameCount">0</strong> | Storage: <strong id="totalGB">0.00</strong> GB
+      </div>
+      <div class="price-text">RM <span id="totalPrice">0.00</span></div>
+    </div>
+    <div class="action-row">
+      <button class="btn-primary btn-save" onclick="saveOrder()">Save Order</button>
+      <button class="btn-primary" onclick="copyOrder()">Copy WhatsApp</button>
+    </div>
+  </div>
+
+  <script>
+    // Supabase Credentials (REPLACE WITH YOUR KEYS)
+    const supabaseUrl = 'https://mwxndccwzkcsyvslucjg.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13eG5kY2N3emtjc3l2c2x1Y2pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0MTY1MjksImV4cCI6MjEwNTk5MjUyOX0.61NvDZ6cPnxLqoxJ4tr-H729a99h_XOAZDXo3zfx25g';
+    const db = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // Placeholder dataset (Auto-updated by PowerShell script)
+    const games = [
+      { name: "The Legend of Zelda: Tears of the Kingdom", size: 16.30 },
+      { name: "Super Mario Bros. Wonder", size: 3.50 }
+    ];
+
+    function renderGames() {
+      const container = document.getElementById("gameList");
+      container.innerHTML = "";
+      games.forEach((game, index) => {
+        const item = document.createElement("label");
+        item.className = "game-item";
+        item.innerHTML = 
+          <input type="checkbox" data-index="${index}" onchange="calculatePriceAndSize()">
+          <div class="game-info">
+            <span class="game-title">${game.name}</span>
+            <span class="game-size">${game.size.toFixed(2)} GB</span>
+          </div>
+        ;
+        container.appendChild(item);
+      });
+    }
+
+    function calculatePriceAndSize() {
+      const checkboxes = document.querySelectorAll('#gameList input[type="checkbox"]:checked');
+      const count = checkboxes.length;
+      let totalBytes = 0;
+
+      checkboxes.forEach(cb => {
+        const idx = cb.getAttribute("data-index");
+        totalBytes += games[idx].size;
+      });
+
+      const totalGB = parseFloat(totalBytes.toFixed(2));
+      let totalPrice = 0;
+      let maxAllowedGB = 0;
+
+      // Tiered Pricing Rules
+      if (count === 0) {
+        totalPrice = 0;
+        maxAllowedGB = 0;
+      } else if (count <= 10) {
+        totalPrice = count * 3.00;
+        maxAllowedGB = 100;
+      } else if (count <= 20) {
+        totalPrice = count * 2.50;
+        maxAllowedGB = 200;
+      } else {
+        totalPrice = count * 2.00;
+        maxAllowedGB = 400;
+      }
+
+      document.getElementById("gameCount").innerText = count;
+      document.getElementById("totalGB").innerText = totalGB.toFixed(2);
+      document.getElementById("totalPrice").innerText = totalPrice.toFixed(2);
+
+      const warningEl = document.getElementById("storageWarning");
+      if (maxAllowedGB > 0 && totalGB > maxAllowedGB) {
+        warningEl.style.display = "block";
+        warningEl.innerText = ⚠️ Storage Alert: ${count} games (${totalGB} GB) exceeds ${maxAllowedGB} GB tier limit!;
+      } else {
+        warningEl.style.display = "none";
+      }
+    }
+
+    function filterGames() {
+      const query = document.getElementById("search").value.toLowerCase();
+      const items = document.querySelectorAll(".game-item");
+      items.forEach(item => {
+        const title = item.querySelector(".game-title").innerText.toLowerCase();
+        item.style.display = title.includes(query) ? "flex" : "none";
+      });
+    }
+
+    async function saveOrder() {
+      const phoneId = document.getElementById("phoneInput").value.trim();
+      if (phoneId.length !== 4 || isNaN(phoneId)) {
+        alert("Please enter a valid 4-digit phone number identifier.");
+        return;
+      }
+
+      const checkboxes = document.querySelectorAll('#gameList input[type="checkbox"]:checked');
+      if (checkboxes.length === 0) {
+        alert("Please select at least one game before saving.");
+        return;
+      }
+
+      const selectedGames = Array.from(checkboxes).map(cb => games[cb.getAttribute("data-index")].name);
+      const totalGB = parseFloat(document.getElementById("totalGB").innerText);
+      const totalPrice = parseFloat(document.getElementById("totalPrice").innerText);
+
+      const { error } = await db.from('customer_orders').upsert({
+        phone_last4: phoneId,
+        selected_games: selectedGames,
+        total_count: selectedGames.length,
+        total_gb: totalGB,
+        total_price: totalPrice,
+        updated_at: new Date()
+      });
+
+      if (error) {
+        alert("Error saving: " + error.message);
+      } else {
+        alert(Order saved successfully under ID: ${phoneId}!);
+      }
+    }
+
+    async function loadOrder() {
+      const phoneId = document.getElementById("phoneInput").value.trim();
+      if (phoneId.length !== 4 || isNaN(phoneId)) {
+        alert("Please enter the 4-digit phone number ID to search.");
+        return;
+      }
+
+      const { data, error } = await db.from('customer_orders')
+        .select('*')
+        .eq('phone_last4', phoneId)
+        .maybeSingle();
+
+      if (data) {
+        document.querySelectorAll('#gameList input[type="checkbox"]').forEach(cb => cb.checked = false);
+        data.selected_games.forEach(gameName => {
+          const idx = games.findIndex(g => g.name === gameName);
+          if (idx !== -1) {
+            const cb = document.querySelector(#gameList input[data-index="${idx}"]);
+            if (cb) cb.checked = true;
+          }
+        });
+        calculatePriceAndSize();
+        alert(Loaded saved list for ID ${phoneId} (${data.total_count} games).);
+      } else {
+        alert("No saved order found under ID " + phoneId);
+      }
+    }
+
+    function copyOrder() {
+      const phoneId = document.getElementById("phoneInput").value.trim() || "N/A";
+      const checkboxes = document.querySelectorAll('#gameList input[type="checkbox"]:checked');
+      if (checkboxes.length === 0) {
+        alert("Please select at least one game.");
+        return;
+      }
+
+      let date = new Date().toISOString().split('T')[0];
+      let text = Pulai PC Selected Order\nID: ${phoneId}\nDate: ${date}\n========================\n;
+      let totalGB = 0;
+
+      checkboxes.forEach((cb, idx) => {
+        const game = games[cb.getAttribute("data-index")];
+        text += ${idx + 1}. ${game.name} (${game.size.toFixed(2)} GB)\n;
+        totalGB += game.size;
+      });
+
+      const count = checkboxes.length;
+      const totalPrice = document.getElementById("totalPrice").innerText;
+
+      text += ========================\nTotal Games: ${count}\nTotal Size : ${totalGB.toFixed(2)} GB\nTotal Price: RM ${totalPrice};
+
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Order summary copied to clipboard! You can paste it into WhatsApp now.");
+      });
+    }
+
+    renderGames();
+  </script>
+</body>
+</html>
