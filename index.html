@@ -75,7 +75,7 @@
             margin-bottom: 10px;
             flex-wrap: wrap;
         }
-        .search-box, .phone-input {
+        .search-box, .phone-input, .sd-select {
             padding: 12px;
             font-size: 16px;
             border-radius: 6px;
@@ -86,13 +86,18 @@
         }
         .search-box {
             flex: 2;
-            min-width: 200px;
+            min-width: 180px;
+        }
+        .sd-select {
+            flex: 1;
+            min-width: 130px;
+            cursor: pointer;
         }
         .phone-group {
             flex: 1;
             display: flex;
             flex-direction: column;
-            min-width: 150px;
+            min-width: 130px;
         }
         .phone-input {
             width: 100%;
@@ -104,11 +109,15 @@
             margin-top: 3px;
             text-align: center;
         }
+        .btn-group {
+            display: flex;
+            gap: 5px;
+        }
         .lookup-btn {
             background-color: #2196F3;
             color: white;
             border: none;
-            padding: 12px 16px;
+            padding: 12px 14px;
             font-size: 14px;
             font-weight: bold;
             border-radius: 6px;
@@ -117,6 +126,21 @@
         }
         .lookup-btn:hover {
             background-color: #1976D2;
+        }
+        .clear-btn {
+            background-color: #424242;
+            color: #ff5252;
+            border: 1px solid #ff5252;
+            padding: 12px 14px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            height: 47px;
+        }
+        .clear-btn:hover {
+            background-color: #ff5252;
+            color: white;
         }
         .status-msg {
             text-align: center;
@@ -313,13 +337,13 @@
     <div class="container">
         <h1>Pulai PC Game List</h1>
         <div class="instructions">
-            1. Tick your desired games below.<br>
+            1. Select your <strong>SD Card Size</strong> and tick your desired games.<br>
             2. Type the <strong>last 4 digits of your phone number</strong> to save/load your selection anytime.
         </div>
 
         <!-- Pricing Guide Dropdown/Box -->
         <details class="pricing-guide">
-            <summary>📦 View Pricing Tiers & Guidelines (Tap to expand)</summary>
+            <summary>ðŸ“¦ View Pricing Tiers & Guidelines (Tap to expand)</summary>
             <div class="pricing-tiers">
                 <div class="tier-box">
                     Small Pack
@@ -335,17 +359,32 @@
                 </div>
             </div>
             <p style="font-size: 12px; color: #888; margin-top: 10px; margin-bottom: 0; text-align: center;">
-                * Pricing is primarily based on game count. A small storage tolerance buffer is given, but heavy file sizes exceeding the tier limit will adjust accordingly.
+                * Pricing is primarily based on game count with a reasonable tolerance buffer. Games are restricted based on your SD card capacity.
             </p>
         </details>
-        
+
         <div class="top-bar">
-            <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search games..." onkeyup="filterGames()">
+            <input type="text" id="searchInput" class="search-box" placeholder="ðŸ” Search games..." onkeyup="filterGames()">
+
+            <!-- SD Card Size Selector -->
+            <select id="sdCardSelect" class="sd-select" onchange="updateSdLimit()">
+                <option value="64">64 GB SD Card</option>
+                <option value="128">128 GB SD Card</option>
+                <option value="256" selected>256 GB SD Card</option>
+                <option value="512">512 GB SD Card</option>
+                <option value="1024">1 TB SD Card</option>
+                <option value="2048">2 TB SD Card</option>
+            </select>
+
             <div class="phone-group">
                 <input type="text" id="phoneInput" class="phone-input" maxlength="4" placeholder="e.g. 5678" oninput="savePhone()">
-                <span class="input-hint">Last 4 digits of phone</span>
+                <span class="input-hint">Last 4 digits phone</span>
             </div>
-            <button class="lookup-btn" onclick="fetchExistingOrder()">Load Order</button>
+
+            <div class="btn-group">
+                <button class="lookup-btn" onclick="fetchExistingOrder()" title="Load Saved Order">Load</button>
+                <button class="clear-btn" onclick="clearAllSelections()" title="Clear All Games">Clear</button>
+            </div>
         </div>
         <div id="statusMsg" class="status-msg"></div>
 
@@ -355,8 +394,8 @@
     <!-- Sticky Bottom Checkout Bar -->
     <div class="checkout-bar">
         <div class="checkout-info" onclick="openCartModal()">
-            🛒 <span id="selectedCount" style="color: #00e676; font-weight: bold;">0</span> games 
-            (<span id="selectedSize" style="color: #00e676;">0</span> GB) | 
+            ðŸ›’ <span id="selectedCount" style="color: #00e676; font-weight: bold;">0</span> games
+            (<span id="selectedSize" style="color: #00e676;">0</span> / <span id="maxSdLabel">256</span> GB) |
             <span id="selectedPrice" style="color: #00e676; font-weight: bold;">RM0</span>
             <br><span style="font-size: 12px; color: #aaa;">Tap here to review & add remarks</span>
         </div>
@@ -371,9 +410,9 @@
                 <button class="close-modal" onclick="closeCartModal()">&times;</button>
             </div>
             <div id="cartModalBody" class="modal-body"></div>
-            
+
             <div id="sizeWarningBox" class="warning-box">
-                ⚠️ <strong>Size Tolerance Alert:</strong> Your total game count fits a certain tier, but your total storage size has exceeded the standard buffer limit. Pricing has adjusted accordingly.
+                âš ï¸ <strong>Size Tolerance Alert:</strong> Your total storage size has exceeded the standard buffer limit for this game count tier. Pricing has adjusted accordingly.
             </div>
 
             <div class="remarks-container">
@@ -738,18 +777,53 @@
     ];
 
     let selectedGames = new Map(); // Stores game name -> size mapping
+    let maxSdSize = 256; // Default selection
 
     window.onload = function() {
         const savedPhone = localStorage.getItem('userPhone4');
         if (savedPhone) {
             document.getElementById('phoneInput').value = savedPhone;
         }
+
+        const savedSd = localStorage.getItem('userSdSize');
+        if (savedSd) {
+            document.getElementById('sdCardSelect').value = savedSd;
+            maxSdSize = parseInt(savedSd);
+        }
+
+        updateSdLimit();
         renderGames(games);
     };
 
     function savePhone() {
         const phone = document.getElementById('phoneInput').value;
         localStorage.setItem('userPhone4', phone);
+    }
+
+    function updateSdLimit() {
+        const select = document.getElementById('sdCardSelect');
+        maxSdSize = parseInt(select.value);
+        localStorage.setItem('userSdSize', maxSdSize);
+        document.getElementById('maxSdLabel').innerText = maxSdSize;
+
+        // Re-check current total size against new SD limit
+        let currentTotalSize = 0;
+        selectedGames.forEach(size => { currentTotalSize += size; });
+
+        if (currentTotalSize > maxSdSize) {
+            alert(`Warning: Your selected games total (${currentTotalSize} GB) exceeds your new SD card capacity (${maxSdSize} GB). Please remove some games.`);
+        }
+        updateCartSummary();
+    }
+
+    function clearAllSelections() {
+        if (selectedGames.size === 0) return;
+        if (confirm('Are you sure you want to clear all selected games?')) {
+            selectedGames.clear();
+            renderGames(games);
+            document.getElementById('statusMsg').style.color = '#ff5252';
+            document.getElementById('statusMsg').innerText = 'Selections cleared.';
+        }
     }
 
     function renderGames(list) {
@@ -768,6 +842,15 @@
             card.onclick = (e) => {
                 if (e.target.tagName !== 'INPUT') {
                     const cb = card.querySelector('input');
+                    // Calculate prospective size if checked
+                    let currentTotal = 0;
+                    selectedGames.forEach(s => currentTotal += s);
+
+                    if (!isSelected && (currentTotal + game.size > maxSdSize)) {
+                        alert(`Cannot add "${game.name}" (${game.size} GB). It exceeds your ${maxSdSize} GB SD card capacity! Please choose a smaller game or clear some space.`);
+                        return;
+                    }
+
                     cb.checked = !cb.checked;
                     toggleGame(game.name, game.size, cb.checked);
                 }
@@ -775,7 +858,7 @@
 
             card.innerHTML = `
                 <div class="game-info">
-                    <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleGame('${game.name.replace(/'/g, "\\'")}', ${game.size}, this.checked)">
+                    <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="handleCheckboxChange(event, '${game.name.replace(/'/g, "\\'")}', ${game.size}, this)">
                     <span class="game-title">${game.name}</span>
                 </div>
                 <span class="game-size">${game.size} GB</span>
@@ -783,6 +866,20 @@
             container.appendChild(card);
         });
         updateCartSummary();
+    }
+
+    function handleCheckboxChange(event, name, size, checkbox) {
+        let currentTotal = 0;
+        selectedGames.forEach(s => currentTotal += s);
+
+        if (checkbox.checked && (currentTotal + size > maxSdSize)) {
+            alert(`Cannot add "${name}" (${size} GB). It exceeds your ${maxSdSize} GB SD card capacity!`);
+            checkbox.checked = false;
+            event.preventDefault();
+            return;
+        }
+
+        toggleGame(name, size, checkbox.checked);
     }
 
     function toggleGame(name, size, isChecked) {
@@ -800,38 +897,34 @@
     function calculatePriceDetails(count, totalSizeGb) {
         if (count <= 0) return { price: 0, exceeded: false };
 
-        // 1. Calculate price purely based on Game Count tiers
         let countTierPrice = 0;
-        let targetGbLimit = 100; // Default buffer baseline
+        let targetGbLimit = 100;
 
         if (count <= 10) {
             countTierPrice = count * 3.0;
-            targetGbLimit = 125; // Generous 25GB buffer above the 100GB target
+            targetGbLimit = 125;
         } else if (count <= 20) {
-            countTierPrice = 30 + (count - 10) * 2.5; 
-            targetGbLimit = 240; // Generous 40GB buffer above the 200GB target
+            countTierPrice = 30 + (count - 10) * 2.5;
+            targetGbLimit = 240;
         } else if (count <= 40) {
-            countTierPrice = 50 + (count - 20) * 1.5; 
-            targetGbLimit = 460; // Generous 60GB buffer above the 400GB target
+            countTierPrice = 50 + (count - 20) * 1.5;
+            targetGbLimit = 460;
         } else {
             countTierPrice = 80 + (count - 40) * 2.0;
             targetGbLimit = totalSizeGb;
         }
 
-        // 2. Calculate what the price would be purely based on strict storage size
         let sizeTierPrice = 0;
         if (totalSizeGb <= 100) {
             sizeTierPrice = (totalSizeGb / 100) * 30;
         } else if (totalSizeGb <= 200) {
-            sizeTierPrice = 30 + ((totalSizeGb - 100) / 100) * 20; 
+            sizeTierPrice = 30 + ((totalSizeGb - 100) / 100) * 20;
         } else if (totalSizeGb <= 400) {
-            sizeTierPrice = 50 + ((totalSizeGb - 200) / 200) * 30; 
+            sizeTierPrice = 50 + ((totalSizeGb - 200) / 200) * 30;
         } else {
             sizeTierPrice = 80 + ((totalSizeGb - 400) / 100) * 20;
         }
 
-        // Tolerance Check: If they stay under the tolerant targetGbLimit, we stick to the game-count price!
-        // If they heavily exceed the size buffer, we use the higher size-based pricing.
         let finalPrice = countTierPrice;
         let isExceeded = false;
 
@@ -896,7 +989,7 @@
                     const size = found ? found.size : 0;
                     selectedGames.set(gameName, size);
                 });
-                
+
                 if (data[0].remarks) {
                     document.getElementById('orderRemarks').value = data[0].remarks;
                 }
@@ -940,10 +1033,9 @@
         const count = selectedGames.size;
         let totalSize = 0;
         selectedGames.forEach(size => { totalSize += size; });
-        
+
         const details = calculatePriceDetails(count, totalSize);
-        
-        // Show or hide tolerance warning inside modal
+
         const warningBox = document.getElementById('sizeWarningBox');
         if (details.exceeded) {
             warningBox.style.display = 'block';
@@ -951,7 +1043,7 @@
             warningBox.style.display = 'none';
         }
 
-        document.getElementById('modalTotal').innerText = `${count} games (${totalSize.toFixed(1)} GB) | Total: RM${Math.round(details.price)}`;
+        document.getElementById('modalTotal').innerText = `${count} games (${totalSize.toFixed(1)} / ${maxSdSize} GB) | Total: RM${Math.round(details.price)}`;
         document.getElementById('cartModal').style.display = 'flex';
     }
 
@@ -962,7 +1054,7 @@
     function removeGameFromCart(gameName) {
         selectedGames.delete(gameName);
         renderGames(games);
-        
+
         if (selectedGames.size === 0) {
             closeCartModal();
         } else {
@@ -1004,20 +1096,20 @@
             if (existing && existing.length > 0) {
                 const { error: updateError } = await supabaseClient
                     .from('orders')
-                    .update({ 
+                    .update({
                         games: gameNamesArray,
                         total_games: selectedGames.size,
                         remarks: remarksText,
                         created_at: new Date()
                     })
-                    .eq('phone_ending5', phone); // keeping your phone lookup match
+                    .eq('phone_ending', phone);
                 error = updateError;
             } else {
                 const { error: insertError } = await supabaseClient
                     .from('orders')
                     .insert([
-                        { 
-                            phone_ending: phone, 
+                        {
+                            phone_ending: phone,
                             games: gameNamesArray,
                             total_games: selectedGames.size,
                             remarks: remarksText
