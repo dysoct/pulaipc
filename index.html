@@ -243,7 +243,7 @@
             margin-bottom: 15px;
             min-height: 20px;
         }
-        /* Jailbreak Notice Box (Replaces game list initially for jailbreak) */
+        /* Jailbreak Notice Card (Replaces game list initially for jailbreak) */
         .jailbreak-notice-card {
             background: #1a2e22;
             border: 1px solid #00e676;
@@ -1131,13 +1131,25 @@
             return;
         }
 
+        const serviceType = document.getElementById('serviceTypeSelect').value;
+
+        // If Full Jailbreak is selected and fewer than 3 games are chosen, prompt user
+        if (serviceType === 'jailbreak' && selectedGames.size < 3) {
+            const remainingFree = 3 - selectedGames.size;
+            const confirmProceed = confirm(`You have selected ${selectedGames.size} game(s). You still have ${remainingFree} free game(s) available to choose from!\n\nDo you want to proceed and save your order without taking all your free games?`);
+            if (!confirmProceed) {
+                closeCartModal();
+                revealGameSection();
+                return;
+            }
+        }
+
         const btn = document.querySelector('#cartModal .submit-btn');
         btn.innerText = 'Saving...';
         btn.disabled = true;
 
         const gameNamesArray = Array.from(selectedGames.keys());
         const remarksText = document.getElementById('orderRemarks').value.trim();
-        const serviceType = document.getElementById('serviceTypeSelect').value;
         const consoleModel = document.getElementById('consoleModelSelect').value;
         
         const sdSource = (serviceType === 'jailbreak') ? document.getElementById('sdSourceSelect').value : 'own';
