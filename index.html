@@ -408,7 +408,7 @@
     <div class="container">
         <h1>Pulai PC Game Selector</h1>
         <div class="instructions">
-            1. Choose your <strong>Service Type, Console Model, SD Card Source & Size</strong> upfront.<br>
+            1. Choose your <strong>Service Type, Console Model & SD Card Size</strong> upfront.<br>
             2. Tick your games below within your available usable space, then review and save!
         </div>
 
@@ -450,7 +450,7 @@
                     <option value="LITE">LITE (RM230)</option>
                 </select>
 
-                <!-- SD Card Source Selector (Bring Own vs Buy) -->
+                <!-- SD Card Source Selector (Bring Own vs Buy) - Only visible on Full Jailbreak -->
                 <select id="sdSourceSelect" class="sd-source-select" onchange="updateSdLimit()">
                     <option value="own">Bring Own SD Card</option>
                     <option value="buy">Purchase New SD Card</option>
@@ -477,8 +477,8 @@
                 </div>
             </div>
 
-            <!-- Mode Selection Checkboxes with Tooltips -->
-            <div class="modes-container">
+            <!-- Mode Selection Checkboxes with Tooltips - Only visible on Full Jailbreak -->
+            <div id="jailbreakModesContainer" class="modes-container">
                 <div class="mode-wrapper">
                     <label class="mode-checkbox-label">
                         <input type="checkbox" id="androidModeCheck" onchange="updateSdLimit()"> 
@@ -498,10 +498,10 @@
                         <strong>Ubuntu Linux:</strong> Gives you a full desktop environment on your Switch. Perfect for lightweight productivity, retro PC gaming via PortProton, and custom media center setups.
                     </div>
                 </div>
+            </div>
 
-                <div id="storageBreakdown" class="storage-breakdown">
-                    Usable Space: <span id="maxUsableLabel">--</span> GB
-                </div>
+            <div id="storageBreakdown" class="storage-breakdown">
+                Usable Space: <span id="maxUsableLabel">--</span> GB
             </div>
         </div>
 
@@ -602,11 +602,20 @@
     function toggleServiceFields() {
         const serviceType = document.getElementById('serviceTypeSelect').value;
         const modelSelect = document.getElementById('consoleModelSelect');
+        const sdSourceSelect = document.getElementById('sdSourceSelect');
+        const jailbreakModesContainer = document.getElementById('jailbreakModesContainer');
         
         if (serviceType === 'jailbreak') {
             modelSelect.style.display = 'block';
+            sdSourceSelect.style.display = 'block';
+            jailbreakModesContainer.style.display = 'flex';
         } else {
             modelSelect.style.display = 'none';
+            sdSourceSelect.style.display = 'none';
+            jailbreakModesContainer.style.display = 'none';
+            // Reset mode checkboxes when switching to games_only
+            document.getElementById('androidModeCheck').checked = false;
+            document.getElementById('linuxModeCheck').checked = false;
         }
         updateSdLimit();
     }
@@ -616,19 +625,22 @@
         maxSdSize = parseInt(select.value);
         localStorage.setItem('userSdSelect', maxSdSize);
 
-        const sdSource = document.getElementById('sdSourceSelect').value;
-        localStorage.setItem('userSdSource', sdSource);
-
         const serviceType = document.getElementById('serviceTypeSelect').value;
-        localStorage.setItem('userServiceType', serviceType);
-
         const consoleModel = document.getElementById('consoleModelSelect').value;
+        
+        let sdSource = 'own';
+        if (serviceType === 'jailbreak') {
+            sdSource = document.getElementById('sdSourceSelect').value;
+            localStorage.setItem('userSdSource', sdSource);
+        }
+
+        localStorage.setItem('userServiceType', serviceType);
         localStorage.setItem('userConsoleModel', consoleModel);
 
         const androidChecked = document.getElementById('androidModeCheck');
         const linuxChecked = document.getElementById('linuxModeCheck');
 
-        if (maxSdSize < 128) {
+        if (serviceType === 'jailbreak' && maxSdSize < 128) {
             if (androidChecked.checked) {
                 androidChecked.checked = false;
                 alert('Android Mode requires an SD card of 128GB or larger.');
@@ -660,9 +672,11 @@
             partitionPerMode = 20;
         }
 
-        let totalDeduction = baseSystemOverhead;
-        if (androidChecked.checked) totalDeduction += partitionPerMode;
-        if (linuxChecked.checked) totalDeduction += partitionPerMode;
+        let totalDeduction = (serviceType === 'jailbreak') ? baseSystemOverhead : 2; // Minimal overhead for games_only
+        if (serviceType === 'jailbreak') {
+            if (androidChecked.checked) totalDeduction += partitionPerMode;
+            if (linuxChecked.checked) totalDeduction += partitionPerMode;
+        }
 
         usableStorageLimit = maxSdSize - totalDeduction;
         document.getElementById('maxUsableLabel').innerText = usableStorageLimit;
@@ -671,10 +685,13 @@
         selectedGames.forEach(size => { currentGamesSize += size; });
 
         let serviceDesc = serviceType === 'jailbreak' ? `Full Jailbreak (${consoleModel})` : 'Games Only';
-        let cardSourceDesc = sdSource === 'buy' ? `New SD Card (${maxSdSize}GB)` : `Own SD Card (${maxSdSize}GB)`;
-        let breakdownText = `Service: ${serviceDesc} | SD Source: ${cardSourceDesc} | OS: -${baseSystemOverhead}GB`;
-        if (androidChecked.checked) breakdownText += ` | Android: -${partitionPerMode}GB`;
-        if (linuxChecked.checked) breakdownText += ` | Linux: -${partitionPerMode}GB`;
+        let breakdownText = `Service: ${serviceDesc} | SD Size: ${maxSdSize}GB`;
+        if (serviceType === 'jailbreak') {
+            let cardSourceDesc = sdSource === 'buy' ? 'New SD Card' : 'Own SD Card';
+            breakdownText += ` | Source: ${cardSourceDesc} | OS: -${baseSystemOverhead}GB`;
+            if (androidChecked.checked) breakdownText += ` | Android: -${partitionPerMode}GB`;
+            if (linuxChecked.checked) breakdownText += ` | Linux: -${partitionPerMode}GB`;
+        }
         breakdownText += `<br>📊 <strong>Selected Games: ${currentGamesSize.toFixed(1)} GB</strong> / Usable Limit: <strong><span id="maxUsableLabel">${usableStorageLimit}</span> GB</strong>`;
         
         document.getElementById('storageBreakdown').innerHTML = breakdownText;
@@ -763,24 +780,23 @@
         renderGames(games);
     }
 
-    // Corrected Pricing Logic: 1-10 games = RM3/ea (max 30), 11-20 games = RM50 flat, 21-40 = RM80 base scale
     function calculatePriceDetails(count, totalGameSizeGb) {
-        let baseOnlyPrice = 0;
-        if (document.getElementById('androidModeCheck').checked) baseOnlyPrice += APP_CONFIG.addonPrices.android;
-        if (document.getElementById('linuxModeCheck').checked) baseOnlyPrice += APP_CONFIG.addonPrices.linux;
-
         const serviceType = document.getElementById('serviceTypeSelect').value;
         const consoleModel = document.getElementById('consoleModelSelect').value;
-        const sdSource = document.getElementById('sdSourceSelect').value;
-
+        
+        let baseOnlyPrice = 0;
+        let sdCardPrice = 0;
         let serviceBasePrice = 0;
+
         if (serviceType === 'jailbreak') {
             serviceBasePrice = APP_CONFIG.jailbreakPrices[consoleModel] || 190;
-        }
-
-        let sdCardPrice = 0;
-        if (sdSource === 'buy') {
-            sdCardPrice = APP_CONFIG.sdCardRetailPrices[maxSdSize] || 0;
+            if (document.getElementById('androidModeCheck').checked) baseOnlyPrice += APP_CONFIG.addonPrices.android;
+            if (document.getElementById('linuxModeCheck').checked) baseOnlyPrice += APP_CONFIG.addonPrices.linux;
+            
+            const sdSource = document.getElementById('sdSourceSelect').value;
+            if (sdSource === 'buy') {
+                sdCardPrice = APP_CONFIG.sdCardRetailPrices[maxSdSize] || 0;
+            }
         }
 
         if (count <= 0) {
@@ -893,12 +909,12 @@
                     maxSdSize = parseInt(data[0].sd_card_size);
                 }
 
-                if (data[0].sd_source) {
-                    document.getElementById('sdSourceSelect').value = data[0].sd_source;
-                }
-
                 if (data[0].service_type) {
                     document.getElementById('serviceTypeSelect').value = data[0].service_type;
+                }
+
+                if (data[0].sd_source) {
+                    document.getElementById('sdSourceSelect').value = data[0].sd_source;
                 }
 
                 if (data[0].console_model) {
@@ -996,16 +1012,16 @@
         const remarksText = document.getElementById('orderRemarks').value.trim();
         const serviceType = document.getElementById('serviceTypeSelect').value;
         const consoleModel = document.getElementById('consoleModelSelect').value;
-        const sdSource = document.getElementById('sdSourceSelect').value;
+        
+        const sdSource = (serviceType === 'jailbreak') ? document.getElementById('sdSourceSelect').value : 'own';
+        const androidSelected = (serviceType === 'jailbreak') ? document.getElementById('androidModeCheck').checked : false;
+        const linuxSelected = (serviceType === 'jailbreak') ? document.getElementById('linuxModeCheck').checked : false;
         
         let totalGamesSize = 0;
         selectedGames.forEach(size => { totalGamesSize += size; });
         
         const details = calculatePriceDetails(selectedGames.size, totalGamesSize);
         const finalPrice = Math.round(details.price);
-
-        const androidSelected = document.getElementById('androidModeCheck').checked;
-        const linuxSelected = document.getElementById('linuxModeCheck').checked;
 
         try {
             const { data: existing } = await supabaseClient
