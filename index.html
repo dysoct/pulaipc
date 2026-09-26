@@ -94,9 +94,11 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 -4px 10px rgba(0,0,0,0.5);
+            z-index: 100;
         }
         .checkout-info {
             font-size: 16px;
+            cursor: pointer;
         }
         .submit-btn {
             background-color: #00e676;
@@ -110,6 +112,86 @@
         }
         .submit-btn:hover {
             background-color: #00c853;
+        }
+        /* Cart Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #333;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .modal-header h2 {
+            margin: 0;
+            color: #00e676;
+            font-size: 20px;
+        }
+        .close-modal {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .modal-body {
+            overflow-y: auto;
+            flex-grow: 1;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2a2a2a;
+            padding: 10px 15px;
+            border-radius: 6px;
+        }
+        .remove-btn {
+            background: #ff5252;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .remove-btn:hover {
+            background: #ff1744;
+        }
+        .modal-footer {
+            border-top: 1px solid #333;
+            padding-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
     </style>
 </head>
@@ -127,18 +209,35 @@
 
     <!-- Sticky Bottom Checkout Bar -->
     <div class="checkout-bar">
-        <div class="checkout-info">
-            Selected: <span id="selectedCount" style="color: #00e676; font-weight: bold;">0</span> games
+        <div class="checkout-info" onclick="openCartModal()">
+            🛒 Selected: <span id="selectedCount" style="color: #00e676; font-weight: bold;">0</span> games (Tap to edit)
         </div>
-        <button class="submit-btn" onclick="submitOrderToSupabase()">Submit Order</button>
+        <button class="submit-btn" onclick="openCartModal()">Review & Submit</button>
+    </div>
+
+    <!-- Cart Review / Edit Modal -->
+    <div id="cartModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Your Selected Games</h2>
+                <button class="close-modal" onclick="closeCartModal()">&times;</button>
+            </div>
+            <div id="cartModalBody" class="modal-body">
+                <!-- Dynamically populated selected items -->
+            </div>
+            <div class="modal-footer">
+                <span id="modalTotal" style="color: #888; font-size: 14px;">0 games total</span>
+                <button class="submit-btn" onclick="submitOrderToSupabase()">Confirm & Submit Order</button>
+            </div>
+        </div>
     </div>
 
     <script>
     // ==========================================
     // 1. SUPABASE CONFIGURATION
     // ==========================================
-    const SUPABASE_URL = 'https://mwxndccwzkcsyvslucjg.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13eG5kY2N3emtjc3l2c2x1Y2pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0MTY1MjksImV4cCI6MjEwNTk5MjUyOX0.61NvDZ6cPnxLqoxJ4tr-H729a99h_XOAZDXo3zfx25g';
+    const SUPABASE_URL = 'YOUR_SUPABASE_PROJECT_URL';
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // AUTOMATICALLY GENERATED DATASET - DO NOT EDIT MANUALLY
@@ -550,27 +649,67 @@
     }
 
     // ==========================================
-    // 2. SUBMIT TO SUPABASE DATABASE
+    // 2. CART MODAL CONTROLS
     // ==========================================
-    async function submitOrderToSupabase() {
-        const phone = document.getElementById('phoneInput').value.trim();
-        if (phone.length !== 4) {
-            alert('Please enter the last 4 digits of your phone number!');
-            document.getElementById('phoneInput').focus();
-            return;
-        }
-
+    function openCartModal() {
         if (selectedGames.size === 0) {
             alert('Please select at least one game first!');
             return;
         }
 
-        const btn = document.querySelector('.submit-btn');
+        const modalBody = document.getElementById('cartModalBody');
+        modalBody.innerHTML = '';
+
+        selectedGames.forEach(gameName => {
+            const item = document.createElement('div');
+            item.className = 'cart-item';
+            item.innerHTML = `
+                <span>${gameName}</span>
+                <button class="remove-btn" onclick="removeGameFromCart('${gameName.replace(/'/g, "\\'")}')">Remove</button>
+            `;
+            modalBody.appendChild(item);
+        });
+
+        document.getElementById('modalTotal').innerText = `${selectedGames.size} games total`;
+        document.getElementById('cartModal').style.display = 'flex';
+    }
+
+    function closeCartModal() {
+        document.getElementById('cartModal').style.display = 'none';
+    }
+
+    function removeGameFromCart(gameName) {
+        selectedGames.delete(gameName);
+        renderGames(games); // Refreshes main list checkboxes and counter
+        
+        if (selectedGames.size === 0) {
+            closeCartModal();
+        } else {
+            openCartModal(); // Refresh modal contents
+        }
+    }
+
+    // ==========================================
+    // 3. SUBMIT TO SUPABASE DATABASE
+    // ==========================================
+    async function submitOrderToSupabase() {
+        const phone = document.getElementById('phoneInput').value.trim();
+        if (phone.length !== 4) {
+            alert('Please enter the last 4 digits of your phone number at the top!');
+            document.getElementById('phoneInput').focus();
+            return;
+        }
+
+        if (selectedGames.size === 0) {
+            alert('Your selection is empty!');
+            return;
+        }
+
+        const btn = document.querySelector('#cartModal .submit-btn');
         btn.innerText = 'Submitting...';
         btn.disabled = true;
 
         try {
-            // Insert row into your Supabase 'orders' table
             const { data, error } = await supabaseClient
                 .from('orders')
                 .insert([
@@ -583,15 +722,16 @@
 
             if (error) throw error;
 
-            alert('Order submitted successfully to database!');
+            alert('Order submitted successfully!');
             selectedGames.clear();
+            closeCartModal();
             renderGames(games);
 
         } catch (err) {
             console.error(err);
             alert('Failed to submit order. Check console for details.');
         } finally {
-            btn.innerText = 'Submit Order';
+            btn.innerText = 'Confirm & Submit Order';
             btn.disabled = false;
         }
     }
