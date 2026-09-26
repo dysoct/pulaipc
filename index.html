@@ -474,7 +474,7 @@
                 </div>
 
                 <div id="storageBreakdown" class="storage-breakdown">
-                    Usable Space: Calculating...
+                    Usable Space: <span id="maxUsableLabel">--</span> GB
                 </div>
             </div>
         </div>
@@ -950,7 +950,7 @@
         let breakdownText = `SD Card: ${maxSdSize}GB | Base System: -${baseSystemOverhead}GB`;
         if (androidChecked.checked) breakdownText += ` | Android: -${partitionPerMode}GB`;
         if (linuxChecked.checked) breakdownText += ` | Linux: -${partitionPerMode}GB`;
-        breakdownText += `<br>📊 <strong>Selected Games: ${currentGamesSize.toFixed(1)} GB</strong> / Usable Limit: <strong>${usableStorageLimit} GB</strong>`;
+        breakdownText += `<br>📊 <strong>Selected Games: ${currentGamesSize.toFixed(1)} GB</strong> / Usable Limit: <strong><span id="maxUsableLabel">${usableStorageLimit}</span> GB</strong>`;
         
         document.getElementById('storageBreakdown').innerHTML = breakdownText;
 
