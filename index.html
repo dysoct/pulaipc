@@ -1043,7 +1043,6 @@
         document.getElementById('remainderSize').innerText = remainderSize.toFixed(1);
         document.getElementById('selectedPrice').innerText = `RM${Math.round(details.price)}`;
 
-        // Dynamic subtitle info reflecting package breakdown & 10/20 game addon warnings
         const subtext = document.getElementById('checkoutSubtext');
         if (serviceType === 'jailbreak') {
             if (count === 0) {
@@ -1219,14 +1218,12 @@
         const serviceType = document.getElementById('serviceTypeSelect').value;
         const count = selectedGames.size;
 
-        // Full Jailbreak & fewer than 3 games check
+        // Popup Warning Check for Free 3 Games
         if (serviceType === 'jailbreak' && count < 3) {
             const remainingFree = 3 - count;
-            const confirmProceed = confirm(`🎁 Full Jailbreak Reminder:\nYou selected ${count} game(s), but your package includes 3 free games! You still have ${remainingFree} free game slot(s) available.\n\nDo you want to proceed without taking all your free games?`);
-            if (!confirmProceed) {
-                closeCartModal();
-                revealGameSection();
-                return;
+            const confirmSave = confirm(`🎁 You have selected only ${count} game(s).\n\nYour Full Jailbreak package includes 3 FREE games! You still have ${remainingFree} free game slot(s) available.\n\nDo you still want to save your order with fewer than 3 games?`);
+            if (!confirmSave) {
+                return; // Cancel save and let them pick more games
             }
         }
 
