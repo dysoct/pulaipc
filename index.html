@@ -86,7 +86,7 @@
             flex-wrap: wrap;
             align-items: center;
         }
-        .search-box, .phone-input, .sd-select {
+        .search-box, .phone-input, .sd-select, .service-select {
             padding: 12px;
             font-size: 16px;
             border-radius: 6px;
@@ -99,7 +99,7 @@
             flex: 2;
             min-width: 180px;
         }
-        .sd-select {
+        .sd-select, .service-select {
             flex: 1;
             min-width: 140px;
             cursor: pointer;
@@ -399,7 +399,7 @@
     <div class="container">
         <h1>Pulai PC Game Selector</h1>
         <div class="instructions">
-            1. Choose your <strong>SD Card Size & System Modes</strong> upfront.<br>
+            1. Choose your <strong>Service Type, SD Card & Modes</strong> upfront.<br>
             2. Tick your games within your available usable space, then review and save!
         </div>
 
@@ -421,7 +421,7 @@
                 </div>
             </div>
             <p style="font-size: 12px; color: #888; margin-top: 10px; margin-bottom: 0; text-align: center;">
-                * Android / Linux modes require 128GB+ SD cards and cost +RM30 each.
+                * Full Jailbreak service includes 3 Free Games! Android / Linux modes require 128GB+ cards (+RM30 each).
             </p>
         </details>
         
@@ -430,6 +430,12 @@
             <div class="config-row">
                 <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search games..." onkeyup="filterGames()">
                 
+                <!-- Service Type Selector -->
+                <select id="serviceTypeSelect" class="service-select" onchange="updateSdLimit()">
+                    <option value="jailbreak">Full Jailbreak (Free 3 Games)</option>
+                    <option value="games_only">Games Installation Only</option>
+                </select>
+
                 <!-- SD Card Size Selector -->
                 <select id="sdCardSelect" class="sd-select" onchange="updateSdLimit()">
                     <option value="64">64 GB Card</option>
@@ -885,6 +891,11 @@
             document.getElementById('sdCardSelect').value = savedSd;
             maxSdSize = parseInt(savedSd);
         }
+
+        const savedService = localStorage.getItem('userServiceType');
+        if (savedService) {
+            document.getElementById('serviceTypeSelect').value = savedService;
+        }
         
         updateSdLimit();
         renderGames(games);
@@ -900,6 +911,9 @@
         const select = document.getElementById('sdCardSelect');
         maxSdSize = parseInt(select.value);
         localStorage.setItem('userSdSelect', maxSdSize);
+
+        const serviceType = document.getElementById('serviceTypeSelect').value;
+        localStorage.setItem('userServiceType', serviceType);
 
         const androidChecked = document.getElementById('androidModeCheck');
         const linuxChecked = document.getElementById('linuxModeCheck');
@@ -921,7 +935,7 @@
             linuxChecked.disabled = false;
         }
 
-        // Determine base OS overhead deduction (8GB for 64GB, 10GB for 128GB, 16GB for 256GB+)
+        // Determine base OS overhead deduction
         let baseSystemOverhead = 0;
         let partitionPerMode = 0;
 
@@ -930,9 +944,12 @@
         } else if (maxSdSize === 128) {
             baseSystemOverhead = 10;
             partitionPerMode = 10;
-        } else if (maxSdSize >= 256) {
+        } else if (maxSdSize === 256) {
             baseSystemOverhead = 16;
             partitionPerMode = 16;
+        } else if (maxSdSize >= 512) {
+            baseSystemOverhead = 20;
+            partitionPerMode = 20;
         }
 
         let totalDeduction = baseSystemOverhead;
@@ -946,20 +963,18 @@
         let currentGamesSize = 0;
         selectedGames.forEach(size => { currentGamesSize += size; });
 
-        // Render detailed breakdown message including selected games total vs usable limit
-        let breakdownText = `SD Card: ${maxSdSize}GB | Base System: -${baseSystemOverhead}GB`;
+        // Render detailed breakdown message
+        let breakdownText = `Service: ${serviceType === 'jailbreak' ? 'Full Jailbreak (Free 3 Games)' : 'Games Only'} | SD: ${maxSdSize}GB | OS: -${baseSystemOverhead}GB`;
         if (androidChecked.checked) breakdownText += ` | Android: -${partitionPerMode}GB`;
         if (linuxChecked.checked) breakdownText += ` | Linux: -${partitionPerMode}GB`;
         breakdownText += `<br>📊 <strong>Selected Games: ${currentGamesSize.toFixed(1)} GB</strong> / Usable Limit: <strong><span id="maxUsableLabel">${usableStorageLimit}</span> GB</strong>`;
         
         document.getElementById('storageBreakdown').innerHTML = breakdownText;
 
-        // Re-check current selections against new usable limit
         if (currentGamesSize > usableStorageLimit) {
             alert(`Warning: Your selected games total (${currentGamesSize.toFixed(1)} GB) exceeds your updated usable game storage (${usableStorageLimit} GB). Please remove some games.`);
         }
         
-        // Immediately update price calculation on UI
         updateCartSummary();
     }
 
@@ -1041,13 +1056,14 @@
     }
 
     // ==========================================
-    // 2. SMART TOLERANCE PRICING LOGIC
+    // 2. SMART TOLERANCE & FREE GAMES PRICING LOGIC
     // ==========================================
     function calculatePriceDetails(count, totalGameSizeGb) {
+        let baseOnlyPrice = 0;
+        if (document.getElementById('androidModeCheck').checked) baseOnlyPrice += 30;
+        if (document.getElementById('linuxModeCheck').checked) baseOnlyPrice += 30;
+
         if (count <= 0) {
-            let baseOnlyPrice = 0;
-            if (document.getElementById('androidModeCheck').checked) baseOnlyPrice += 30;
-            if (document.getElementById('linuxModeCheck').checked) baseOnlyPrice += 30;
             return { price: baseOnlyPrice, exceeded: false };
         }
 
@@ -1087,9 +1103,22 @@
             isExceeded = true;
         }
 
-        // Add extra system mode pricing (+RM30 each) instantly
-        if (document.getElementById('androidModeCheck').checked) finalPrice += 30;
-        if (document.getElementById('linuxModeCheck').checked) finalPrice += 30;
+        // Apply Full Jailbreak 3 Free Games discount if selected
+        const serviceType = document.getElementById('serviceTypeSelect').value;
+        if (serviceType === 'jailbreak') {
+            if (count <= 3) {
+                // If 3 or fewer games selected under jailbreak, games component is entirely free
+                countTierPrice = 0;
+                finalPrice = 0;
+            } else {
+                // Deduct the value of the 3 cheapest games (approximate standard unit cost of RM3 per game for small tier)
+                let discountAmount = 3 * 3.0; 
+                finalPrice = Math.max(0, finalPrice - discountAmount);
+            }
+        }
+
+        // Add extra system mode pricing (+RM30 each)
+        finalPrice += baseOnlyPrice;
 
         return { price: finalPrice, exceeded: isExceeded };
     }
@@ -1155,6 +1184,10 @@
                 if (data[0].sd_card_size) {
                     document.getElementById('sdCardSelect').value = data[0].sd_card_size;
                     maxSdSize = parseInt(data[0].sd_card_size);
+                }
+
+                if (data[0].service_type) {
+                    document.getElementById('serviceTypeSelect').value = data[0].service_type;
                 }
 
                 document.getElementById('androidModeCheck').checked = !!data[0].android_mode;
@@ -1256,6 +1289,7 @@
 
         const gameNamesArray = Array.from(selectedGames.keys());
         const remarksText = document.getElementById('orderRemarks').value.trim();
+        const serviceType = document.getElementById('serviceTypeSelect').value;
         
         let totalGamesSize = 0;
         selectedGames.forEach(size => { totalGamesSize += size; });
@@ -1281,6 +1315,7 @@
                 total_games: selectedGames.size,
                 remarks: remarksText,
                 sd_card_size: maxSdSize,
+                service_type: serviceType,
                 total_size_gb: totalGamesSize,
                 estimated_price: finalPrice,
                 android_mode: androidSelected,
