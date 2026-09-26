@@ -190,6 +190,11 @@
             padding-top: 5px;
             border-top: 1px solid #2a2a2a;
         }
+        .addon-label-title {
+            font-size: 13px;
+            color: #888;
+            font-weight: bold;
+        }
         .mode-wrapper {
             position: relative;
             display: inline-block;
@@ -457,7 +462,7 @@
             <div class="config-row">
                 <!-- Service Type Selector -->
                 <select id="serviceTypeSelect" class="service-select" onchange="toggleServiceFields()">
-                    <option value="jailbreak">Full Jailbreak</option>
+                    <option value="jailbreak">Full Jailbreak (Free 3 Games)</option>
                     <option value="games_only">Games Only</option>
                 </select>
 
@@ -486,7 +491,7 @@
 
                 <div class="phone-group">
                     <input type="text" id="phoneInput" class="phone-input" maxlength="4" placeholder="e.g. 5678" oninput="savePhone()">
-                    <span class="input-hint">Last 4 digits phone</span>
+                    <span class="input-hint">Last 4 digits phone no</span>
                 </div>
 
                 <div class="btn-group">
@@ -497,6 +502,7 @@
 
             <!-- Mode Selection Checkboxes with Tooltips -->
             <div id="jailbreakModesContainer" class="modes-container">
+                <span class="addon-label-title">Addon:</span>
                 <div class="mode-wrapper">
                     <label class="mode-checkbox-label">
                         <input type="checkbox" id="androidModeCheck" onchange="updateSdLimit()"> 
@@ -702,7 +708,7 @@
         let currentGamesSize = 0;
         selectedGames.forEach(size => { currentGamesSize += size; });
 
-        let serviceDesc = serviceType === 'jailbreak' ? `Full Jailbreak (${consoleModel})` : 'Games Only';
+        let serviceDesc = serviceType === 'jailbreak' ? `Full Jailbreak (${consoleModel}, Free 3 Games)` : 'Games Only';
         let breakdownText = `Service: ${serviceDesc} | SD Size: ${maxSdSize}GB`;
         if (serviceType === 'jailbreak') {
             let cardSourceDesc = sdSource === 'buy' ? 'New SD Card' : 'Own SD Card';
@@ -795,7 +801,6 @@
         } else {
             selectedGames.delete(name);
         }
-        // Maintain search filter instead of resetting to full list
         filterGames();
     }
 
