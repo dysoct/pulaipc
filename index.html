@@ -264,7 +264,7 @@
             z-index: 100;
         }
         .checkout-info {
-            font-size: 15px;
+            font-size: 14px;
             cursor: pointer;
             line-height: 1.4;
         }
@@ -488,9 +488,10 @@
     <div class="checkout-bar">
         <div class="checkout-info" onclick="openCartModal()">
             🛒 <span id="selectedCount" style="color: #00e676; font-weight: bold;">0</span> games 
-            (<span id="selectedSize" style="color: #00e676; font-weight: bold;">0</span> GB / <span id="maxUsableLabel">0</span> GB Usable) | 
+            (<span id="selectedSize" style="color: #00e676; font-weight: bold;">0</span> GB selected | 
+            <span id="remainderSize" style="color: #ffb74d; font-weight: bold;">0</span> GB left) | 
             <span id="selectedPrice" style="color: #00e676; font-weight: bold;">RM0</span>
-            <br><span style="font-size: 12px; color: #aaa;">Tap here to review & add remarks</span>
+            <br><span style="font-size: 11px; color: #aaa;">Tap here to review & add remarks</span>
         </div>
         <button class="submit-btn" onclick="openCartModal()">Review & Submit</button>
     </div>
@@ -514,7 +515,7 @@
             </div>
 
             <div class="modal-footer">
-                <span id="modalTotal" style="color: #888; font-size: 13px;">0 games total</span>
+                <span id="modalTotal" style="color: #aaa; font-size: 12px; line-height: 1.4;">0 games total</span>
                 <button class="submit-btn" onclick="submitOrUpdateOrder()">Save Changes</button>
             </div>
         </div>
@@ -1098,10 +1099,12 @@
         let totalGamesSize = 0;
         selectedGames.forEach(size => { totalGamesSize += size; });
 
+        const remainderSize = Math.max(0, usableStorageLimit - totalGamesSize);
         const details = calculatePriceDetails(count, totalGamesSize);
 
         document.getElementById('selectedCount').innerText = count;
         document.getElementById('selectedSize').innerText = totalGamesSize.toFixed(1);
+        document.getElementById('remainderSize').innerText = remainderSize.toFixed(1);
         document.getElementById('selectedPrice').innerText = `RM${Math.round(details.price)}`;
     }
 
@@ -1202,6 +1205,7 @@
         let totalGamesSize = 0;
         selectedGames.forEach(size => { totalGamesSize += size; });
         
+        const remainderSize = Math.max(0, usableStorageLimit - totalGamesSize);
         const details = calculatePriceDetails(count, totalGamesSize);
         
         const warningBox = document.getElementById('sizeWarningBox');
@@ -1211,7 +1215,7 @@
             warningBox.style.display = 'none';
         }
 
-        document.getElementById('modalTotal').innerHTML = `${count} games (<span style="color:#00e676;">${totalGamesSize.toFixed(1)} GB</span> / ${usableStorageLimit} GB Usable) | Total: <strong style="color:#00e676;">RM${Math.round(details.price)}</strong>`;
+        document.getElementById('modalTotal').innerHTML = `${count} games (<span style="color:#00e676;">${totalGamesSize.toFixed(1)} GB</span> | <span style="color:#ffb74d;">${remainderSize.toFixed(1)} GB left</span>) | Total: <strong style="color:#00e676;">RM${Math.round(details.price)}</strong>`;
         document.getElementById('cartModal').style.display = 'flex';
     }
 
