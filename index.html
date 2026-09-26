@@ -86,7 +86,7 @@
             flex-wrap: wrap;
             align-items: center;
         }
-        .search-box, .phone-input, .sd-select, .service-select {
+        .search-box, .phone-input, .sd-select, .service-select, .model-select {
             padding: 12px;
             font-size: 16px;
             border-radius: 6px;
@@ -99,16 +99,16 @@
             flex: 2;
             min-width: 180px;
         }
-        .sd-select, .service-select {
+        .sd-select, .service-select, .model-select {
             flex: 1;
-            min-width: 140px;
+            min-width: 130px;
             cursor: pointer;
         }
         .phone-group {
             flex: 1;
             display: flex;
             flex-direction: column;
-            min-width: 130px;
+            min-width: 120px;
         }
         .phone-input {
             width: 100%;
@@ -399,29 +399,29 @@
     <div class="container">
         <h1>Pulai PC Game Selector</h1>
         <div class="instructions">
-            1. Choose your <strong>Service Type, SD Card & Modes</strong> upfront.<br>
+            1. Choose your <strong>Service Type, Console Model, SD Card & Modes</strong> upfront.<br>
             2. Tick your games within your available usable space, then review and save!
         </div>
 
         <!-- Pricing Guide Dropdown -->
         <details class="pricing-guide">
-            <summary>📦 View Pricing Tiers & Guidelines (Tap to expand)</summary>
+            <summary>📦 View Pricing Tiers & Jailbreak Rates (Tap to expand)</summary>
             <div class="pricing-tiers">
                 <div class="tier-box">
-                    Small Pack
-                    <span>10 Games / 100GB<br>RM30</span>
+                    Jailbreak (OLED)
+                    <span>RM300<br><small>Free 3 Games</small></span>
                 </div>
                 <div class="tier-box">
-                    Medium Pack
-                    <span>20 Games / 200GB<br>RM50</span>
+                    Jailbreak (V1/V2)
+                    <span>RM190<br><small>Free 3 Games</small></span>
                 </div>
                 <div class="tier-box">
-                    Large Pack
-                    <span>40 Games / 400GB<br>RM80</span>
+                    Jailbreak (Lite)
+                    <span>RM230<br><small>Free 3 Games</small></span>
                 </div>
             </div>
             <p style="font-size: 12px; color: #888; margin-top: 10px; margin-bottom: 0; text-align: center;">
-                * Full Jailbreak service includes 3 Free Games! Android / Linux modes require 128GB+ cards (+RM30 each).
+                * Game packs: Small (10/RM30), Medium (20/RM50), Large (40/RM80). Android/Linux modes require 128GB+ cards (+RM30 each).
             </p>
         </details>
         
@@ -431,9 +431,16 @@
                 <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search games..." onkeyup="filterGames()">
                 
                 <!-- Service Type Selector -->
-                <select id="serviceTypeSelect" class="service-select" onchange="updateSdLimit()">
-                    <option value="jailbreak">Full Jailbreak (Free 3 Games)</option>
-                    <option value="games_only">Games Installation Only</option>
+                <select id="serviceTypeSelect" class="service-select" onchange="toggleServiceFields()">
+                    <option value="jailbreak">Full Jailbreak</option>
+                    <option value="games_only">Games Only</option>
+                </select>
+
+                <!-- Console Model Selector (Visible only for Full Jailbreak) -->
+                <select id="consoleModelSelect" class="model-select" onchange="updateSdLimit()">
+                    <option value="OLED">OLED (RM300)</option>
+                    <option value="V1_V2">V1/V2 (RM190)</option>
+                    <option value="LITE">LITE (RM230)</option>
                 </select>
 
                 <!-- SD Card Size Selector -->
@@ -448,7 +455,7 @@
 
                 <div class="phone-group">
                     <input type="text" id="phoneInput" class="phone-input" maxlength="4" placeholder="e.g. 5678" oninput="savePhone()">
-                    <span class="input-hint">Last 4 digits phone no</span>
+                    <span class="input-hint">Last 4 digits phone</span>
                 </div>
 
                 <div class="btn-group">
@@ -896,7 +903,13 @@
         if (savedService) {
             document.getElementById('serviceTypeSelect').value = savedService;
         }
+
+        const savedModel = localStorage.getItem('userConsoleModel');
+        if (savedModel) {
+            document.getElementById('consoleModelSelect').value = savedModel;
+        }
         
+        toggleServiceFields();
         updateSdLimit();
         renderGames(games);
     };
@@ -904,6 +917,18 @@
     function savePhone() {
         const phone = document.getElementById('phoneInput').value;
         localStorage.setItem('userPhone4', phone);
+    }
+
+    function toggleServiceFields() {
+        const serviceType = document.getElementById('serviceTypeSelect').value;
+        const modelSelect = document.getElementById('consoleModelSelect');
+        
+        if (serviceType === 'jailbreak') {
+            modelSelect.style.display = 'block';
+        } else {
+            modelSelect.style.display = 'none';
+        }
+        updateSdLimit();
     }
 
     // Calculates base OS overhead & active partition deductions upfront
@@ -914,6 +939,9 @@
 
         const serviceType = document.getElementById('serviceTypeSelect').value;
         localStorage.setItem('userServiceType', serviceType);
+
+        const consoleModel = document.getElementById('consoleModelSelect').value;
+        localStorage.setItem('userConsoleModel', consoleModel);
 
         const androidChecked = document.getElementById('androidModeCheck');
         const linuxChecked = document.getElementById('linuxModeCheck');
@@ -964,7 +992,8 @@
         selectedGames.forEach(size => { currentGamesSize += size; });
 
         // Render detailed breakdown message
-        let breakdownText = `Service: ${serviceType === 'jailbreak' ? 'Full Jailbreak (Free 3 Games)' : 'Games Only'} | SD: ${maxSdSize}GB | OS: -${baseSystemOverhead}GB`;
+        let serviceDesc = serviceType === 'jailbreak' ? `Full Jailbreak (${consoleModel})` : 'Games Only';
+        let breakdownText = `Service: ${serviceDesc} | SD: ${maxSdSize}GB | OS: -${baseSystemOverhead}GB`;
         if (androidChecked.checked) breakdownText += ` | Android: -${partitionPerMode}GB`;
         if (linuxChecked.checked) breakdownText += ` | Linux: -${partitionPerMode}GB`;
         breakdownText += `<br>📊 <strong>Selected Games: ${currentGamesSize.toFixed(1)} GB</strong> / Usable Limit: <strong><span id="maxUsableLabel">${usableStorageLimit}</span> GB</strong>`;
@@ -1056,31 +1085,47 @@
     }
 
     // ==========================================
-    // 2. SMART TOLERANCE & FREE GAMES PRICING LOGIC
+    // 2. PRICING LOGIC (JAILBREAK + GAMES)
     // ==========================================
     function calculatePriceDetails(count, totalGameSizeGb) {
         let baseOnlyPrice = 0;
         if (document.getElementById('androidModeCheck').checked) baseOnlyPrice += 30;
         if (document.getElementById('linuxModeCheck').checked) baseOnlyPrice += 30;
 
+        const serviceType = document.getElementById('serviceTypeSelect').value;
+        const consoleModel = document.getElementById('consoleModelSelect').value;
+
+        // Base Jailbreak service fee
+        let serviceBasePrice = 0;
+        if (serviceType === 'jailbreak') {
+            if (consoleModel === 'OLED') serviceBasePrice = 300;
+            else if (consoleModel === 'V1_V2') serviceBasePrice = 190;
+            else if (consoleModel === 'LITE') serviceBasePrice = 230;
+        }
+
         if (count <= 0) {
-            return { price: baseOnlyPrice, exceeded: false };
+            return { price: serviceBasePrice + baseOnlyPrice, exceeded: false };
+        }
+
+        let effectiveCount = count;
+        if (serviceType === 'jailbreak') {
+            effectiveCount = Math.max(0, count - 3); // 3 free games for full jailbreak
         }
 
         let countTierPrice = 0;
         let targetGbLimit = 100;
 
-        if (count <= 10) {
-            countTierPrice = count * 3.0;
+        if (effectiveCount <= 10) {
+            countTierPrice = effectiveCount * 3.0;
             targetGbLimit = 125; 
-        } else if (count <= 20) {
-            countTierPrice = 30 + (count - 10) * 2.5; 
+        } else if (effectiveCount <= 20) {
+            countTierPrice = 30 + (effectiveCount - 10) * 2.5; 
             targetGbLimit = 240; 
-        } else if (count <= 40) {
-            countTierPrice = 50 + (count - 20) * 1.5; 
+        } else if (effectiveCount <= 40) {
+            countTierPrice = 50 + (effectiveCount - 20) * 1.5; 
             targetGbLimit = 460; 
         } else {
-            countTierPrice = 80 + (count - 40) * 2.0;
+            countTierPrice = 80 + (effectiveCount - 40) * 2.0;
             targetGbLimit = totalGameSizeGb;
         }
 
@@ -1095,30 +1140,15 @@
             sizeTierPrice = 80 + ((totalGameSizeGb - 400) / 100) * 20;
         }
 
-        let finalPrice = countTierPrice;
+        let gamesPrice = countTierPrice;
         let isExceeded = false;
 
         if (totalGameSizeGb > targetGbLimit && sizeTierPrice > countTierPrice) {
-            finalPrice = sizeTierPrice;
+            gamesPrice = sizeTierPrice;
             isExceeded = true;
         }
 
-        // Apply Full Jailbreak 3 Free Games discount if selected
-        const serviceType = document.getElementById('serviceTypeSelect').value;
-        if (serviceType === 'jailbreak') {
-            if (count <= 3) {
-                // If 3 or fewer games selected under jailbreak, games component is entirely free
-                countTierPrice = 0;
-                finalPrice = 0;
-            } else {
-                // Deduct the value of the 3 cheapest games (approximate standard unit cost of RM3 per game for small tier)
-                let discountAmount = 3 * 3.0; 
-                finalPrice = Math.max(0, finalPrice - discountAmount);
-            }
-        }
-
-        // Add extra system mode pricing (+RM30 each)
-        finalPrice += baseOnlyPrice;
+        let finalPrice = serviceBasePrice + gamesPrice + baseOnlyPrice;
 
         return { price: finalPrice, exceeded: isExceeded };
     }
@@ -1190,9 +1220,14 @@
                     document.getElementById('serviceTypeSelect').value = data[0].service_type;
                 }
 
+                if (data[0].console_model) {
+                    document.getElementById('consoleModelSelect').value = data[0].console_model;
+                }
+
                 document.getElementById('androidModeCheck').checked = !!data[0].android_mode;
                 document.getElementById('linuxModeCheck').checked = !!data[0].linux_mode;
 
+                toggleServiceFields();
                 updateSdLimit();
                 renderGames(games);
                 statusMsg.style.color = '#00e676';
@@ -1212,8 +1247,8 @@
     // 4. CART MODAL CONTROLS
     // ==========================================
     function openCartModal() {
-        if (selectedGames.size === 0 && !document.getElementById('androidModeCheck').checked && !document.getElementById('linuxModeCheck').checked) {
-            alert('Please select at least one game or system mode first!');
+        if (selectedGames.size === 0 && !document.getElementById('androidModeCheck').checked && !document.getElementById('linuxModeCheck').checked && document.getElementById('serviceTypeSelect').value === 'games_only') {
+            alert('Please select at least one game or service mode first!');
             return;
         }
 
@@ -1231,7 +1266,7 @@
         });
 
         if (selectedGames.size === 0) {
-            modalBody.innerHTML = '<p style="text-align:center; color:#888; margin:5px 0;">No individual games selected (Only System Add-on modes).</p>';
+            modalBody.innerHTML = '<p style="text-align:center; color:#888; margin:5px 0;">No individual games selected.</p>';
         }
 
         const count = selectedGames.size;
@@ -1260,7 +1295,7 @@
         selectedGames.delete(gameName);
         renderGames(games);
         
-        if (selectedGames.size === 0 && !document.getElementById('androidModeCheck').checked && !document.getElementById('linuxModeCheck').checked) {
+        if (selectedGames.size === 0 && !document.getElementById('androidModeCheck').checked && !document.getElementById('linuxModeCheck').checked && document.getElementById('serviceTypeSelect').value === 'games_only') {
             closeCartModal();
         } else {
             openCartModal();
@@ -1278,11 +1313,6 @@
             return;
         }
 
-        if (selectedGames.size === 0 && !document.getElementById('androidModeCheck').checked && !document.getElementById('linuxModeCheck').checked) {
-            alert('Your selection is empty!');
-            return;
-        }
-
         const btn = document.querySelector('#cartModal .submit-btn');
         btn.innerText = 'Saving...';
         btn.disabled = true;
@@ -1290,6 +1320,7 @@
         const gameNamesArray = Array.from(selectedGames.keys());
         const remarksText = document.getElementById('orderRemarks').value.trim();
         const serviceType = document.getElementById('serviceTypeSelect').value;
+        const consoleModel = document.getElementById('consoleModelSelect').value;
         
         let totalGamesSize = 0;
         selectedGames.forEach(size => { totalGamesSize += size; });
@@ -1316,6 +1347,7 @@
                 remarks: remarksText,
                 sd_card_size: maxSdSize,
                 service_type: serviceType,
+                console_model: serviceType === 'jailbreak' ? consoleModel : null,
                 total_size_gb: totalGamesSize,
                 estimated_price: finalPrice,
                 android_mode: androidSelected,
