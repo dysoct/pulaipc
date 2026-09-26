@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pulai PC - Game List</title>
+    <title>Pulai PC - Game Selector</title>
     <!-- Include Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -59,7 +59,7 @@
             background: #222;
             padding: 8px 12px;
             border-radius: 6px;
-/            flex: 1;
+            flex: 1;
             min-width: 110px;
             border: 1px solid #333;
         }
@@ -158,8 +158,13 @@
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
+            align-items: center;
             padding-top: 5px;
             border-top: 1px solid #2a2a2a;
+        }
+        .mode-wrapper {
+            position: relative;
+            display: inline-block;
         }
         .mode-checkbox-label {
             display: flex;
@@ -168,6 +173,39 @@
             font-size: 13px;
             color: #ccc;
             cursor: pointer;
+        }
+        /* Tooltip style for mode benefits */
+        .info-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: #333;
+            color: #00e676;
+            text-align: center;
+            border-radius: 50%;
+            font-size: 11px;
+            line-height: 16px;
+            cursor: pointer;
+            margin-left: 4px;
+        }
+        .mode-tooltip {
+            display: none;
+            position: absolute;
+            bottom: 125%;
+            left: 0;
+            width: 240px;
+            background: #252525;
+            border: 1px solid #00e676;
+            color: #ddd;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 11.5px;
+            line-height: 1.4;
+            z-index: 50;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .mode-wrapper:hover .mode-tooltip {
+            display: block;
         }
         .storage-breakdown {
             font-size: 12px;
@@ -371,7 +409,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Pulai PC Game List</h1>
+        <h1>Pulai PC Game Selector</h1>
         <div class="instructions">
             1. Choose your <strong>SD Card Size & System Modes</strong> upfront.<br>
             2. Tick your games within your available usable space, then review and save!
@@ -425,16 +463,28 @@
                 </div>
             </div>
 
-            <!-- Mode Selection Checkboxes -->
+            <!-- Mode Selection Checkboxes with Tooltips -->
             <div class="modes-container">
-                <label class="mode-checkbox-label">
-                    <input type="checkbox" id="androidModeCheck" onchange="updateSdLimit()"> 
-                    <span>🤖 Android Mode (+RM30)</span>
-                </label>
-                <label class="mode-checkbox-label">
-                    <input type="checkbox" id="linuxModeCheck" onchange="updateSdLimit()"> 
-                    <span>🐧 Linux Mode (+RM30)</span>
-                </label>
+                <div class="mode-wrapper">
+                    <label class="mode-checkbox-label">
+                        <input type="checkbox" id="androidModeCheck" onchange="updateSdLimit()"> 
+                        <span>🤖 Android Mode (+RM30)</span>
+                    </label>
+                    <div class="mode-tooltip">
+                        <strong>Android (LineageOS):</strong> Turns your Switch into an Android tablet. Great for native Android games, Xbox Game Pass cloud streaming, Netflix, and emulators (PS2, GameCube, Wii).
+                    </div>
+                </div>
+
+                <div class="mode-wrapper">
+                    <label class="mode-checkbox-label">
+                        <input type="checkbox" id="linuxModeCheck" onchange="updateSdLimit()"> 
+                        <span>🐧 Linux Mode (+RM30)</span>
+                    </label>
+                    <div class="mode-tooltip">
+                        <strong>Ubuntu Linux:</strong> Gives you a full desktop environment on your Switch. Perfect for lightweight productivity, retro PC gaming via PortProton, and custom media center setups.
+                    </div>
+                </div>
+
                 <div id="storageBreakdown" class="storage-breakdown">
                     Usable Space: Calculating...
                 </div>
@@ -882,11 +932,13 @@
             linuxChecked.disabled = false;
         }
 
-        // Determine base OS overhead deduction (approx 10GB for 128GB, 16GB for 256GB+)
+        // Determine base OS overhead deduction (8GB for 64GB, 10GB for 128GB, 16GB for 256GB+)
         let baseSystemOverhead = 0;
         let partitionPerMode = 0;
 
-        if (maxSdSize === 128) {
+        if (maxSdSize === 64) {
+            baseSystemOverhead = 8;
+        } else if (maxSdSize === 128) {
             baseSystemOverhead = 10;
             partitionPerMode = 10;
         } else if (maxSdSize >= 256) {
@@ -905,7 +957,7 @@
         let breakdownText = `SD Card: ${maxSdSize}GB | Base System: -${baseSystemOverhead}GB`;
         if (androidChecked.checked) breakdownText += ` | Android Mode: -${partitionPerMode}GB`;
         if (linuxChecked.checked) breakdownText += ` | Linux Mode: -${partitionPerMode}GB`;
-        breakdownText += ` 👉 **Available for Games: ${usableStorageLimit} GB**`;
+        breakdownText += ` 👉 <strong>Available for Games: ${usableStorageLimit} GB</strong>`;
         document.getElementById('storageBreakdown').innerHTML = breakdownText;
 
         // Re-check current selections against new usable limit
@@ -915,6 +967,8 @@
         if (currentGamesSize > usableStorageLimit) {
             alert(`Warning: Your selected games total (${currentGamesSize.toFixed(1)} GB) exceeds your updated usable game storage (${usableStorageLimit} GB). Please remove some games.`);
         }
+        
+        // Immediately update price calculation on UI
         updateCartSummary();
     }
 
@@ -999,7 +1053,12 @@
     // 2. SMART TOLERANCE PRICING LOGIC
     // ==========================================
     function calculatePriceDetails(count, totalGameSizeGb) {
-        if (count <= 0) return { price: 0, exceeded: false };
+        if (count <= 0) {
+            let baseOnlyPrice = 0;
+            if (document.getElementById('androidModeCheck').checked) baseOnlyPrice += 30;
+            if (document.getElementById('linuxModeCheck').checked) baseOnlyPrice += 30;
+            return { price: baseOnlyPrice, exceeded: false };
+        }
 
         let countTierPrice = 0;
         let targetGbLimit = 100;
@@ -1037,7 +1096,7 @@
             isExceeded = true;
         }
 
-        // Add extra system mode pricing (+RM30 each)
+        // Add extra system mode pricing (+RM30 each) instantly
         if (document.getElementById('androidModeCheck').checked) finalPrice += 30;
         if (document.getElementById('linuxModeCheck').checked) finalPrice += 30;
 
