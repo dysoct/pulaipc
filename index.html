@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1224,25 +1224,32 @@
                 const remainingFree = 3 - count;
                 const confirmSave = confirm(`🎁 You have selected only ${count} game(s).\n\nYour Full Jailbreak package includes 3 FREE games! You still have ${remainingFree} free game slot(s) available.\n\nDo you still want to save your order with fewer than 3 games?`);
                 if (!confirmSave) return;
-            } else if (count > 3) {
-                const chargeableCount = count - 3;
+            } else {
+                const chargeableCount = Math.max(0, count - 3);
                 
-                // Define your actual package milestones
-                const milestones = [10, 20, 40];
-                let matchedMilestone = null;
-                let suggestedTotal = null;
+                // Package tiers based on ADDON count (10, 20, 40)
+                const packageAddons = [10, 20, 40];
+                let matchedAddonTier = null;
+                let targetTotalGames = null;
 
-                // Check if they are just 1 to 3 games short of a clean package tier
-                for (let m of milestones) {
-                    if (chargeableCount > m - 3 && chargeableCount < m) {
-                        matchedMilestone = m;
-                        suggestedTotal = m + 3;
+                // Check if total selection is short of a clean addon package tier
+                for (let addonCount of packageAddons) {
+                    const milestoneTotal = addonCount + 3; // e.g., 13, 23, 43 total games
+                    
+                    if (count >= addonCount && count < milestoneTotal) {
+                        matchedAddonTier = addonCount;
+                        targetTotalGames = milestoneTotal;
                         break;
                     }
                 }
 
-                if (matchedMilestone && suggestedTotal) {
-                    const confirmTier = confirm(`⚠️ Package Tier Reminder:\n\nYou selected ${count} games total (${chargeableCount} addon games after your 3 free ones).\n\nSince you're going for the ${matchedMilestone}-game package, did you want to choose ${suggestedTotal} games total (3 free + ${matchedMilestone} addon)?\n\nClick [Cancel] to go back and add more games, or [OK] to save with your current count (${count} games).`);
+                if (matchedAddonTier && targetTotalGames) {
+                    const confirmTier = confirm(
+                        `⚠️ Package Tier Reminder:\n\n` +
+                        `You selected ${count} games total (${chargeableCount} addon games after your 3 free ones).\n\n` +
+                        `Since you are opting for the ${matchedAddonTier}-game package tier, did you want to pick ${targetTotalGames} games total (3 FREE + ${matchedAddonTier} ADDON)?\n\n` +
+                        `Click [Cancel] to go back and select more games, or [OK] to save as-is (${count} games total).`
+                    );
                     if (!confirmTier) return;
                 }
             }
