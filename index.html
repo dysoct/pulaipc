@@ -22,11 +22,19 @@
         h1 {
             text-align: center;
             color: #00e676;
+            margin-bottom: 5px;
+        }
+        .instructions {
+            text-align: center;
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.5;
         }
         .top-bar {
             display: flex;
             gap: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             flex-wrap: wrap;
         }
         .search-box, .phone-input {
@@ -42,10 +50,21 @@
             flex: 2;
             min-width: 200px;
         }
-        .phone-input {
+        .phone-group {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 150px;
+        }
+        .phone-input {
+            width: 100%;
             text-align: center;
-            min-width: 120px;
+        }
+        .input-hint {
+            font-size: 11px;
+            color: #888;
+            margin-top: 3px;
+            text-align: center;
         }
         .lookup-btn {
             background-color: #2196F3;
@@ -56,6 +75,7 @@
             font-weight: bold;
             border-radius: 6px;
             cursor: pointer;
+            height: 47px;
         }
         .lookup-btn:hover {
             background-color: #1976D2;
@@ -156,7 +176,7 @@
             border-radius: 8px;
             width: 90%;
             max-width: 500px;
-            max-height: 80vh;
+            max-height: 85vh;
             display: flex;
             flex-direction: column;
             border: 1px solid #333;
@@ -210,6 +230,28 @@
         .remove-btn:hover {
             background: #ff1744;
         }
+        .remarks-container {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .remarks-container label {
+            font-size: 13px;
+            color: #aaa;
+        }
+        .remarks-input {
+            width: 100%;
+            padding: 10px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+            resize: vertical;
+            min-height: 50px;
+        }
         .modal-footer {
             border-top: 1px solid #333;
             padding-top: 15px;
@@ -222,11 +264,18 @@
 <body>
     <div class="container">
         <h1>Pulai PC Game List</h1>
+        <div class="instructions">
+            1. Tick your desired games below.<br>
+            2. Type your phone number's last 4 digits to save/load your selection anytime.
+        </div>
         
         <div class="top-bar">
-            <input type="text" id="searchInput" class="search-box" placeholder="Search games..." onkeyup="filterGames()">
-            <input type="text" id="phoneInput" class="phone-input" maxlength="4" placeholder="Last 4 Digits" oninput="savePhone()">
-            <button class="lookup-btn" onclick="fetchExistingOrder()">Load My Order</button>
+            <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search games..." onkeyup="filterGames()">
+            <div class="phone-group">
+                <input type="text" id="phoneInput" class="phone-input" maxlength="4" placeholder="e.g. 5678" oninput="savePhone()">
+                <span class="input-hint">Last 4 digits of phone</span>
+            </div>
+            <button class="lookup-btn" onclick="fetchExistingOrder()">Load Order</button>
         </div>
         <div id="statusMsg" class="status-msg"></div>
 
@@ -239,7 +288,7 @@
             🛒 <span id="selectedCount" style="color: #00e676; font-weight: bold;">0</span> games 
             (<span id="selectedSize" style="color: #00e676;">0</span> GB) | 
             <span id="selectedPrice" style="color: #00e676; font-weight: bold;">RM0</span>
-            <br><span style="font-size: 12px; color: #aaa;">Tap here to review/edit</span>
+            <br><span style="font-size: 12px; color: #aaa;">Tap here to review & add remarks</span>
         </div>
         <button class="submit-btn" onclick="openCartModal()">Review & Submit</button>
     </div>
@@ -252,8 +301,14 @@
                 <button class="close-modal" onclick="closeCartModal()">&times;</button>
             </div>
             <div id="cartModalBody" class="modal-body"></div>
+            
+            <div class="remarks-container">
+                <label for="orderRemarks">Remarks / Notes (e.g. "GTA Trilogy has 3 games"):</label>
+                <textarea id="orderRemarks" class="remarks-input" placeholder="Optional: mention trilogies, specific requests, etc."></textarea>
+            </div>
+
             <div class="modal-footer">
-                <span id="modalTotal" style="color: #888; font-size: 14px;">0 games total</span>
+                <span id="modalTotal" style="color: #888; font-size: 13px;">0 games total</span>
                 <button class="submit-btn" onclick="submitOrUpdateOrder()">Save Changes</button>
             </div>
         </div>
@@ -666,26 +721,37 @@
     }
 
     // ==========================================
-    // 2. PRICING & SUMMARY CALCULATION
+    // 2. DUAL-METRIC PRICING (Count vs Size)
     // ==========================================
-    function calculatePrice(count) {
+    function calculatePrice(count, totalSizeGb) {
         if (count <= 0) return 0;
-        
-        // Exact tier matches
-        if (count === 10) return 30;
-        if (count === 20) return 50;
-        if (count === 40) return 80;
 
-        // Dynamic tiered scaling
-        if (count < 10) {
-            return count * 3.0; // RM3 per game below 10
-        } else if (count > 10 && count < 20) {
-            return 30 + (count - 10) * 2.0; // Transitioning smoothly between 10 (RM30) and 20 (RM50)
-        } else if (count > 20 && count < 40) {
-            return 50 + (count - 20) * 1.5; // Transitioning between 20 (RM50) and 40 (RM80)
+        // Determine equivalent tier level for game count
+        let countTierPrice = 0;
+        if (count <= 10) {
+            countTierPrice = count * 3.0;
+        } else if (count <= 20) {
+            countTierPrice = 30 + (count - 10) * 2.5; // RM2.50 per game for 20 pack
+        } else if (count <= 40) {
+            countTierPrice = 50 + (count - 20) * 1.5; 
         } else {
-            return 80 + (count - 40) * 2.0; // Above 40 games
+            countTierPrice = 80 + (count - 40) * 2.0;
         }
+
+        // Determine equivalent tier level for GB size (100GB=30, 200GB=50, 400GB=80)
+        let sizeTierPrice = 0;
+        if (totalSizeGb <= 100) {
+            sizeTierPrice = (totalSizeGb / 100) * 30;
+        } else if (totalSizeGb <= 200) {
+            sizeTierPrice = 30 + ((totalSizeGb - 100) / 100) * 20; // 100GB to 200GB costs +RM20
+        } else if (totalSizeGb <= 400) {
+            sizeTierPrice = 50 + ((totalSizeGb - 200) / 200) * 30; // 200GB to 400GB costs +RM30
+        } else {
+            sizeTierPrice = 80 + ((totalSizeGb - 400) / 100) * 20;
+        }
+
+        // Return whichever metric hits the higher tier first (whichever comes first/higher)
+        return Math.max(countTierPrice, sizeTierPrice);
     }
 
     function updateCartSummary() {
@@ -695,7 +761,7 @@
             totalSize += size;
         });
 
-        const price = calculatePrice(count);
+        const price = calculatePrice(count, totalSize);
 
         document.getElementById('selectedCount').innerText = count;
         document.getElementById('selectedSize').innerText = totalSize.toFixed(1);
@@ -716,7 +782,7 @@
         const statusMsg = document.getElementById('statusMsg');
 
         if (phone.length !== 4) {
-            alert('Please enter your exact last 4 digits first!');
+            alert('Please enter the exact last 4 digits of your phone number!');
             document.getElementById('phoneInput').focus();
             return;
         }
@@ -741,6 +807,12 @@
                     const size = found ? found.size : 0;
                     selectedGames.set(gameName, size);
                 });
+                
+                // Load remarks if saved
+                if (data[0].remarks) {
+                    document.getElementById('orderRemarks').value = data[0].remarks;
+                }
+
                 renderGames(games);
                 statusMsg.style.color = '#00e676';
                 statusMsg.innerText = `Loaded previous order! (${selectedGames.size} games found)`;
@@ -778,8 +850,11 @@
         });
 
         const count = selectedGames.size;
-        const price = Math.round(calculatePrice(count));
-        document.getElementById('modalTotal').innerText = `${count} games total | Price: RM${price}`;
+        let totalSize = 0;
+        selectedGames.forEach(size => { totalSize += size; });
+        const price = Math.round(calculatePrice(count, totalSize));
+        
+        document.getElementById('modalTotal').innerText = `${count} games (${totalSize.toFixed(1)} GB) | Total: RM${price}`;
         document.getElementById('cartModal').style.display = 'flex';
     }
 
@@ -819,6 +894,7 @@
         btn.disabled = true;
 
         const gameNamesArray = Array.from(selectedGames.keys());
+        const remarksText = document.getElementById('orderRemarks').value.trim();
 
         try {
             const { data: existing } = await supabaseClient
@@ -834,6 +910,7 @@
                     .update({ 
                         games: gameNamesArray,
                         total_games: selectedGames.size,
+                        remarks: remarksText,
                         created_at: new Date()
                     })
                     .eq('phone_ending', phone);
@@ -845,7 +922,8 @@
                         { 
                             phone_ending: phone, 
                             games: gameNamesArray,
-                            total_games: selectedGames.size 
+                            total_games: selectedGames.size,
+                            remarks: remarksText
                         }
                     ]);
                 error = insertError;
