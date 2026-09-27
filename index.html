@@ -666,9 +666,9 @@
                     <h4>🎮 Game Count Tiers (Baseline)</h4>
                     <ul>
                         <li><strong>1 - 10 games:</strong> RM3 / game (Up to ~125 GB)</li>
-                        <li><strong>11 - 20 games:</strong> RM50 flat (Up to ~240 GB)</li>
-                        <li><strong>21 - 40 games:</strong> RM80 flat (Up to ~460 GB)</li>
-                        <li><strong>40+ games:</strong> RM80 base + RM2 per extra game</li>
+                        <li><strong>11 - 19 games:</strong> RM3 / game (Up to ~240 GB)</li>
+                        <li><strong>20 - 39 games:</strong> RM2.5 / game (Up to ~460 GB)</li>
+                        <li><strong>40+ games:</strong> RM2 per game</li>
                     </ul>
                 </div>
                 <div class="pricing-col">
@@ -1380,14 +1380,14 @@
         if (chargeableCount <= 10) {
             countTierPrice = chargeableCount * 3.0; 
             targetGbLimit = 125; 
-        } else if (chargeableCount <= 20) {
-            countTierPrice = 50; 
+        } else if (chargeableCount <= 19) {
+            countTierPrice = chargeableCount * 3.0; 
             targetGbLimit = 240; 
-        } else if (chargeableCount <= 40) {
-            countTierPrice = 50 + (chargeableCount - 20) * 1.5; 
+        } else if (chargeableCount <= 39) {
+            countTierPrice = chargeableCount * 2.5; 
             targetGbLimit = 460; 
         } else {
-            countTierPrice = 80 + (chargeableCount - 40) * 2.0;
+            countTierPrice = chargeableCount * 2.0;
             targetGbLimit = totalGameSizeGb;
         }
 
@@ -1433,18 +1433,18 @@
                 isFreeGamesNotice = true;
             } else if (count > 3 && count <= 13) {
                 targetCount = 13; 
-            } else if (count >= 14 && count <= 23) {
-                targetCount = 23; 
-            } else if (count >= 24 && count <= 43) {
-                targetCount = 43; 
+            } else if (count >= 14 && count <= 22) {
+                targetCount = 22; 
+            } else if (count >= 23 && count <= 42) {
+                targetCount = 42; 
             }
         } else {
             if (count > 0 && count <= 10) {
                 targetCount = 10;
-            } else if (count >= 11 && count <= 20) {
-                targetCount = 20;
-            } else if (count >= 21 && count <= 40) {
-                targetCount = 40;
+            } else if (count >= 11 && count <= 19) {
+                targetCount = 19;
+            } else if (count >= 20 && count <= 39) {
+                targetCount = 39;
             }
         }
 
