@@ -179,6 +179,9 @@
                 } else if (e.target.classList.contains('edit-wa-btn')) {
                     const id = e.target.getAttribute('data-order-id');
                     editWhatsappUsername(id);
+                } else if (e.target.classList.contains('copy-main-btn')) {
+                    const id = e.target.getAttribute('data-order-id');
+                    copyGamesForScriptMain(id, e.target);
                 }
             }
         });
@@ -367,7 +370,10 @@
                                 <button class="edit-wa-btn" data-order-id="${orderId}">✏️ Edit WA</button>
                             </div>
                         </div>
-                        <div style="font-size:12px; color:#888;">${order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}</div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <button class="copy-txt-btn copy-main-btn" data-order-id="${orderId}">📋 Copy List for Script</button>
+                            <div style="font-size:12px; color:#888;">${order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}</div>
+                        </div>
                     </div>
                     <div class="order-body">
                         <div>
@@ -478,6 +484,44 @@
                     btn.innerText = originalText;
                     btn.style.background = '#2196F3';
                     btn.style.color = 'white';
+                }, 2000);
+            }).catch(err => {
+                alert('Failed to copy text: ' + err);
+            });
+        }
+
+        function copyGamesForScriptMain(orderId, btnElement) {
+            const order = allOrders.find(o => String(o.id) === String(orderId) || String(o.order_id) === String(orderId));
+            if (!order) return;
+
+            let gameList = [];
+            if (Array.isArray(order.games)) {
+                gameList = order.games;
+            } else if (typeof order.games === 'string') {
+                try {
+                    gameList = JSON.parse(order.games);
+                } catch(e) {
+                    gameList = order.games.split(',').map(g => g.trim());
+                }
+            }
+
+            sortGameList(gameList);
+
+            if (!gameList || gameList.length === 0) {
+                alert("No games in this order to copy!");
+                return;
+            }
+
+            const textToCopy = gameList.join('\n');
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalText = btnElement.innerText;
+                btnElement.innerText = '✅ Copied!';
+                btnElement.style.background = '#00e676';
+                btnElement.style.color = '#121212';
+                setTimeout(() => {
+                    btnElement.innerText = originalText;
+                    btnElement.style.background = '#2196F3';
+                    btnElement.style.color = 'white';
                 }, 2000);
             }).catch(err => {
                 alert('Failed to copy text: ' + err);
