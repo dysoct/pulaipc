@@ -48,24 +48,25 @@
 
         /* FULL ORDER DETAILS MODAL */
         #orderModalOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 99999; padding: 20px; box-sizing: border-box; }
-        .modal-card { background: #1e1e1e; border: 1px solid #444; border-radius: 12px; width: 100%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .modal-header { padding: 18px 24px; background: #252525; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h2 { margin: 0; color: #00e676; font-size: 20px; }
-        .close-modal-btn { background: transparent; border: none; color: #aaa; font-size: 24px; cursor: pointer; line-height: 1; }
+        .modal-card { background: #1e1e1e; border: 1px solid #444; border-radius: 12px; width: 100%; max-width: 700px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .modal-header { padding: 16px 20px; background: #252525; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { margin: 0; color: #00e676; font-size: 18px; }
+        .close-modal-btn { background: transparent; border: none; color: #aaa; font-size: 22px; cursor: pointer; line-height: 1; }
         .close-modal-btn:hover { color: #fff; }
-        .modal-body { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+        .modal-body { padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
         
-        .modal-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; background: #141414; padding: 16px; border-radius: 8px; border: 1px solid #333; }
-        .modal-info-item .lbl { font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 4px; }
-        .modal-info-item .val { font-size: 15px; font-weight: 500; color: #fff; }
+        .modal-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; background: #141414; padding: 12px; border-radius: 8px; border: 1px solid #333; }
+        .modal-info-item .lbl { font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 2px; }
+        .modal-info-item .val { font-size: 14px; font-weight: 500; color: #fff; }
 
-        .game-list-container { background: #141414; border: 1px solid #333; border-radius: 8px; padding: 16px; }
-        .game-list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #2a2a2a; }
-        .game-list-header h3 { margin: 0; font-size: 16px; color: #00e676; }
+        .game-list-container { background: #141414; border: 1px solid #333; border-radius: 8px; padding: 12px; }
+        .game-list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #2a2a2a; }
+        .game-list-header h3 { margin: 0; font-size: 15px; color: #00e676; }
 
-        .modal-game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; max-height: 350px; overflow-y: auto; padding-right: 5px; }
-        .game-item { background: #222; border: 1px solid #333; padding: 10px 12px; border-radius: 6px; font-size: 14px; display: flex; align-items: center; gap: 10px; word-break: break-word; }
-        .game-num { background: #00e676; color: #121212; font-weight: bold; font-size: 11px; padding: 2px 6px; border-radius: 4px; min-width: 20px; text-align: center; flex-shrink: 0; }
+        /* Compact Vertical Downwards List */
+        .modal-game-list { display: flex; flex-direction: column; gap: 6px; max-height: 400px; overflow-y: auto; padding-right: 4px; }
+        .game-item { background: #222; border: 1px solid #2f2f2f; padding: 7px 10px; border-radius: 5px; font-size: 13px; display: flex; align-items: center; gap: 10px; word-break: break-word; }
+        .game-num { background: #00e676; color: #121212; font-weight: bold; font-size: 11px; padding: 1px 5px; border-radius: 3px; min-width: 22px; text-align: center; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -136,7 +137,8 @@
                         <h3>Selected Games</h3>
                         <span id="modalGameCount" style="font-size:13px; color:#aaa;">0 Games</span>
                     </div>
-                    <div id="modalGameGrid" class="modal-game-grid"></div>
+                    <!-- Compact Vertical List Container -->
+                    <div id="modalGameGrid" class="modal-game-list"></div>
                 </div>
             </div>
         </div>
@@ -273,6 +275,30 @@
             filterAndRenderOrders();
         }
 
+        // Helper function to sort game lists consistently based on config.js master order
+        function sortGameList(gameList) {
+            let masterList = [];
+            if (typeof APP_CONFIG !== 'undefined') {
+                masterList = APP_CONFIG.gamesList || APP_CONFIG.games || APP_CONFIG.allGames || [];
+            }
+
+            if (masterList.length > 0) {
+                gameList.sort((a, b) => {
+                    const indexA = masterList.indexOf(a);
+                    const indexB = masterList.indexOf(b);
+                    
+                    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+                    if (indexA === -1 && indexB !== -1) return 1;
+                    if (indexA !== -1 && indexB === -1) return -1;
+                    
+                    return String(a).localeCompare(String(b), undefined, { sensitivity: 'accent', numeric: true });
+                });
+            } else {
+                gameList.sort((a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: 'accent', numeric: true }));
+            }
+            return gameList;
+        }
+
         function filterAndRenderOrders() {
             const query = document.getElementById('adminSearchInput').value.toLowerCase().trim();
             const container = document.getElementById('ordersContainer');
@@ -315,6 +341,9 @@
                 else if (typeof order.games === 'string') {
                     try { gameList = JSON.parse(order.games); } catch(e) { gameList = order.games.split(','); }
                 }
+
+                // Sort games for main page snippet preview too
+                sortGameList(gameList);
 
                 const gamesPreview = (gameList && gameList.length > 0) 
                     ? gameList.slice(0, 3).map((g, i) => `<div>${i + 1}. ${g}</div>`).join('') + (gameList.length > 3 ? `<div style="color:#00e676; margin-top:4px;">+ ${gameList.length - 3} more games...</div>` : '')
@@ -366,7 +395,7 @@
             });
         }
 
-        // OPEN MODAL POPUP (Robust sorting: Config order first, alphabetical fallback)
+        // OPEN MODAL POPUP (Compact downwards list sorted by config.js order)
         async function openOrderModal(orderId) {
             const idField = String(orderId).length > 10 ? 'id' : 'order_id';
             
@@ -391,7 +420,6 @@
             document.getElementById('modalPriceVal').innerText = `RM${Math.round(order.estimated_price || 0)}`;
             document.getElementById('modalDateVal').innerText = order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A';
             
-            // Populate Last Updated Timestamp field
             const lastUpdated = order.updated_at || order.created_at;
             document.getElementById('modalUpdatedVal').innerText = lastUpdated ? new Date(lastUpdated).toLocaleString() : 'N/A';
 
@@ -411,26 +439,8 @@
                 }
             }
 
-            // Locate master games list from config.js using common naming conventions
-            let masterList = [];
-            if (typeof APP_CONFIG !== 'undefined') {
-                masterList = APP_CONFIG.gamesList || APP_CONFIG.games || APP_CONFIG.allGames || [];
-            }
-
-            if (masterList.length > 0) {
-                gameList.sort((a, b) => {
-                    const indexA = masterList.indexOf(a);
-                    const indexB = masterList.indexOf(b);
-                    
-                    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-                    if (indexA === -1 && indexB !== -1) return 1;
-                    if (indexA !== -1 && indexB === -1) return -1;
-                    
-                    return String(a).localeCompare(String(b), undefined, { sensitivity: 'accent', numeric: true });
-                });
-            } else {
-                gameList.sort((a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: 'accent', numeric: true }));
-            }
+            // Sort using master config list
+            sortGameList(gameList);
 
             if (gameList && gameList.length > 0) {
                 document.getElementById('modalGameCount').innerText = `${gameList.length} Games Total`;
@@ -442,7 +452,7 @@
                 });
             } else {
                 document.getElementById('modalGameCount').innerText = '0 Games';
-                gameGrid.innerHTML = '<div style="color:#777; grid-column:1/-1;">No games selected for this order.</div>';
+                gameGrid.innerHTML = '<div style="color:#777; padding: 10px;">No games selected for this order.</div>';
             }
 
             document.getElementById('orderModalOverlay').style.display = 'flex';
