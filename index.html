@@ -841,9 +841,8 @@
 
             <div class="modal-footer">
                 <span id="modalTotal" style="color: #aaa; font-size: 12px; line-height: 1.4;">0 games total</span>
-                <div style="display: flex; gap: 8px;">
+                <div>
                     <button class="submit-btn" onclick="submitOrUpdateOrder()">Save Changes</button>
-                    <button id="whatsappShareBtn" class="submit-btn" style="background-color: #25D366; color: #fff; display: none;" onclick="shareOrderViaWhatsApp()">📱 Send to WhatsApp</button>
                 </div>
             </div>
         </div>
@@ -1284,9 +1283,6 @@
     }
 
     function toggleGame(name, size, isChecked, cardElement) {
-        // Hiding WhatsApp button whenever selection changes until they re-save
-        document.getElementById('whatsappShareBtn').style.display = 'none';
-
         if (isChecked) {
             selectedGames.set(name, size);
             if (cardElement) cardElement.classList.add('selected');
@@ -1577,9 +1573,6 @@
                 
                 if (selectedGames.size > 0) revealGameSection();
 
-                // Show WhatsApp button since order exists in system
-                document.getElementById('whatsappShareBtn').style.display = 'block';
-
                 if (statusMsg) {
                     statusMsg.style.color = '#00e676';
                     statusMsg.innerText = `Loaded previous order! (${selectedGames.size} games found)`;
@@ -1855,24 +1848,18 @@
     }
 
     function removeSdCardFromCart() {
-        // Hiding WhatsApp button until re-saved
-        document.getElementById('whatsappShareBtn').style.display = 'none';
         document.getElementById('sdSourceSelect').value = 'own';
         updateSdLimit();
         openCartModal();
     }
 
     function removeAndroidFromCart() {
-        // Hiding WhatsApp button until re-saved
-        document.getElementById('whatsappShareBtn').style.display = 'none';
         document.getElementById('androidModeCheck').checked = false;
         updateSdLimit();
         openCartModal();
     }
 
     function removeLinuxFromCart() {
-        // Hiding WhatsApp button until re-saved
-        document.getElementById('whatsappShareBtn').style.display = 'none';
         document.getElementById('linuxModeCheck').checked = false;
         updateSdLimit();
         openCartModal();
@@ -1883,8 +1870,6 @@
     }
 
     function removeGameFromCart(gameName) {
-        // Hiding WhatsApp button until re-saved
-        document.getElementById('whatsappShareBtn').style.display = 'none';
         selectedGames.delete(gameName);
         filterGames();
         openCartModal();
@@ -1987,15 +1972,15 @@
             if (saveResult.error) throw saveResult.error;
 
             alert('Order updated and saved successfully!');
-            
-            // Only reveal the WhatsApp share button AFTER successful save
-            document.getElementById('whatsappShareBtn').style.display = 'block';
-
             closeCartModal();
+            
             const statusMsg = document.getElementById('statusMsg');
             if (statusMsg) {
                 statusMsg.innerText = 'Order successfully updated in system!';
             }
+
+            // Immediately trigger WhatsApp prompt after a successful save
+            shareOrderViaWhatsApp();
 
         } catch (err) {
             console.error(err);
