@@ -697,9 +697,10 @@
                 <div class="field-group">
                     <select id="serviceTypeSelect" class="service-select" onchange="toggleServiceFields()">
                         <option value="jailbreak">Full Jailbreak (Free 3 Games)</option>
+                        <option value="system_setup">System Setup</option>
                         <option value="games_only">Games Only</option>
                     </select>
-                    <span class="field-hint">Choose full modding setup or game installs only</span>
+                    <span class="field-hint">Choose full modding setup, system setup, or game installs only</span>
                 </div>
 
                 <div class="field-group" id="consoleModelGroup">
@@ -1015,6 +1016,15 @@
                 jailbreakNoticeCard.style.display = 'none';
                 gameSectionWrapper.style.display = 'block';
             }
+        } else if (serviceType === 'system_setup') {
+            consoleModelGroup.style.display = 'none';
+            sdSourceGroup.style.display = 'flex';
+            sdCardGroup.style.display = 'flex';
+            freeStorageContainer.style.display = 'none';
+            jailbreakModesContainer.style.display = 'flex';
+
+            jailbreakNoticeCard.style.display = 'none';
+            gameSectionWrapper.style.display = 'block';
         } else {
             consoleModelGroup.style.display = 'none';
             sdSourceGroup.style.display = 'none';
@@ -1054,7 +1064,7 @@
 
         localStorage.setItem('userServiceType', serviceType);
 
-        if (serviceType === 'jailbreak') {
+        if (serviceType === 'jailbreak' || serviceType === 'system_setup') {
             const sdSource = document.getElementById('sdSourceSelect').value;
             localStorage.setItem('userSdSource', sdSource);
 
@@ -1064,8 +1074,11 @@
             maxSdSize = parseInt(select.value) || 256;
             localStorage.setItem('userSdSelect', maxSdSize);
 
-            const consoleModel = document.getElementById('consoleModelSelect').value;
-            localStorage.setItem('userConsoleModel', consoleModel);
+            let consoleModel = null;
+            if (serviceType === 'jailbreak') {
+                consoleModel = document.getElementById('consoleModelSelect').value;
+                localStorage.setItem('userConsoleModel', consoleModel);
+            }
 
             const androidChecked = document.getElementById('androidModeCheck');
             const linuxChecked = document.getElementById('linuxModeCheck');
@@ -1120,8 +1133,9 @@
 
             let formattedSdSize = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
             let cardSourceDesc = sdSource === 'buy' ? 'New SD Card' : 'Own SD Card';
-            let breakdownText = `Service: Full Jailbreak (${consoleModel}) | SD: ${formattedSdSize} (${cardSourceDesc}) | System OS: -${baseSystemOverhead}GB`;
-            
+            let serviceLabel = serviceType === 'jailbreak' ? `Full Jailbreak (${consoleModel})` : 'System Setup';
+            let breakdownText = `Service: ${serviceLabel} | SD: ${formattedSdSize} (${cardSourceDesc}) | System OS: -${baseSystemOverhead}GB`;
+
             if (androidChecked.checked) breakdownText += ` | Android: -${partitionPerMode}GB`;
             if (linuxChecked.checked) breakdownText += ` | Linux: -${partitionPerMode}GB`;
 
@@ -1346,6 +1360,11 @@
 
         if (serviceType === 'jailbreak') {
             serviceBasePrice = (APP_CONFIG && APP_CONFIG.jailbreakPrices && APP_CONFIG.jailbreakPrices[consoleModel]) || 190;
+        } else if (serviceType === 'system_setup') {
+            serviceBasePrice = (APP_CONFIG && APP_CONFIG.systemSetupPrice) || 50;
+        }
+
+        if (serviceType === 'jailbreak' || serviceType === 'system_setup') {
             if (document.getElementById('androidModeCheck').checked) androidPrice = APP_CONFIG.addonPrices.android || 30;
             if (document.getElementById('linuxModeCheck').checked) linuxPrice = APP_CONFIG.addonPrices.linux || 30;
             
@@ -1710,6 +1729,81 @@
                 `;
                 modalBody.appendChild(linuxItem);
             }
+        } else if (serviceType === 'system_setup') {
+            const serviceItem = document.createElement('div');
+            serviceItem.className = 'cart-item fixed-item';
+            serviceItem.innerHTML = `
+                <div class="cart-item-details">
+                    <span class="cart-item-title">System Setup</span>
+                    <span class="cart-item-sub">Console system setup service</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-weight:bold; color:#00e676;">RM${details.serviceBasePrice}</span>
+                    <span class="lock-badge">🔒 Core Service</span>
+                </div>
+            `;
+            modalBody.appendChild(serviceItem);
+
+            if (sdSource === 'buy') {
+                const sdItem = document.createElement('div');
+                sdItem.className = 'cart-item';
+                let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
+                sdItem.innerHTML = `
+                    <div class="cart-item-details">
+                        <span class="cart-item-title">Purchase ${displayCardLabel} SD Card</span>
+                        <span class="cart-item-sub">Brand new pre-configured card</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-weight:bold; color:#00e676;">+RM${details.sdCardPrice}</span>
+                        <button class="remove-btn" onclick="removeSdCardFromCart()">Remove</button>
+                    </div>
+                `;
+                modalBody.appendChild(sdItem);
+            } else {
+                const sdItem = document.createElement('div');
+                sdItem.className = 'cart-item';
+                let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
+                sdItem.innerHTML = `
+                    <div class="cart-item-details">
+                        <span class="cart-item-title">Bring Own SD Card (${displayCardLabel})</span>
+                        <span class="cart-item-sub">Provided by customer</span>
+                    </div>
+                    <span class="lock-badge">Free</span>
+                `;
+                modalBody.appendChild(sdItem);
+            }
+
+            if (androidChecked) {
+                const androidItem = document.createElement('div');
+                androidItem.className = 'cart-item';
+                androidItem.innerHTML = `
+                    <div class="cart-item-details">
+                        <span class="cart-item-title">🤖 Android Mode Partition</span>
+                        <span class="cart-item-sub">LineageOS dual-boot setup</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-weight:bold; color:#00e676;">+RM${details.androidPrice}</span>
+                        <button class="remove-btn" onclick="removeAndroidFromCart()">Remove</button>
+                    </div>
+                `;
+                modalBody.appendChild(androidItem);
+            }
+
+            if (linuxChecked) {
+                const linuxItem = document.createElement('div');
+                linuxItem.className = 'cart-item';
+                linuxItem.innerHTML = `
+                    <div class="cart-item-details">
+                        <span class="cart-item-title">🐧 Linux Mode Partition</span>
+                        <span class="cart-item-sub">Ubuntu Linux desktop environment</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-weight:bold; color:#00e676;">+RM${details.linuxPrice}</span>
+                        <button class="remove-btn" onclick="removeLinuxFromCart()">Remove</button>
+                    </div>
+                `;
+                modalBody.appendChild(linuxItem);
+            }
         } else {
             const gamesOnlyItem = document.createElement('div');
             gamesOnlyItem.className = 'cart-item fixed-item';
@@ -1813,6 +1907,44 @@
                     <span>RM${Math.round(details.gamesPrice)}</span>
                 </div>
             `;
+        } else if (serviceType === 'system_setup') {
+            breakdownHtml += `
+                <div class="price-breakdown-row">
+                    <span>System Setup Service:</span>
+                    <span>RM${details.serviceBasePrice}</span>
+                </div>
+            `;
+            if (sdSource === 'buy') {
+                let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
+                breakdownHtml += `
+                    <div class="price-breakdown-row">
+                        <span>New ${displayCardLabel} SD Card:</span>
+                        <span>RM${details.sdCardPrice}</span>
+                    </div>
+                `;
+            }
+            if (androidChecked) {
+                breakdownHtml += `
+                    <div class="price-breakdown-row">
+                        <span>Android Mode:</span>
+                        <span>RM${details.androidPrice}</span>
+                    </div>
+                `;
+            }
+            if (linuxChecked) {
+                breakdownHtml += `
+                    <div class="price-breakdown-row">
+                        <span>Linux Mode:</span>
+                        <span>RM${details.linuxPrice}</span>
+                    </div>
+                `;
+            }
+            breakdownHtml += `
+                <div class="price-breakdown-row">
+                    <span>Games Price (${count} games):</span>
+                    <span>RM${Math.round(details.gamesPrice)}</span>
+                </div>
+            `;
         } else {
             breakdownHtml += `
                 <div class="price-breakdown-row">
@@ -1913,7 +2045,7 @@
                 const confirmSave = confirm(`You have selected only ${count} game(s).\n\nYour Full Jailbreak package includes 3 FREE games! Do you still want to save your order with fewer than 3 games?`);
                 if (!confirmSave) return;
             }
-        } else {
+        } else if (serviceType === 'games_only') {
             const freeStorageInput = document.getElementById('userFreeStorageInput').value;
             if (!freeStorageInput || parseFloat(freeStorageInput) <= 0) {
                 alert('Please enter your remaining free SD card storage space before submitting!');
@@ -1932,9 +2064,9 @@
         const consoleModel = document.getElementById('consoleModelSelect').value;
         const freeStorageInput = document.getElementById('userFreeStorageInput').value;
         
-        const sdSource = (serviceType === 'jailbreak') ? document.getElementById('sdSourceSelect').value : 'own';
-        const androidSelected = (serviceType === 'jailbreak') ? document.getElementById('androidModeCheck').checked : false;
-        const linuxSelected = (serviceType === 'jailbreak') ? document.getElementById('linuxModeCheck').checked : false;
+        const sdSource = (serviceType === 'jailbreak' || serviceType === 'system_setup') ? document.getElementById('sdSourceSelect').value : 'own';
+        const androidSelected = (serviceType === 'jailbreak' || serviceType === 'system_setup') ? document.getElementById('androidModeCheck').checked : false;
+        const linuxSelected = (serviceType === 'jailbreak' || serviceType === 'system_setup') ? document.getElementById('linuxModeCheck').checked : false;
         
         let totalGamesSize = 0;
         selectedGames.forEach(size => { totalGamesSize += size; });
@@ -1957,7 +2089,7 @@
                 games: gameNamesArray,
                 total_games: count,
                 remarks: remarksText,
-                sd_card_size: serviceType === 'jailbreak' ? maxSdSize : null,
+                sd_card_size: (serviceType === 'jailbreak' || serviceType === 'system_setup') ? maxSdSize : null,
                 free_storage_gb: serviceType === 'games_only' ? parseFloat(freeStorageInput) : null,
                 sd_source: sdSource,
                 service_type: serviceType,
@@ -2022,9 +2154,13 @@
         let message = `🎮 *New Pulai PC Order / Inquiry*\n`;
         message += `━━━━━━━━━━━━━━━━━━━\n`;
         message += `📱 *Phone ID (Last 4):* ${phone}\n`;
-        message += `🔧 *Service Type:* ${serviceType === 'jailbreak' ? `Full Jailbreak (${consoleModel})` : 'Games Only'}\n`;
 
-        if (serviceType === 'jailbreak') {
+        let serviceLabel = 'Games Only';
+        if (serviceType === 'jailbreak') serviceLabel = `Full Jailbreak (${consoleModel})`;
+        else if (serviceType === 'system_setup') serviceLabel = 'System Setup';
+        message += `🔧 *Service Type:* ${serviceLabel}\n`;
+
+        if (serviceType === 'jailbreak' || serviceType === 'system_setup') {
             let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
             message += `💾 *SD Card:* ${displayCardLabel} (${sdSource === 'buy' ? 'New Purchase' : 'Own Card'})\n`;
             if (androidChecked) message += `🤖 *Addon:* Android Mode\n`;
