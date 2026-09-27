@@ -1652,7 +1652,7 @@
             isExceeded = true;
         }
 
-        let finalPrice = Math.round(serviceBasePrice + sdCardPrice + gamesPrice + baseOnlyPrice);
+        let finalPrice = serviceBasePrice + sdCardPrice + gamesPrice + baseOnlyPrice;
 
         return { 
             price: finalPrice, 
@@ -1705,22 +1705,18 @@
                     };
                 } else {
                     return {
-                        hasWarning: true,
+                        hasWarning: false,
                         targetCount: targetCount,
                         remaining: diff,
-                        msg: currentLang === 'bm'
-                            ? `💡 <strong>Peluang Pakej:</strong> Anda memilih <strong>${count} game</strong>. Anda boleh memilih <strong>${diff} lagi game</strong> (sehingga <strong>${targetCount} game</strong>) untuk mencapai tier ${targetCount} game!`
-                            : `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong>. You can choose <strong>${diff} more game(s)</strong> (up to <strong>${targetCount} total</strong>) to reach the ${targetCount} games tier!`
+                        msg: ''
                     };
                 }
             } else {
                 return {
-                    hasWarning: true,
+                    hasWarning: false,
                     targetCount: targetCount,
                     remaining: diff,
-                    msg: currentLang === 'bm'
-                        ? `💡 <strong>Peluang Pakej:</strong> Anda memilih <strong>${count} game</strong>. Anda boleh memilih <strong>${diff} lagi game</strong> (sehingga <strong>${targetCount} game</strong>) untuk mencapai tier ${targetCount} game!`
-                        : `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong>. You can choose <strong>${diff} more game(s)</strong> (up to <strong>${targetCount} total</strong>) to reach the ${targetCount} games tier!`
+                    msg: ''
                 };
             }
         }
@@ -1740,7 +1736,7 @@
         document.getElementById('selectedCount').innerText = count;
         document.getElementById('selectedSize').innerText = totalGamesSize.toFixed(1);
         document.getElementById('remainderSize').innerText = remainderSize.toFixed(1);
-        document.getElementById('selectedPrice').innerText = `RM${Math.round(details.price)}`;
+        document.getElementById('selectedPrice').innerText = `RM${details.price.toFixed(2)}`;
 
         const tierRec = checkTierRecommendation(count, serviceType);
         const banner = document.getElementById('tierWarningBanner');
@@ -1894,7 +1890,7 @@
                     <span class="cart-item-sub">${currentLang === 'bm' ? 'Modifikasi console + 3 Game PERCUMA' : 'Console modification + 3 FREE Games'}</span>
                 </div>
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="font-weight:bold; color:#00e676;">RM${details.serviceBasePrice}</span>
+                    <span style="font-weight:bold; color:#00e676;">RM${details.serviceBasePrice.toFixed(2)}</span>
                     <span class="lock-badge">🔒 ${currentLang === 'bm' ? 'Perkhidmatan Utama' : 'Core Service'}</span>
                 </div>
             `;
@@ -1910,7 +1906,7 @@
                         <span class="cart-item-sub">${currentLang === 'bm' ? 'Kad baharu pra-konfigurasi' : 'Brand new pre-configured card'}</span>
                     </div>
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-weight:bold; color:#00e676;">+RM${details.sdCardPrice}</span>
+                        <span style="font-weight:bold; color:#00e676;">+RM${details.sdCardPrice.toFixed(2)}</span>
                         <button class="remove-btn" onclick="removeSdCardFromCart()">${currentLang === 'bm' ? 'Buang' : 'Remove'}</button>
                     </div>
                 `;
@@ -1938,7 +1934,7 @@
                         <span class="cart-item-sub">LineageOS dual-boot setup</span>
                     </div>
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-weight:bold; color:#00e676;">+RM${details.androidPrice}</span>
+                        <span style="font-weight:bold; color:#00e676;">+RM${details.androidPrice.toFixed(2)}</span>
                         <button class="remove-btn" onclick="removeAndroidFromCart()">${currentLang === 'bm' ? 'Buang' : 'Remove'}</button>
                     </div>
                 `;
@@ -1954,7 +1950,7 @@
                         <span class="cart-item-sub">Ubuntu Linux desktop environment</span>
                     </div>
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-weight:bold; color:#00e676;">+RM${details.linuxPrice}</span>
+                        <span style="font-weight:bold; color:#00e676;">+RM${details.linuxPrice.toFixed(2)}</span>
                         <button class="remove-btn" onclick="removeLinuxFromCart()">${currentLang === 'bm' ? 'Buang' : 'Remove'}</button>
                     </div>
                 `;
@@ -2027,7 +2023,7 @@
             breakdownHtml += `
                 <div class="price-breakdown-row">
                     <span>${currentLang === 'bm' ? `Perkhidmatan Full Jailbreak (${consoleModel}):` : `Full Jailbreak Service (${consoleModel}):`}</span>
-                    <span>RM${details.serviceBasePrice}</span>
+                    <span>RM${details.serviceBasePrice.toFixed(2)}</span>
                 </div>
             `;
             if (sdSource === 'buy') {
@@ -2035,7 +2031,7 @@
                 breakdownHtml += `
                     <div class="price-breakdown-row">
                         <span>${currentLang === 'bm' ? `Kad SD Baru ${displayCardLabel}:` : `New ${displayCardLabel} SD Card:`}</span>
-                        <span>RM${details.sdCardPrice}</span>
+                        <span>RM${details.sdCardPrice.toFixed(2)}</span>
                     </div>
                 `;
             }
@@ -2043,7 +2039,7 @@
                 breakdownHtml += `
                     <div class="price-breakdown-row">
                         <span>${currentLang === 'bm' ? 'Mod Android:' : 'Android Mode:'}</span>
-                        <span>RM${details.androidPrice}</span>
+                        <span>RM${details.androidPrice.toFixed(2)}</span>
                     </div>
                 `;
             }
@@ -2051,7 +2047,7 @@
                 breakdownHtml += `
                     <div class="price-breakdown-row">
                         <span>${currentLang === 'bm' ? 'Mod Linux:' : 'Linux Mode:'}</span>
-                        <span>RM${details.linuxPrice}</span>
+                        <span>RM${details.linuxPrice.toFixed(2)}</span>
                     </div>
                 `;
             }
@@ -2060,14 +2056,14 @@
             breakdownHtml += `
                 <div class="price-breakdown-row">
                     <span>${currentLang === 'bm' ? `Harga Game (${count} game: 3 Percuma +${chargeableCount} Tambahan):` : `Games Price (${count} games: 3 Free +${chargeableCount} Addon):`}</span>
-                    <span>RM${Math.round(details.gamesPrice)}</span>
+                    <span>RM${details.gamesPrice.toFixed(2)}</span>
                 </div>
             `;
         } else {
             breakdownHtml += `
                 <div class="price-breakdown-row">
                     <span>${currentLang === 'bm' ? `Harga Game (${count} game):` : `Games Price (${count} games):`}</span>
-                    <span>RM${Math.round(details.gamesPrice)}</span>
+                    <span>RM${details.gamesPrice.toFixed(2)}</span>
                 </div>
             `;
         }
@@ -2075,7 +2071,7 @@
         breakdownHtml += `
             <div class="price-breakdown-row total-row">
                 <span>${currentLang === 'bm' ? 'Jumlah Anggaran Bayaran:' : 'Total Estimated Payable:'}</span>
-                <span style="color:#00e676;">RM${Math.round(details.price)}</span>
+                <span style="color:#00e676;">RM${details.price.toFixed(2)}</span>
             </div>
         `;
 
@@ -2106,7 +2102,7 @@
             }
         }
 
-        document.getElementById('modalTotal').innerHTML = `${summaryText} (<span style="color:#00e676;">${totalGamesSize.toFixed(1)} GB</span> | <span style="color:#ffb74d;">${remainderSize.toFixed(1)} GB ${currentLang === 'bm' ? 'baki' : 'left'}</span>)<br>${currentLang === 'bm' ? 'Jumlah' : 'Total'}: <strong style="color:#00e676; font-size:14px;">RM${Math.round(details.price)}</strong>`;
+        document.getElementById('modalTotal').innerHTML = `${summaryText} (<span style="color:#00e676;">${totalGamesSize.toFixed(1)} GB</span> | <span style="color:#ffb74d;">${remainderSize.toFixed(1)} GB ${currentLang === 'bm' ? 'baki' : 'left'}</span>)<br>${currentLang === 'bm' ? 'Jumlah' : 'Total'}: <strong style="color:#00e676; font-size:14px;">RM${details.price.toFixed(2)}</strong>`;
         document.getElementById('cartModal').style.display = 'flex';
     }
 
@@ -2198,7 +2194,7 @@
         selectedGames.forEach(size => { totalGamesSize += size; });
         
         const details = calculatePriceDetails(count, totalGamesSize);
-        const finalPrice = Math.round(details.price);
+        const finalPrice = details.price;
 
         try {
             const { data: existing, error: queryErr } = await supabaseClient
@@ -2289,29 +2285,34 @@
             if (linuxChecked) message += `🐧 *Addon:* Linux Mode\n`;
         } else {
             const freeStorageInput = document.getElementById('userFreeStorageInput').value;
-            message += `📊 *Free Storage:* ${freeStorageInput || 0} GB\n`;
+            message += `💾 *Stated Free Storage:* ${freeStorageInput} GB\n`;
         }
 
-        message += `━━━━━━━━━━━━━━━━━━━\n`;
-        message += `📦 *Selected Games:* ${count} games (${totalGamesSize.toFixed(1)} GB total)\n`;
+        message += `📊 *Games Chosen:* ${count} (${totalGamesSize.toFixed(1)} GB)\n`;
+        message += `💰 *Estimated Total:* RM${details.price.toFixed(2)}\n`;
 
         if (remarks) {
-            message += `━━━━━━━━━━━━━━━━━━━\n`;
             message += `📝 *Remarks:* ${remarks}\n`;
         }
 
         message += `━━━━━━━━━━━━━━━━━━━\n`;
-        message += `💰 *Total Estimated Price:* RM${Math.round(details.price)}`;
+        message += `🎮 *Selected Games List:*\n`;
 
-        const businessWhatsAppNumber = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.whatsappNumber) ? APP_CONFIG.whatsappNumber : '';
-        if (!businessWhatsAppNumber) {
-            alert('WhatsApp number is not configured in APP_CONFIG.');
-            return;
+        if (selectedGames.size === 0) {
+            message += `_No games selected_\n`;
+        } else {
+            let idx = 1;
+            selectedGames.forEach((size, gameName) => {
+                message += `${idx}. ${gameName} (${size} GB)\n`;
+                idx++;
+            });
         }
-        const encodedMessage = encodeURIComponent(message);
-        const whatsappUrl = `https://wa.me/${businessWhatsAppNumber}?text=${encodedMessage}`;
+
+        const encodedMsg = encodeURIComponent(message);
+        const whatsappNumber = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.whatsappNumber) ? APP_CONFIG.whatsappNumber : '';
+        const waUrl = whatsappNumber ? `https://wa.me/${whatsappNumber}?text=${encodedMsg}` : `https://wa.me/?text=${encodedMsg}`;
         
-        window.open(whatsappUrl, '_blank');
+        window.open(waUrl, '_blank');
     }
     </script>
 </body>
