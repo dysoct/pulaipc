@@ -1831,6 +1831,7 @@
             modalTierBox.innerHTML = tierRec.msg;
         } else {
             modalTierBox.style.display = 'none';
+            modalTierBox.innerHTML = '';
         }
 
         let summaryText = `${count} games total`;
@@ -2031,7 +2032,11 @@
         message += `━━━━━━━━━━━━━━━━━━━\n`;
         message += `💰 *Total Estimated Price:* RM${Math.round(details.price)}`;
 
-        const businessWhatsAppNumber = '601165676869';
+        const businessWhatsAppNumber = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.whatsappNumber) ? APP_CONFIG.whatsappNumber : '';
+        if (!businessWhatsAppNumber) {
+            alert('WhatsApp number is not configured in APP_CONFIG.');
+            return;
+        }
         const encodedMessage = encodeURIComponent(message);
         const whatsappUrl = `https://wa.me/${businessWhatsAppNumber}?text=${encodedMessage}`;
         
