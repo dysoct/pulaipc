@@ -1674,16 +1674,18 @@
             if (count < 3) {
                 targetCount = 3;
                 isFreeGamesNotice = true;
-            } else if (count >= 3 && count < 13) {
-                targetCount = 13; // 3 free + 10 chargeable = 13 max for Tier 1
-            } else if (count >= 13 && count < 23) {
-                targetCount = 23; // 3 free + 20 chargeable = 23 max for Tier 2
+            } else if (count > 3 && count < 23) {
+                targetCount = 23; // 3 free + 20 chargeable = 23 total
+            } else if (count >= 23 && count < 43) {
+                targetCount = 43; // 3 free + 40 chargeable = 43 total
             }
         } else {
             if (count > 0 && count < 10) {
                 targetCount = 10;
-            } else if (count >= 10 && count < 20) {
+            } else if (count > 10 && count < 20) {
                 targetCount = 20;
+            } else if (count > 20 && count < 40) {
+                targetCount = 40;
             }
         }
 
