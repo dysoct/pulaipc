@@ -1161,7 +1161,7 @@
                 let currentGamesSize = 0;
                 selectedGames.forEach(size => { currentGamesSize += size; });
 
-                let breakdownText = `Service: Games Only | Stated Free Storage: <strong>${userSpace} GB</strong>`;
+                let breakdownText = `Service: Games Only | Stated Free Storage: ${userSpace} GB`;
                 breakdownText += `<br>📊 <strong>Selected Games: ${currentGamesSize.toFixed(1)} GB</strong> / Available Balance: <strong>${(usableStorageLimit - currentGamesSize).toFixed(1)} GB</strong>`;
                 
                 document.getElementById('storageBreakdown').innerHTML = breakdownText;
@@ -1284,6 +1284,9 @@
     }
 
     function toggleGame(name, size, isChecked, cardElement) {
+        // Hiding WhatsApp button whenever selection changes until they re-save
+        document.getElementById('whatsappShareBtn').style.display = 'none';
+
         if (isChecked) {
             selectedGames.set(name, size);
             if (cardElement) cardElement.classList.add('selected');
@@ -1574,7 +1577,7 @@
                 
                 if (selectedGames.size > 0) revealGameSection();
 
-                // Show WhatsApp button since order exists
+                // Show WhatsApp button since order exists in system
                 document.getElementById('whatsappShareBtn').style.display = 'block';
 
                 if (statusMsg) {
@@ -1852,18 +1855,24 @@
     }
 
     function removeSdCardFromCart() {
+        // Hiding WhatsApp button until re-saved
+        document.getElementById('whatsappShareBtn').style.display = 'none';
         document.getElementById('sdSourceSelect').value = 'own';
         updateSdLimit();
         openCartModal();
     }
 
     function removeAndroidFromCart() {
+        // Hiding WhatsApp button until re-saved
+        document.getElementById('whatsappShareBtn').style.display = 'none';
         document.getElementById('androidModeCheck').checked = false;
         updateSdLimit();
         openCartModal();
     }
 
     function removeLinuxFromCart() {
+        // Hiding WhatsApp button until re-saved
+        document.getElementById('whatsappShareBtn').style.display = 'none';
         document.getElementById('linuxModeCheck').checked = false;
         updateSdLimit();
         openCartModal();
@@ -1874,6 +1883,8 @@
     }
 
     function removeGameFromCart(gameName) {
+        // Hiding WhatsApp button until re-saved
+        document.getElementById('whatsappShareBtn').style.display = 'none';
         selectedGames.delete(gameName);
         filterGames();
         openCartModal();
@@ -1977,7 +1988,7 @@
 
             alert('Order updated and saved successfully!');
             
-            // Reveal the WhatsApp share button upon successful save
+            // Only reveal the WhatsApp share button AFTER successful save
             document.getElementById('whatsappShareBtn').style.display = 'block';
 
             closeCartModal();
@@ -2025,13 +2036,7 @@
         }
 
         message += `━━━━━━━━━━━━━━━━━━━\n`;
-        message += `📦 *Selected Games (${count} games - ${totalGamesSize.toFixed(1)} GB):*\n`;
-        
-        let index = 1;
-        selectedGames.forEach((size, gameName) => {
-            message += `${index}. ${gameName} (${size}GB)\n`;
-            index++;
-        });
+        message += `📦 *Selected Games:* ${count} games (${totalGamesSize.toFixed(1)} GB total)\n`;
 
         if (remarks) {
             message += `━━━━━━━━━━━━━━━━━━━\n`;
