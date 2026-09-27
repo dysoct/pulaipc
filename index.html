@@ -737,12 +737,7 @@
                 <!-- SD Card Size Selector (Jailbreak Only) -->
                 <div class="field-group" id="sdCardGroup">
                     <select id="sdCardSelect" class="sd-select" onchange="updateSdLimit()">
-                        <option value="64">64 GB Card</option>
-                        <option value="128">128 GB Card</option>
-                        <option value="256" selected>256 GB Card</option>
-                        <option value="512">512 GB Card</option>
-                        <option value="1024">1 TB Card</option>
-                        <option value="2048">2 TB Card</option>
+                        <!-- Dynamically populated from config.js sdCardRetailPrices -->
                     </select>
                     <span class="field-hint">Total capacity of memory card used</span>
                 </div>
@@ -891,6 +886,9 @@
     let isStorageConfigured = false;
 
     window.onload = function() {
+        // Populate only the SD card sizes available in config.js stock
+        populateSdCardOptions();
+
         const savedPhone = localStorage.getItem('userPhone4');
         if (savedPhone) {
             document.getElementById('phoneInput').value = savedPhone;
@@ -903,8 +901,19 @@
 
         const savedSd = localStorage.getItem('userSdSelect');
         if (savedSd) {
-            document.getElementById('sdCardSelect').value = savedSd;
-            maxSdSize = parseInt(savedSd);
+            const sdCardSelect = document.getElementById('sdCardSelect');
+            // Ensure saved size exists in the dropdown options
+            if (sdCardSelect.querySelector(`option[value="${savedSd}"]`)) {
+                sdCardSelect.value = savedSd;
+                maxSdSize = parseInt(savedSd);
+            } else if (sdCardSelect.options.length > 0) {
+                maxSdSize = parseInt(sdCardSelect.value);
+            }
+        } else {
+            const sdCardSelect = document.getElementById('sdCardSelect');
+            if (sdCardSelect.options.length > 0) {
+                maxSdSize = parseInt(sdCardSelect.value);
+            }
         }
 
         const savedFreeStorage = localStorage.getItem('userFreeStorage');
@@ -926,6 +935,42 @@
         updateSdLimit();
         filterGames();
     };
+
+    function populateSdCardOptions() {
+        const sdSelect = document.getElementById('sdCardSelect');
+        if (!sdSelect) return;
+        
+        sdSelect.innerHTML = '';
+
+        if (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.sdCardRetailPrices) {
+            let hasValidOptions = false;
+            Object.entries(APP_CONFIG.sdCardRetailPrices).forEach(([size, price]) => {
+                const numericPrice = Number(price);
+                if (numericPrice > 0) {
+                    hasValidOptions = true;
+                    const option = document.createElement('option');
+                    option.value = size;
+                    if (size === '256') {
+                        option.selected = true;
+                    }
+                    option.textContent = `${size} GB Card (RM${numericPrice})`;
+                    sdSelect.appendChild(option);
+                }
+            });
+
+            if (!hasValidOptions) {
+                const option = document.createElement('option');
+                option.value = '256';
+                option.textContent = '256 GB Card';
+                sdSelect.appendChild(option);
+            }
+        } else {
+            const option = document.createElement('option');
+            option.value = '256';
+            option.textContent = '256 GB Card';
+            sdSelect.appendChild(option);
+        }
+    }
 
     function validatePhoneProvided() {
         const phoneInput = document.getElementById('phoneInput');
@@ -1293,7 +1338,7 @@
             
             const sdSource = document.getElementById('sdSourceSelect').value;
             if (sdSource === 'buy') {
-                sdCardPrice = APP_CONFIG.sdCardRetailPrices[maxSdSize] || 0;
+                sdCardPrice = (APP_CONFIG.sdCardRetailPrices && APP_CONFIG.sdCardRetailPrices[maxSdSize]) || 0;
             }
         }
 
@@ -1490,8 +1535,11 @@
                 if (order.remarks) document.getElementById('orderRemarks').value = order.remarks;
                 if (order.service_type) document.getElementById('serviceTypeSelect').value = order.service_type;
                 if (order.sd_card_size) {
-                    document.getElementById('sdCardSelect').value = order.sd_card_size;
-                    maxSdSize = parseInt(order.sd_card_size);
+                    const sdCardSelect = document.getElementById('sdCardSelect');
+                    if (sdCardSelect.querySelector(`option[value="${order.sd_card_size}"]`)) {
+                        sdCardSelect.value = order.sd_card_size;
+                        maxSdSize = parseInt(order.sd_card_size);
+                    }
                 }
                 if (order.free_storage_gb) document.getElementById('userFreeStorageInput').value = order.free_storage_gb;
                 if (order.sd_source) document.getElementById('sdSourceSelect').value = order.sd_source;
