@@ -689,10 +689,9 @@
                 <div class="pricing-col">
                     <h4 data-i18n="gameCountTierTitle">🎮 Game Count Tiers (Baseline)</h4>
                     <ul>
-                        <li><strong data-i18n="tier1Range">1 - 10 games:</strong> RM3 / game (Up to ~125 GB)</li>
-                        <li><strong data-i18n="tier2Range">11 - 20 games:</strong> RM50 flat (Up to ~240 GB)</li>
-                        <li><strong data-i18n="tier3Range">21 - 40 games:</strong> RM80 flat (Up to ~460 GB)</li>
-                        <li><strong data-i18n="tier4Range">40+ games:</strong> RM80 base + RM2 per extra game</li>
+                        <li><strong data-i18n="tier1Range">1 - 19 games:</strong> RM3 / game</li>
+                        <li><strong data-i18n="tier2Range">20 - 39 games:</strong> RM2.50 / game</li>
+                        <li><strong data-i18n="tier3Range">40+ games:</strong> RM2 / game</li>
                     </ul>
                 </div>
                 <div class="pricing-col">
@@ -884,10 +883,9 @@
             pricingSummary: "📦 View Pricing Tiers & Game Size Rates (Tap to expand)",
             free3Games: "Free 3 Games",
             gameCountTierTitle: "🎮 Game Count Tiers (Baseline)",
-            tier1Range: "1 - 10 games:",
-            tier2Range: "11 - 20 games:",
-            tier3Range: "21 - 40 games:",
-            tier4Range: "40+ games:",
+            tier1Range: "1 - 19 games:",
+            tier2Range: "20 - 39 games:",
+            tier3Range: "40+ games:",
             gameSizeTierTitle: "📊 Game Size Volume Override",
             size1Range: "Up to 100 GB:",
             size2Range: "Up to 200 GB:",
@@ -946,10 +944,9 @@
             pricingSummary: "📦 Lihat Peringkat Harga & Kadar Saiz Game (Tekan untuk buka)",
             free3Games: "Percuma 3 Game",
             gameCountTierTitle: "🎮 Peringkat Jumlah Game (Asas)",
-            tier1Range: "1 - 10 game:",
-            tier2Range: "11 - 20 game:",
-            tier3Range: "21 - 40 game:",
-            tier4Range: "40+ game:",
+            tier1Range: "1 - 19 game:",
+            tier2Range: "20 - 39 game:",
+            tier3Range: "40+ game:",
             gameSizeTierTitle: "📊 Override Isipadu Saiz Game",
             size1Range: "Sehingga 100 GB:",
             size2Range: "Sehingga 200 GB:",
@@ -1026,7 +1023,6 @@
         document.querySelector('[data-i18n="tier1Range"]').innerText = t.tier1Range;
         document.querySelector('[data-i18n="tier2Range"]').innerText = t.tier2Range;
         document.querySelector('[data-i18n="tier3Range"]').innerText = t.tier3Range;
-        document.querySelector('[data-i18n="tier4Range"]').innerText = t.tier4Range;
 
         document.querySelector('[data-i18n="gameSizeTierTitle"]').innerText = t.gameSizeTierTitle;
         document.querySelector('[data-i18n="size1Range"]').innerText = t.size1Range;
@@ -1624,17 +1620,17 @@
         let countTierPrice = 0;
         let targetGbLimit = 100;
 
-        if (chargeableCount <= 10) {
-            countTierPrice = chargeableCount * 3.0; 
-            targetGbLimit = 125; 
-        } else if (chargeableCount <= 20) {
-            countTierPrice = 50; 
-            targetGbLimit = 240; 
-        } else if (chargeableCount <= 40) {
-            countTierPrice = 50 + (chargeableCount - 20) * 1.5; 
-            targetGbLimit = 460; 
+        if (chargeableCount <= 0) {
+            countTierPrice = 0;
+            targetGbLimit = 30;
+        } else if (chargeableCount <= 19) {
+            countTierPrice = chargeableCount * 3.0; // 1-19 games: RM3 per game
+            targetGbLimit = 180; 
+        } else if (chargeableCount <= 39) {
+            countTierPrice = chargeableCount * 2.5; // 20-39 games: RM2.5 per game
+            targetGbLimit = 360; 
         } else {
-            countTierPrice = 80 + (chargeableCount - 40) * 2.0;
+            countTierPrice = chargeableCount * 2.0; // 40+ games: RM2 per game
             targetGbLimit = totalGameSizeGb;
         }
 
@@ -1678,20 +1674,16 @@
             if (count < 3) {
                 targetCount = 3;
                 isFreeGamesNotice = true;
-            } else if (count > 3 && count <= 13) {
-                targetCount = 13; 
-            } else if (count >= 14 && count <= 23) {
-                targetCount = 23; 
-            } else if (count >= 24 && count <= 43) {
-                targetCount = 43; 
+            } else if (count >= 3 && count <= 22) {
+                targetCount = 22; // 3 free + 19 chargeable = 22 max for Tier 1
+            } else if (count >= 23 && count <= 42) {
+                targetCount = 42; // 3 free + 39 chargeable = 42 max for Tier 2
             }
         } else {
-            if (count > 0 && count <= 10) {
-                targetCount = 10;
-            } else if (count >= 11 && count <= 20) {
-                targetCount = 20;
-            } else if (count >= 21 && count <= 40) {
-                targetCount = 40;
+            if (count > 0 && count <= 19) {
+                targetCount = 19;
+            } else if (count >= 20 && count <= 39) {
+                targetCount = 39;
             }
         }
 
