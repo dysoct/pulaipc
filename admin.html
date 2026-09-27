@@ -142,7 +142,7 @@
                         <h3>Selected Games</h3>
                         <div style="display:flex; align-items:center; gap:10px;">
                             <span id="modalGameCount" style="font-size:13px; color:#aaa;">0 Games</span>
-                            <button class="copy-txt-btn" onclick="copyGamesForScript()">📋 Copy List for Script</button>
+                            <button class="copy-txt-btn modal-copy-btn" onclick="copyGamesForScript()">📋 Copy List for Script</button>
                         </div>
                     </div>
                     <!-- Compact Vertical List Container -->
@@ -475,7 +475,7 @@
 
             const textToCopy = currentModalGames.join('\n');
             navigator.clipboard.writeText(textToCopy).then(() => {
-                const btn = document.querySelector('.copy-txt-btn');
+                const btn = document.querySelector('.modal-copy-btn');
                 const originalText = btn.innerText;
                 btn.innerText = '✅ Copied!';
                 btn.style.background = '#00e676';
