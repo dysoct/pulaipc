@@ -127,6 +127,7 @@
                     <div class="modal-info-item"><div class="lbl">Storage Size</div><div class="val" id="modalStorageVal">-</div></div>
                     <div class="modal-info-item"><div class="lbl">Total Estimated Price</div><div class="val" id="modalPriceVal" style="color:#00e676;">-</div></div>
                     <div class="modal-info-item"><div class="lbl">Date Created</div><div class="val" id="modalDateVal">-</div></div>
+                    <div class="modal-info-item"><div class="lbl">Last Updated / Edited</div><div class="val" id="modalUpdatedVal" style="color:#ffb74d;">-</div></div>
                     <div class="modal-info-item" style="grid-column: 1 / -1;"><div class="lbl">Remarks</div><div class="val" id="modalRemarksVal">-</div></div>
                 </div>
 
@@ -365,9 +366,18 @@
             });
         }
 
-        // OPEN MODAL POPUP
-        function openOrderModal(orderId) {
-            const order = allOrders.find(o => String(o.id) === String(orderId) || String(o.order_id) === String(orderId));
+        // OPEN MODAL POPUP (Fetches fresh data from database to ensure latest edits are shown)
+        async function openOrderModal(orderId) {
+            const idField = String(orderId).length > 10 ? 'id' : 'order_id';
+            
+            const { data, error } = await supabaseClient
+                .from('orders')
+                .select('*')
+                .eq(idField, orderId)
+                .single();
+
+            const order = data || allOrders.find(o => String(o.id) === String(orderId) || String(o.order_id) === String(orderId));
+            
             if (!order) {
                 alert("Could not load order details.");
                 return;
@@ -380,6 +390,11 @@
             document.getElementById('modalStorageVal').innerText = `${order.sd_card_size || order.free_storage_gb || 0} GB`;
             document.getElementById('modalPriceVal').innerText = `RM${Math.round(order.estimated_price || 0)}`;
             document.getElementById('modalDateVal').innerText = order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A';
+            
+            // Populate Last Updated Timestamp field
+            const lastUpdated = order.updated_at || order.created_at;
+            document.getElementById('modalUpdatedVal').innerText = lastUpdated ? new Date(lastUpdated).toLocaleString() : 'N/A';
+
             document.getElementById('modalRemarksVal').innerText = order.remarks || 'None';
 
             const gameGrid = document.getElementById('modalGameGrid');
