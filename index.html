@@ -1094,6 +1094,7 @@
     let maxSdSize = 256; 
     let usableStorageLimit = 0; 
     let isStorageConfigured = false;
+    let currentOrderId = null; // Track current loaded order ID for updating existing records
 
     window.onload = function() {
         applyTranslations();
@@ -1436,6 +1437,7 @@
         if (selectedGames.size === 0 && !document.getElementById('androidModeCheck').checked && !document.getElementById('linuxModeCheck').checked) return;
         if (confirm(currentLang === 'bm' ? 'Adakah anda pasti mahu mengkosongkan semua game dan mod yang dipilih?' : 'Are you sure you want to clear all selected games and modes?')) {
             selectedGames.clear();
+            currentOrderId = null; // Clear tracked order ID
             document.getElementById('androidModeCheck').checked = false;
             document.getElementById('linuxModeCheck').checked = false;
             toggleServiceFields();
@@ -1798,6 +1800,7 @@
 
             if (data && data.length > 0) {
                 const order = data[0];
+                currentOrderId = order.id; // Store existing record ID
                 selectedGames.clear();
                 
                 const sourceGames = typeof games !== 'undefined' ? games : [];
@@ -1839,6 +1842,7 @@
                     statusMsg.innerText = currentLang === 'bm' ? `Pesanan terdahulu dimuatkan! (${selectedGames.size} game ditemui)` : `Loaded previous order! (${selectedGames.size} games found)`;
                 }
             } else {
+                currentOrderId = null; // Reset if no order found
                 alert(currentLang === 'bm' ? `Tiada pesanan tersimpan ditemui untuk ID "${phone}". Jika ini lawatan pertama anda, anda boleh mula memilih game di bawah!` : 'No previous saved order found for ID "' + phone + '". If this is your first visit, you can start picking games below!');
                 if (statusMsg) {
                     statusMsg.style.color = '#ff9800';
@@ -2100,10 +2104,15 @@
             updated_at: new Date().toISOString()
         };
 
+        // Include id if modifying an existing order so Supabase updates instead of inserting a new row
+        if (currentOrderId) {
+            payload.id = currentOrderId;
+        }
+
         try {
             const { data, error } = await supabaseClient
                 .from('orders')
-                .upsert([payload]); // Defaults to upserting on the PRIMARY KEY ('id')
+                .upsert([payload]);
 
             if (error) throw error;
 
