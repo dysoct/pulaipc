@@ -60,8 +60,11 @@
         .modal-info-item .val { font-size: 14px; font-weight: 500; color: #fff; }
 
         .game-list-container { background: #141414; border: 1px solid #333; border-radius: 8px; padding: 12px; }
-        .game-list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #2a2a2a; }
+        .game-list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #2a2a2a; flex-wrap: wrap; gap: 8px; }
         .game-list-header h3 { margin: 0; font-size: 15px; color: #00e676; }
+        
+        .copy-txt-btn { background: #2196F3; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .copy-txt-btn:hover { opacity: 0.9; }
 
         /* Compact Vertical Downwards List */
         .modal-game-list { display: flex; flex-direction: column; gap: 6px; max-height: 400px; overflow-y: auto; padding-right: 4px; }
@@ -135,7 +138,10 @@
                 <div class="game-list-container">
                     <div class="game-list-header">
                         <h3>Selected Games</h3>
-                        <span id="modalGameCount" style="font-size:13px; color:#aaa;">0 Games</span>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span id="modalGameCount" style="font-size:13px; color:#aaa;">0 Games</span>
+                            <button class="copy-txt-btn" onclick="copyGamesForScript()">📋 Copy List for Script</button>
+                        </div>
                     </div>
                     <!-- Compact Vertical List Container -->
                     <div id="modalGameGrid" class="modal-game-list"></div>
@@ -149,6 +155,7 @@
         const supabaseClient = supabase.createClient(APP_CONFIG.supabaseUrl, APP_CONFIG.supabaseAnonKey);
         let allOrders = [];
         let currentStatusFilter = 'ALL';
+        let currentModalGames = []; // Stores currently opened order's sorted games for copying
 
         window.onload = async function() {
             const { data: { session } } = await supabaseClient.auth.getSession();
@@ -247,7 +254,6 @@
             filterAndRenderOrders();
         }
 
-        // Add or edit WhatsApp Username
         async function editWhatsappUsername(orderId) {
             const order = allOrders.find(o => String(o.id) === String(orderId) || String(o.order_id) === String(orderId));
             if (!order) return;
@@ -255,7 +261,7 @@
             const currentWa = order.whatsapp_username || '';
             const newWa = prompt("Enter WhatsApp Username or Contact Name:", currentWa);
             
-            if (newWa === null) return; // Cancelled
+            if (newWa === null) return;
 
             const trimmedWa = newWa.trim();
             const oldWa = order.whatsapp_username;
@@ -275,7 +281,6 @@
             filterAndRenderOrders();
         }
 
-        // Helper function to sort game lists consistently based on config.js master order
         function sortGameList(gameList) {
             let masterList = [];
             if (typeof APP_CONFIG !== 'undefined') {
@@ -342,7 +347,6 @@
                     try { gameList = JSON.parse(order.games); } catch(e) { gameList = order.games.split(','); }
                 }
 
-                // Sort games for main page snippet preview too
                 sortGameList(gameList);
 
                 const gamesPreview = (gameList && gameList.length > 0) 
@@ -395,11 +399,10 @@
             });
         }
 
-        // OPEN MODAL POPUP (Compact downwards list sorted by config.js order)
         async function openOrderModal(orderId) {
             const idField = String(orderId).length > 10 ? 'id' : 'order_id';
             
-            const { data, error } = await supabaseClient
+            const { data } = await supabaseClient
                 .from('orders')
                 .select('*')
                 .eq(idField, orderId)
@@ -422,7 +425,6 @@
             
             const lastUpdated = order.updated_at || order.created_at;
             document.getElementById('modalUpdatedVal').innerText = lastUpdated ? new Date(lastUpdated).toLocaleString() : 'N/A';
-
             document.getElementById('modalRemarksVal').innerText = order.remarks || 'None';
 
             const gameGrid = document.getElementById('modalGameGrid');
@@ -439,8 +441,8 @@
                 }
             }
 
-            // Sort using master config list
             sortGameList(gameList);
+            currentModalGames = gameList; // Save for the copy button action
 
             if (gameList && gameList.length > 0) {
                 document.getElementById('modalGameCount').innerText = `${gameList.length} Games Total`;
@@ -456,6 +458,30 @@
             }
 
             document.getElementById('orderModalOverlay').style.display = 'flex';
+        }
+
+        // ONE-CLICK COPY TO CLIPBOARD FOR SCRIPT TEXT FILE
+        function copyGamesForScript() {
+            if (!currentModalGames || currentModalGames.length === 0) {
+                alert("No games to copy!");
+                return;
+            }
+
+            const textToCopy = currentModalGames.join('\n');
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const btn = document.querySelector('.copy-txt-btn');
+                const originalText = btn.innerText;
+                btn.innerText = '✅ Copied!';
+                btn.style.background = '#00e676';
+                btn.style.color = '#121212';
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.background = '#2196F3';
+                    btn.style.color = 'white';
+                }, 2000);
+            }).catch(err => {
+                alert('Failed to copy text: ' + err);
+            });
         }
 
         function closeOrderModal() {
