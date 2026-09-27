@@ -31,7 +31,6 @@
             margin-bottom: 15px;
             line-height: 1.5;
         }
-        /* Pricing Guide Box */
         .pricing-guide {
             background: #1a1a1a;
             border: 1px solid #333;
@@ -100,7 +99,6 @@
             color: #bbb;
             line-height: 1.4;
         }
-        /* Top Configuration Card */
         .config-card {
             background: #1a1a1a;
             border: 1px solid #333;
@@ -228,7 +226,6 @@
             background-color: #ff5252;
             color: white;
         }
-        /* Storage Warning Banner */
         .storage-warning-banner {
             background: #3a1c00;
             border: 1px solid #ff9800;
@@ -245,7 +242,6 @@
         .storage-warning-banner .warning-icon {
             font-size: 20px;
         }
-        /* Tier Warning Banner */
         .tier-warning-banner {
             background: #2d2612;
             border: 1px solid #ffca28;
@@ -259,7 +255,6 @@
             gap: 10px;
             line-height: 1.4;
         }
-        /* Search Bar Section */
         .search-container {
             margin-bottom: 15px;
             position: relative;
@@ -298,7 +293,6 @@
         .clear-search-btn:hover {
             color: #fff;
         }
-        /* Top Mode Toggles */
         .modes-container {
             display: flex;
             flex-direction: column;
@@ -347,7 +341,6 @@
             margin-bottom: 15px;
             min-height: 20px;
         }
-        /* Jailbreak Notice Card */
         .jailbreak-notice-card {
             background: #1a2e22;
             border: 1px solid #00e676;
@@ -425,7 +418,6 @@
             accent-color: #00e676;
             cursor: pointer;
         }
-        /* Sticky Checkout Bar */
         .checkout-bar {
             position: fixed;
             bottom: 0;
@@ -464,7 +456,6 @@
             color: #888;
             cursor: not-allowed;
         }
-        /* Cart Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -653,7 +644,6 @@
             3. Choose your games, then review and submit!
         </div>
 
-        <!-- Pricing Guide Dropdown -->
         <details class="pricing-guide">
             <summary>📦 View Pricing Tiers & Game Size Rates (Tap to expand)</summary>
             <div class="pricing-tiers">
@@ -697,16 +687,13 @@
             </p>
         </details>
         
-        <!-- Top Configuration Control Center -->
         <div class="config-card">
             <div class="config-row">
-                <!-- Phone Number Field -->
                 <div class="field-group">
                     <input type="text" id="phoneInput" class="phone-input" maxlength="4" placeholder="e.g. 5678" oninput="savePhone()">
                     <span class="field-hint">Last 4 digits phone no (Required ID)</span>
                 </div>
 
-                <!-- Service Type Selector -->
                 <div class="field-group">
                     <select id="serviceTypeSelect" class="service-select" onchange="toggleServiceFields()">
                         <option value="jailbreak">Full Jailbreak (Free 3 Games)</option>
@@ -715,7 +702,6 @@
                     <span class="field-hint">Choose full modding setup or game installs only</span>
                 </div>
 
-                <!-- Console Model Selector (Jailbreak Only) -->
                 <div class="field-group" id="consoleModelGroup">
                     <select id="consoleModelSelect" class="model-select" onchange="updateSdLimit()">
                         <option value="OLED">OLED (RM300)</option>
@@ -725,7 +711,6 @@
                     <span class="field-hint">Select your Nintendo Switch model variant</span>
                 </div>
 
-                <!-- SD Card Source Selector (Jailbreak Only) -->
                 <div class="field-group" id="sdSourceGroup">
                     <select id="sdSourceSelect" class="sd-source-select" onchange="updateSdLimit()">
                         <option value="own">Bring Own SD Card</option>
@@ -734,22 +719,18 @@
                     <span class="field-hint">Providing your own card or buying a new one</span>
                 </div>
 
-                <!-- SD Card Size Selector (Jailbreak Only) -->
                 <div class="field-group" id="sdCardGroup">
                     <select id="sdCardSelect" class="sd-select" onchange="updateSdLimit()">
-                        <!-- Dynamically populated via JavaScript -->
                     </select>
                     <span class="field-hint">Total capacity of memory card used</span>
                 </div>
 
-                <!-- Free Storage Input (Games Only) -->
                 <div id="freeStorageContainer" class="free-storage-container">
                     <input type="number" id="userFreeStorageInput" class="free-storage-input" placeholder="Free Storage Space (GB)" min="1" step="1" oninput="updateSdLimit()">
                     <button type="button" class="guide-btn" onclick="toggleStorageGuide()">❓ How to check free storage?</button>
                     <span class="field-hint">Remaining GB available on your Switch SD card</span>
                 </div>
 
-                <!-- Buttons Group -->
                 <div class="btn-group-wrapper">
                     <div class="btn-group">
                         <button class="lookup-btn" onclick="fetchExistingOrder()" title="Returning customer? Load your saved game list">📂 Load Saved Order</button>
@@ -759,7 +740,6 @@
                 </div>
             </div>
 
-            <!-- Expandable How-To Guide for Storage Space -->
             <div id="storageGuideBox" class="storage-guide-box">
                 <h4>📱 How to check your remaining microSD card free space:</h4>
                 <p><strong>Method 1: Official Switch Settings</strong><br>
@@ -771,7 +751,6 @@
                 2. Check the bottom-left text: <em>Free: XX.X GB</em> and enter that number above.</p>
             </div>
 
-            <!-- Mode Selection Checkboxes with Hints -->
             <div id="jailbreakModesContainer" class="modes-container">
                 <span class="addon-label-title">Dual-Boot System Addons:</span>
                 <div class="mode-options-row">
@@ -798,28 +777,23 @@
             </div>
         </div>
 
-        <!-- Dynamic Storage Warning Banner -->
         <div id="storageWarningBanner" class="storage-warning-banner">
             <span class="warning-icon">⚠️</span>
             <span id="storageWarningText">Please enter your <strong>Phone ID (4 digits)</strong> and storage capacity to unlock game selection.</span>
         </div>
 
-        <!-- Dynamic Package Tier Recommendation Banner -->
         <div id="tierWarningBanner" class="tier-warning-banner">
             <span>💡</span>
             <span id="tierWarningText">You can add more games to reach your package limit at no extra cost!</span>
         </div>
 
-        <!-- Jailbreak Notice Card -->
         <div id="jailbreakNoticeCard" class="jailbreak-notice-card">
             <h3>🎁 You get 3 Free Games with your Full Jailbreak!</h3>
             <p>Your jailbreak service package includes your first 3 games free. Pick 3 free games + additional addon games if desired!</p>
             <button id="browseGamesBtn" class="browse-games-btn" onclick="revealGameSection()">Browse & Choose Games</button>
         </div>
 
-        <!-- Game Section Wrapper -->
         <div id="gameSectionWrapper" class="game-section-wrapper" style="display: none;">
-            <!-- Search Bar Section -->
             <div class="search-container">
                 <div class="search-input-wrapper">
                     <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search games in library..." onkeyup="filterGames()">
@@ -834,7 +808,6 @@
         </div>
     </div>
 
-    <!-- Sticky Bottom Checkout Bar -->
     <div class="checkout-bar">
         <div class="checkout-info" onclick="openCartModal()">
             🛒 <span id="selectedCount" style="color: #00e676; font-weight: bold;">0</span> games 
@@ -846,7 +819,6 @@
         <button id="mainSubmitBtn" class="submit-btn" onclick="openCartModal()">Review & Submit</button>
     </div>
 
-    <!-- Cart Review / Edit Modal -->
     <div id="cartModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -874,7 +846,6 @@
         </div>
     </div>
 
-    <!-- Load external config.js containing prices, game list, and credentials -->
     <script src="config.js"></script>
 
     <script>
@@ -944,7 +915,6 @@
         sdSelect.innerHTML = '';
 
         if (sdSource === 'own') {
-            // Bring Own SD Card: Show size capacities from 64GB to 2TB without price tags
             const ownSizes = [
                 { size: '64', label: '64 GB Card' },
                 { size: '128', label: '128 GB Card' },
@@ -964,7 +934,6 @@
                 sdSelect.appendChild(option);
             });
         } else {
-            // Purchase New SD Card: Show prices from config.js
             if (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.sdCardRetailPrices) {
                 let hasValidOptions = false;
                 Object.entries(APP_CONFIG.sdCardRetailPrices).forEach(([size, price]) => {
@@ -1130,7 +1099,6 @@
                 baseSystemOverhead = 20;
                 partitionPerMode = 20;
             } else {
-                // 1TB & 2TB Cards
                 baseSystemOverhead = 32;
                 partitionPerMode = 32;
             }
@@ -1363,13 +1331,13 @@
         let serviceBasePrice = 0;
 
         if (serviceType === 'jailbreak') {
-            serviceBasePrice = APP_CONFIG.jailbreakPrices[consoleModel] || 190;
-            if (document.getElementById('androidModeCheck').checked) androidPrice = APP_CONFIG.addonPrices.android;
-            if (document.getElementById('linuxModeCheck').checked) linuxPrice = APP_CONFIG.addonPrices.linux;
+            serviceBasePrice = (APP_CONFIG && APP_CONFIG.jailbreakPrices && APP_CONFIG.jailbreakPrices[consoleModel]) || 190;
+            if (document.getElementById('androidModeCheck').checked) androidPrice = APP_CONFIG.addonPrices.android || 30;
+            if (document.getElementById('linuxModeCheck').checked) linuxPrice = APP_CONFIG.addonPrices.linux || 30;
             
             const sdSource = document.getElementById('sdSourceSelect').value;
             if (sdSource === 'buy') {
-                sdCardPrice = (APP_CONFIG.sdCardRetailPrices && APP_CONFIG.sdCardRetailPrices[maxSdSize]) || 0;
+                sdCardPrice = (APP_CONFIG && APP_CONFIG.sdCardRetailPrices && APP_CONFIG.sdCardRetailPrices[maxSdSize]) || 0;
             }
         }
 
@@ -1428,7 +1396,7 @@
             isExceeded = true;
         }
 
-        let finalPrice = serviceBasePrice + sdCardPrice + gamesPrice + baseOnlyPrice;
+        let finalPrice = Math.round(serviceBasePrice + sdCardPrice + gamesPrice + baseOnlyPrice);
 
         return { 
             price: finalPrice, 
@@ -1443,34 +1411,48 @@
 
     function checkTierRecommendation(count, serviceType) {
         let targetCount = 0;
+        let isFreeGamesNotice = false;
 
         if (serviceType === 'jailbreak') {
-            if (count > 0 && count < 13) {
+            if (count < 3) {
+                targetCount = 3;
+                isFreeGamesNotice = true;
+            } else if (count > 3 && count <= 13) {
                 targetCount = 13; // 3 Free + 10 Paid
-            } else if (count >= 14 && count < 23) {
+            } else if (count >= 14 && count <= 23) {
                 targetCount = 23; // 3 Free + 20 Paid
-            } else if (count >= 24 && count < 43) {
+            } else if (count >= 24 && count <= 43) {
                 targetCount = 43; // 3 Free + 40 Paid
             }
         } else {
-            if (count > 0 && count < 10) {
+            if (count > 0 && count <= 10) {
                 targetCount = 10;
-            } else if (count >= 11 && count < 20) {
+            } else if (count >= 11 && count <= 20) {
                 targetCount = 20;
-            } else if (count >= 21 && count < 40) {
+            } else if (count >= 21 && count <= 40) {
                 targetCount = 40;
             }
         }
 
         if (targetCount > 0 && count < targetCount) {
             let diff = targetCount - count;
+
             if (serviceType === 'jailbreak') {
-                return {
-                    hasWarning: true,
-                    targetCount: targetCount,
-                    remaining: diff,
-                    msg: `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong>. Your full jailbreak includes <strong>3 free games</strong>, so you can select up to <strong>${targetCount} games total</strong> (${diff} more games) without moving to a higher pricing tier!`
-                };
+                if (isFreeGamesNotice) {
+                    return {
+                        hasWarning: true,
+                        targetCount: targetCount,
+                        remaining: diff,
+                        msg: `🎁 <strong>Free Games Available:</strong> You selected <strong>${count} game(s)</strong>. Your Full Jailbreak package includes <strong>3 FREE games</strong>—you can select <strong>${diff} more free game(s)</strong>!`
+                    };
+                } else {
+                    return {
+                        hasWarning: true,
+                        targetCount: targetCount,
+                        remaining: diff,
+                        msg: `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong> (${count - 3} paid). You can choose <strong>${diff} more game(s)</strong> (up to ${targetCount} total) without moving to a higher pricing tier!`
+                    };
+                }
             } else {
                 return {
                     hasWarning: true,
@@ -1555,9 +1537,10 @@
                 const order = data[0];
                 selectedGames.clear();
                 
+                const sourceGames = typeof games !== 'undefined' ? games : [];
                 if (order.games && Array.isArray(order.games)) {
                     order.games.forEach(gameName => {
-                        const found = games.find(g => g.name === gameName);
+                        const found = sourceGames.find(g => g.name === gameName);
                         const size = found ? found.size : 0;
                         selectedGames.set(gameName, size);
                     });
@@ -1633,7 +1616,6 @@
 
         const details = calculatePriceDetails(count, totalGamesSize);
 
-        // --- Section 1: Services & Options ---
         const serviceSectionTitle = document.createElement('div');
         serviceSectionTitle.className = 'modal-section-title';
         serviceSectionTitle.innerText = '1. Service & Hardware Configuration';
@@ -1727,7 +1709,6 @@
             modalBody.appendChild(gamesOnlyItem);
         }
 
-        // --- Section 2: Selected Games ---
         const gamesSectionTitle = document.createElement('div');
         gamesSectionTitle.className = 'modal-section-title';
         gamesSectionTitle.style.marginTop = '10px';
@@ -1768,7 +1749,6 @@
             });
         }
 
-        // --- Section 3: Detailed Price Breakdown ---
         const breakdownTitle = document.createElement('div');
         breakdownTitle.className = 'modal-section-title';
         breakdownTitle.style.marginTop = '10px';
@@ -1905,7 +1885,9 @@
             const confirmProceed = confirm(
                 `💡 Tier Package Notice:\n\nYou selected ${count} games.\n` +
                 (serviceType === 'jailbreak' 
-                    ? `Because your Jailbreak includes 3 free games, you can select up to ${tierRec.targetCount} games total (${tierRec.remaining} more games) at no additional tier cost!\n\nDo you still want to save your order now, or go back and add more games?`
+                    ? (count < 3
+                        ? `You selected ${count} game(s), but your Jailbreak includes 3 FREE games!\n\nDo you want to save your order now or go back and pick your remaining free games?`
+                        : `Because your Jailbreak includes 3 free games, you can select up to ${tierRec.targetCount} games total (${tierRec.remaining} more games) at no additional tier cost!\n\nDo you still want to save your order now, or go back and add more games?`)
                     : `You can add ${tierRec.remaining} more game(s) (up to ${tierRec.targetCount} games) to fully maximize your current pricing tier!\n\nDo you still want to save your order now, or go back and add more games?`)
             );
             if (!confirmProceed) return;
