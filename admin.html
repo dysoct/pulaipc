@@ -71,6 +71,9 @@
         .modal-game-list { display: flex; flex-direction: column; gap: 6px; max-height: 400px; overflow-y: auto; padding-right: 4px; }
         .game-item { background: #222; border: 1px solid #2f2f2f; padding: 7px 10px; border-radius: 5px; font-size: 13px; display: flex; align-items: center; gap: 10px; word-break: break-word; }
         .game-num { background: #00e676; color: #121212; font-weight: bold; font-size: 11px; padding: 1px 5px; border-radius: 3px; min-width: 22px; text-align: center; flex-shrink: 0; }
+        
+        .more-games-link { color: #00e676; text-decoration: underline; background: none; border: none; padding: 0; font-size: inherit; cursor: pointer; margin-top: 4px; display: inline-block; }
+        .more-games-link:hover { color: #69f0ae; }
     </style>
 </head>
 <body>
@@ -182,6 +185,9 @@
                 } else if (e.target.classList.contains('copy-main-btn')) {
                     const id = e.target.getAttribute('data-order-id');
                     copyGamesForScriptMain(id, e.target);
+                } else if (e.target.classList.contains('more-games-link')) {
+                    const id = e.target.getAttribute('data-order-id');
+                    openOrderModal(id);
                 }
             }
         });
@@ -353,8 +359,9 @@
 
                 sortGameList(gameList);
 
+                const remainingCount = gameList.length - 3;
                 const gamesPreview = (gameList && gameList.length > 0) 
-                    ? gameList.slice(0, 3).map((g, i) => `<div>${i + 1}. ${g}</div>`).join('') + (gameList.length > 3 ? `<div style="color:#00e676; margin-top:4px;">+ ${gameList.length - 3} more games...</div>` : '')
+                    ? gameList.slice(0, 3).map((g, i) => `<div>${i + 1}. ${g}</div>`).join('') + (gameList.length > 3 ? `<div><button class="more-games-link" data-order-id="${orderId}">+ ${remainingCount} more games...</button></div>` : '')
                     : '<em>No games selected</em>';
 
                 const waDisplay = order.whatsapp_username 
