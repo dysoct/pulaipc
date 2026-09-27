@@ -689,9 +689,9 @@
                 <div class="pricing-col">
                     <h4 data-i18n="gameCountTierTitle">🎮 Game Count Tiers (Baseline)</h4>
                     <ul>
-                        <li><strong data-i18n="tier1Range">1 - 19 games:</strong> RM3 / game</li>
-                        <li><strong data-i18n="tier2Range">20 - 39 games:</strong> RM2.50 / game</li>
-                        <li><strong data-i18n="tier3Range">40+ games:</strong> RM2 / game</li>
+                        <li><strong data-i18n="tier1Range">1 - 10 games:</strong> RM3 / game</li>
+                        <li><strong data-i18n="tier2Range">11 - 20 games:</strong> RM2.50 / game</li>
+                        <li><strong data-i18n="tier3Range">21 - 40+ games:</strong> RM2 / game</li>
                     </ul>
                 </div>
                 <div class="pricing-col">
@@ -883,9 +883,9 @@
             pricingSummary: "📦 View Pricing Tiers & Game Size Rates (Tap to expand)",
             free3Games: "Free 3 Games",
             gameCountTierTitle: "🎮 Game Count Tiers (Baseline)",
-            tier1Range: "1 - 19 games:",
-            tier2Range: "20 - 39 games:",
-            tier3Range: "40+ games:",
+            tier1Range: "1 - 10 games:",
+            tier2Range: "11 - 20 games:",
+            tier3Range: "21 - 40+ games:",
             gameSizeTierTitle: "📊 Game Size Volume Override",
             size1Range: "Up to 100 GB:",
             size2Range: "Up to 200 GB:",
@@ -944,9 +944,9 @@
             pricingSummary: "📦 Lihat Peringkat Harga & Kadar Saiz Game (Tekan untuk buka)",
             free3Games: "Percuma 3 Game",
             gameCountTierTitle: "🎮 Peringkat Jumlah Game (Asas)",
-            tier1Range: "1 - 19 game:",
-            tier2Range: "20 - 39 game:",
-            tier3Range: "40+ game:",
+            tier1Range: "1 - 10 game:",
+            tier2Range: "11 - 20 game:",
+            tier3Range: "21 - 40+ game:",
             gameSizeTierTitle: "📊 Override Isipadu Saiz Game",
             size1Range: "Sehingga 100 GB:",
             size2Range: "Sehingga 200 GB:",
@@ -1623,14 +1623,14 @@
         if (chargeableCount <= 0) {
             countTierPrice = 0;
             targetGbLimit = 30;
-        } else if (chargeableCount <= 19) {
-            countTierPrice = chargeableCount * 3.0; // 1-19 games: RM3 per game
-            targetGbLimit = 180; 
-        } else if (chargeableCount <= 39) {
-            countTierPrice = chargeableCount * 2.5; // 20-39 games: RM2.5 per game
-            targetGbLimit = 360; 
+        } else if (chargeableCount <= 10) {
+            countTierPrice = chargeableCount * 3.0; // 1-10 games: RM3 per game
+            targetGbLimit = 100; 
+        } else if (chargeableCount <= 20) {
+            countTierPrice = chargeableCount * 2.5; // 11-20 games: RM2.50 per game
+            targetGbLimit = 200; 
         } else {
-            countTierPrice = chargeableCount * 2.0; // 40+ games: RM2 per game
+            countTierPrice = chargeableCount * 2.0; // 21-40+ games: RM2 per game
             targetGbLimit = totalGameSizeGb;
         }
 
@@ -1666,68 +1666,68 @@
         };
     }
 
-function checkTierRecommendation(count, serviceType) {
-    let targetCount = 0;
-    let isFreeGamesNotice = false;
-
-    if (serviceType === 'jailbreak') {
-        // If they are strictly below Tier 1 threshold (1-19 paid games, which means total count 4 to 22 including 3 free)
-        if (count < 3) {
-            targetCount = 3;
-            isFreeGamesNotice = true;
-        } else if (count >= 4 && count <= 21) { 
-            // e.g. 1 to 18 paid games (total 4 to 21), encourage reaching 22 total (19 paid)
-            targetCount = 22; 
-        } else if (count >= 24 && count <= 41) { 
-            // e.g. 20 to 37 paid games (total 24 to 41), encourage reaching 42 total (39 paid)
-            targetCount = 42; 
-        }
-    } else {
-        // Games only service type
-        if (count > 0 && count <= 18) {
-            targetCount = 19;
-        } else if (count >= 20 && count <= 38) {
-            targetCount = 39;
-        }
-    }
-
-    if (targetCount > 0 && count < targetCount) {
-        let diff = targetCount - count;
+    function checkTierRecommendation(count, serviceType) {
+        let targetCount = 0;
+        let isFreeGamesNotice = false;
 
         if (serviceType === 'jailbreak') {
-            if (isFreeGamesNotice) {
-                return {
-                    hasWarning: true,
-                    targetCount: targetCount,
-                    remaining: diff,
-                    msg: currentLang === 'bm' 
-                        ? `🎁 <strong>Game Percuma Tersedia:</strong> Anda memilih <strong>${count} game</strong>. Pakej Jailbreak Penuh anda merangkumi <strong>3 game PERCUMA</strong>—anda boleh pilih <strong>${diff} lagi game percuma</strong>!`
-                        : `🎁 <strong>Free Games Available:</strong> You selected <strong>${count} game(s)</strong>. Your Full Jailbreak package includes <strong>3 FREE games</strong>—you can select <strong>${diff} more free game(s)</strong>!`
-                };
+            if (count < 3) {
+                targetCount = 3;
+                isFreeGamesNotice = true;
+            } else if (count >= 3 && count <= 13) {
+                targetCount = 13; // 3 free + 10 chargeable = 13 max for Tier 1
+            } else if (count >= 14 && count <= 23) {
+                targetCount = 23; // 3 free + 20 chargeable = 23 max for Tier 2
+            } else if (count >= 24 && count <= 43) {
+                targetCount = 43; // 3 free + 40 chargeable = 43 max for Tier 3
+            }
+        } else {
+            if (count > 0 && count <= 10) {
+                targetCount = 10;
+            } else if (count >= 11 && count <= 20) {
+                targetCount = 20;
+            } else if (count >= 21 && count <= 40) {
+                targetCount = 40;
+            }
+        }
+
+        if (targetCount > 0 && count < targetCount) {
+            let diff = targetCount - count;
+
+            if (serviceType === 'jailbreak') {
+                if (isFreeGamesNotice) {
+                    return {
+                        hasWarning: true,
+                        targetCount: targetCount,
+                        remaining: diff,
+                        msg: currentLang === 'bm' 
+                            ? `🎁 <strong>Game Percuma Tersedia:</strong> Anda memilih <strong>${count} game</strong>. Pakej Jailbreak Penuh anda merangkumi <strong>3 game PERCUMA</strong>—anda boleh pilih <strong>${diff} lagi game percuma</strong>!`
+                            : `🎁 <strong>Free Games Available:</strong> You selected <strong>${count} game(s)</strong>. Your Full Jailbreak package includes <strong>3 FREE games</strong>—you can select <strong>${diff} more free game(s)</strong>!`
+                    };
+                } else {
+                    return {
+                        hasWarning: true,
+                        targetCount: targetCount,
+                        remaining: diff,
+                        msg: currentLang === 'bm'
+                            ? `💡 <strong>Peluang Pakej:</strong> Anda memilih <strong>${count} game</strong> (${count - 3} berbayar). Anda boleh memilih <strong>${diff} lagi game</strong> (sehingga ${targetCount} jumlah keseluruhan) tanpa menaikkan peringkat harga!`
+                            : `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong> (${count - 3} paid). You can choose <strong>${diff} more game(s)</strong> (up to ${targetCount} total) without moving to a higher pricing tier!`
+                    };
+                }
             } else {
                 return {
                     hasWarning: true,
                     targetCount: targetCount,
                     remaining: diff,
                     msg: currentLang === 'bm'
-                        ? `💡 <strong>Peluang Pakej:</strong> Anda memilih <strong>${count} game</strong>. Anda boleh memilih <strong>${diff} lagi game</strong> (sehingga ${targetCount} jumlah keseluruhan) tanpa menaikkan peringkat harga!`
-                        : `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong>. You can choose <strong>${diff} more game(s)</strong> (up to ${targetCount} total) without moving to a higher pricing tier!`
+                        ? `💡 <strong>Peluang Pakej:</strong> Anda memilih <strong>${count} game</strong>. Anda boleh memilih <strong>${diff} lagi game</strong> (sehingga ${targetCount} game) untuk memaksimumkan kadar peringkat harga ini!`
+                        : `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong>. You can choose <strong>${diff} more game(s)</strong> (up to ${targetCount} games) to fully maximize this pricing tier rate!`
                 };
             }
-        } else {
-            return {
-                hasWarning: true,
-                targetCount: targetCount,
-                remaining: diff,
-                msg: currentLang === 'bm'
-                    ? `💡 <strong>Peluang Pakej:</strong> Anda memilih <strong>${count} game</strong>. Anda boleh memilih <strong>${diff} lagi game</strong> (sehingga ${targetCount} game) untuk memaksimumkan kadar peringkat harga ini!`
-                    : `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong>. You can choose <strong>${diff} more game(s)</strong> (up to ${targetCount} games) to fully maximize this pricing tier rate!`
-            };
         }
-    }
 
-    return { hasWarning: false, targetCount: 0, remaining: 0, msg: '' };
-}
+        return { hasWarning: false, targetCount: 0, remaining: 0, msg: '' };
+    }
 
     function updateCartSummary() {
         const count = selectedGames.size;
@@ -1865,99 +1865,72 @@ function checkTierRecommendation(count, serviceType) {
             return;
         }
 
+        const modal = document.getElementById('cartModal');
         const modalBody = document.getElementById('cartModalBody');
         modalBody.innerHTML = '';
 
         const serviceType = document.getElementById('serviceTypeSelect').value;
         const consoleModel = document.getElementById('consoleModelSelect').value;
-        const sdSource = document.getElementById('sdSourceSelect').value;
-        const freeStorageInput = document.getElementById('userFreeStorageInput').value;
-        const androidChecked = document.getElementById('androidModeCheck').checked;
-        const linuxChecked = document.getElementById('linuxModeCheck').checked;
-
         const count = selectedGames.size;
         let totalGamesSize = 0;
         selectedGames.forEach(size => { totalGamesSize += size; });
 
-        const details = calculatePriceDetails(count, totalGamesSize);
+        const priceDetails = calculatePriceDetails(count, totalGamesSize);
 
-        const serviceSectionTitle = document.createElement('div');
-        serviceSectionTitle.className = 'modal-section-title';
-        serviceSectionTitle.innerText = currentLang === 'bm' ? '1. Konfigurasi Perkhidmatan & Perkakasan' : '1. Service & Hardware Configuration';
-        modalBody.appendChild(serviceSectionTitle);
+        const setupTitle = document.createElement('div');
+        setupTitle.className = 'modal-section-title';
+        setupTitle.innerText = currentLang === 'bm' ? 'Perkhidmatan & Mod Sistem' : 'Service & System Addons';
+        modalBody.appendChild(setupTitle);
 
         if (serviceType === 'jailbreak') {
-            const serviceItem = document.createElement('div');
-            serviceItem.className = 'cart-item fixed-item';
-            serviceItem.innerHTML = `
+            const jbItem = document.createElement('div');
+            jbItem.className = 'cart-item fixed-item';
+            jbItem.innerHTML = `
                 <div class="cart-item-details">
                     <span class="cart-item-title">Full Jailbreak (${consoleModel})</span>
-                    <span class="cart-item-sub">${currentLang === 'bm' ? 'Modifikasi console + 3 Game PERCUMA' : 'Console modification + 3 FREE Games'}</span>
+                    <span class="cart-item-sub">Base Service Setup (Includes 3 Free Games)</span>
                 </div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="font-weight:bold; color:#00e676;">RM${details.serviceBasePrice}</span>
-                    <span class="lock-badge">🔒 ${currentLang === 'bm' ? 'Perkhidmatan Utama' : 'Core Service'}</span>
-                </div>
+                <span class="lock-badge">RM${priceDetails.serviceBasePrice}</span>
             `;
-            modalBody.appendChild(serviceItem);
+            modalBody.appendChild(jbItem);
 
+            const sdSource = document.getElementById('sdSourceSelect').value;
             if (sdSource === 'buy') {
                 const sdItem = document.createElement('div');
-                sdItem.className = 'cart-item';
-                let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
+                sdItem.className = 'cart-item fixed-item';
+                let formattedSd = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
                 sdItem.innerHTML = `
                     <div class="cart-item-details">
-                        <span class="cart-item-title">${currentLang === 'bm' ? `Beli Kad SD ${displayCardLabel}` : `Purchase ${displayCardLabel} SD Card`}</span>
-                        <span class="cart-item-sub">${currentLang === 'bm' ? 'Kad baharu pra-konfigurasi' : 'Brand new pre-configured card'}</span>
+                        <span class="cart-item-title">Purchase MicroSD Card (${formattedSd})</span>
+                        <span class="cart-item-sub">Brand New Storage Card</span>
                     </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-weight:bold; color:#00e676;">+RM${details.sdCardPrice}</span>
-                        <button class="remove-btn" onclick="removeSdCardFromCart()">${currentLang === 'bm' ? 'Buang' : 'Remove'}</button>
-                    </div>
-                `;
-                modalBody.appendChild(sdItem);
-            } else {
-                const sdItem = document.createElement('div');
-                sdItem.className = 'cart-item';
-                let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
-                sdItem.innerHTML = `
-                    <div class="cart-item-details">
-                        <span class="cart-item-title">${currentLang === 'bm' ? `Bawa Kad SD Sendiri (${displayCardLabel})` : `Bring Own SD Card (${displayCardLabel})`}</span>
-                        <span class="cart-item-sub">${currentLang === 'bm' ? 'Disediakan oleh pelanggan' : 'Provided by customer'}</span>
-                    </div>
-                    <span class="lock-badge">Free</span>
+                    <span class="lock-badge">RM${priceDetails.sdCardPrice}</span>
                 `;
                 modalBody.appendChild(sdItem);
             }
 
-            if (androidChecked) {
+            if (document.getElementById('androidModeCheck').checked) {
                 const androidItem = document.createElement('div');
-                androidItem.className = 'cart-item';
+                androidItem.className = 'cart-item fixed-item';
                 androidItem.innerHTML = `
                     <div class="cart-item-details">
-                        <span class="cart-item-title">🤖 ${currentLang === 'bm' ? 'Partisyen Mod Android' : 'Android Mode Partition'}</span>
-                        <span class="cart-item-sub">LineageOS dual-boot setup</span>
+                        <span class="cart-item-title">Android OS Dual-Boot Addon</span>
+                        <span class="cart-item-sub">System Partition Setup</span>
                     </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-weight:bold; color:#00e676;">+RM${details.androidPrice}</span>
-                        <button class="remove-btn" onclick="removeAndroidFromCart()">${currentLang === 'bm' ? 'Buang' : 'Remove'}</button>
-                    </div>
+                    <span class="lock-badge">RM${priceDetails.androidPrice}</span>
                 `;
                 modalBody.appendChild(androidItem);
             }
 
-            if (linuxChecked) {
+            if (document.getElementById('linuxModeCheck').checked) {
                 const linuxItem = document.createElement('div');
-                linuxItem.className = 'cart-item';
+                linuxItem.className = 'cart-item fixed-item';
                 linuxItem.innerHTML = `
                     <div class="cart-item-details">
-                        <span class="cart-item-title">🐧 ${currentLang === 'bm' ? 'Partisyen Mod Linux' : 'Linux Mode Partition'}</span>
-                        <span class="cart-item-sub">Ubuntu Linux desktop environment</span>
+                        <span class="cart-item-title">Ubuntu Linux Desktop Addon</span>
+                        <span class="cart-item-sub">System Partition Setup</span>
                     </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-weight:bold; color:#00e676;">+RM${details.linuxPrice}</span>
-                        <button class="remove-btn" onclick="removeLinuxFromCart()">${currentLang === 'bm' ? 'Buang' : 'Remove'}</button>
-                    </div>
+                    <span class="lock-badge">RM${priceDetails.linuxPrice}</span>
                 `;
                 modalBody.appendChild(linuxItem);
             }
@@ -1966,58 +1939,70 @@ function checkTierRecommendation(count, serviceType) {
             gamesOnlyItem.className = 'cart-item fixed-item';
             gamesOnlyItem.innerHTML = `
                 <div class="cart-item-details">
-                    <span class="cart-item-title">${currentLang === 'bm' ? 'Perkhidmatan Pemasangan Game' : 'Games Installation Service'}</span>
-                    <span class="cart-item-sub">${currentLang === 'bm' ? `Ruang Bebas Dinyatakan Pelanggan: ${freeStorageInput || 0} GB` : `Client Stated Free Space: ${freeStorageInput || 0} GB`}</span>
+                    <span class="cart-item-title">Games Only Installation</span>
+                    <span class="cart-item-sub">Existing Jailbreak Console (${usableStorageLimit} GB Free)</span>
                 </div>
-                <span class="lock-badge">🔒 Games Only</span>
+                <span class="lock-badge">Games Rate</span>
             `;
             modalBody.appendChild(gamesOnlyItem);
         }
 
-        const gamesSectionTitle = document.createElement('div');
-        gamesSectionTitle.className = 'modal-section-title';
-        gamesSectionTitle.style.marginTop = '10px';
-        gamesSectionTitle.innerText = currentLang === 'bm' ? `2. Game Dipilih (${count} game - ${totalGamesSize.toFixed(1)} GB)` : `2. Selected Games (${count} games - ${totalGamesSize.toFixed(1)} GB)`;
-        modalBody.appendChild(gamesSectionTitle);
+        const gamesTitle = document.createElement('div');
+        gamesTitle.className = 'modal-section-title';
+        gamesTitle.style.marginTop = '10px';
+        gamesTitle.innerText = `${currentLang === 'bm' ? 'Game Dipilih' : 'Selected Games'} (${count})`;
+        modalBody.appendChild(gamesTitle);
 
-        if (selectedGames.size === 0) {
-            const emptyGames = document.createElement('p');
-            emptyGames.style.textAlign = 'center';
-            emptyGames.style.color = '#888';
-            emptyGames.style.margin = '5px 0';
-            emptyGames.style.fontSize = '13px';
-            emptyGames.innerText = serviceType === 'jailbreak' ? (currentLang === 'bm' ? 'Tiada game dipilih lagi (3 Game Percuma tersedia!).' : 'No games selected yet (3 Free Games available!).') : (currentLang === 'bm' ? 'Tiada game dipilih.' : 'No games selected.');
-            modalBody.appendChild(emptyGames);
+        if (count === 0) {
+            const emptyNotice = document.createElement('div');
+            emptyNotice.style.fontSize = '13px';
+            emptyNotice.style.color = '#888';
+            emptyNotice.style.textAlign = 'center';
+            emptyNotice.style.padding = '10px 0';
+            emptyNotice.innerText = currentLang === 'bm' ? 'Tiada game dipilih lagi.' : 'No games selected yet.';
+            modalBody.appendChild(emptyNotice);
         } else {
-            let index = 1;
-            selectedGames.forEach((size, gameName) => {
+            let index = 0;
+            selectedGames.forEach((size, name) => {
+                index++;
+                const isFreeGame = (serviceType === 'jailbreak' && index <= 3);
+
                 const item = document.createElement('div');
                 item.className = 'cart-item';
                 
-                let gameTag = '';
-                if (serviceType === 'jailbreak') {
-                    gameTag = index <= 3 ? ` <span style="color:#00e676; font-size:10px;">[${currentLang === 'bm' ? 'PERCUMA' : 'FREE'}]</span>` : ` <span style="color:#ffb74d; font-size:10px;">[${currentLang === 'bm' ? 'TAMBAHAN' : 'ADDON'}]</span>`;
-                }
+                const detailsDiv = document.createElement('div');
+                detailsDiv.className = 'cart-item-details';
 
                 const titleSpan = document.createElement('span');
-                titleSpan.innerHTML = `${index}. ${gameName} ${gameTag} <span style="color:#00e676; font-size:0.85em;">(${size} GB)</span>`;
+                titleSpan.className = 'cart-item-title';
+                titleSpan.textContent = `${index}. ${name}`;
+
+                const subSpan = document.createElement('span');
+                subSpan.className = 'cart-item-sub';
+                subSpan.textContent = isFreeGame ? `Size: ${size} GB | 🎁 Free Game #${index}` : `Size: ${size} GB | Standard Addon Game`;
+
+                detailsDiv.appendChild(titleSpan);
+                detailsDiv.appendChild(subSpan);
 
                 const removeBtn = document.createElement('button');
                 removeBtn.className = 'remove-btn';
-                removeBtn.textContent = currentLang === 'bm' ? 'Buang' : 'Remove';
-                removeBtn.onclick = () => removeGameFromCart(gameName);
+                removeBtn.innerText = currentLang === 'bm' ? 'Buang' : 'Remove';
+                removeBtn.onclick = () => {
+                    selectedGames.delete(name);
+                    filterGames();
+                    openCartModal();
+                };
 
-                item.appendChild(titleSpan);
+                item.appendChild(detailsDiv);
                 item.appendChild(removeBtn);
                 modalBody.appendChild(item);
-                index++;
             });
         }
 
         const breakdownTitle = document.createElement('div');
         breakdownTitle.className = 'modal-section-title';
         breakdownTitle.style.marginTop = '10px';
-        breakdownTitle.innerText = currentLang === 'bm' ? '3. Pecahan Pembayaran' : '3. Payment Breakdown';
+        breakdownTitle.innerText = currentLang === 'bm' ? 'Ringkasan Harga' : 'Price Summary';
         modalBody.appendChild(breakdownTitle);
 
         const breakdownBox = document.createElement('div');
@@ -2025,294 +2010,120 @@ function checkTierRecommendation(count, serviceType) {
 
         let breakdownHtml = '';
         if (serviceType === 'jailbreak') {
-            breakdownHtml += `
-                <div class="price-breakdown-row">
-                    <span>${currentLang === 'bm' ? `Perkhidmatan Full Jailbreak (${consoleModel}):` : `Full Jailbreak Service (${consoleModel}):`}</span>
-                    <span>RM${details.serviceBasePrice}</span>
-                </div>
-            `;
+            breakdownHtml += `<div class="price-breakdown-row"><span>Base Service (${consoleModel}):</span><span>RM${priceDetails.serviceBasePrice}</span></div>`;
+            const sdSource = document.getElementById('sdSourceSelect').value;
             if (sdSource === 'buy') {
-                let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
-                breakdownHtml += `
-                    <div class="price-breakdown-row">
-                        <span>${currentLang === 'bm' ? `Kad SD Baru ${displayCardLabel}:` : `New ${displayCardLabel} SD Card:`}</span>
-                        <span>RM${details.sdCardPrice}</span>
-                    </div>
-                `;
+                breakdownHtml += `<div class="price-breakdown-row"><span>SD Card (${maxSdSize}GB):</span><span>RM${priceDetails.sdCardPrice}</span></div>`;
             }
-            if (androidChecked) {
-                breakdownHtml += `
-                    <div class="price-breakdown-row">
-                        <span>${currentLang === 'bm' ? 'Mod Android:' : 'Android Mode:'}</span>
-                        <span>RM${details.androidPrice}</span>
-                    </div>
-                `;
+            if (priceDetails.androidPrice > 0) {
+                breakdownHtml += `<div class="price-breakdown-row"><span>Android Mode Addon:</span><span>RM${priceDetails.androidPrice}</span></div>`;
             }
-            if (linuxChecked) {
-                breakdownHtml += `
-                    <div class="price-breakdown-row">
-                        <span>${currentLang === 'bm' ? 'Mod Linux:' : 'Linux Mode:'}</span>
-                        <span>RM${details.linuxPrice}</span>
-                    </div>
-                `;
+            if (priceDetails.linuxPrice > 0) {
+                breakdownHtml += `<div class="price-breakdown-row"><span>Linux Mode Addon:</span><span>RM${priceDetails.linuxPrice}</span></div>`;
             }
-            
             const chargeableCount = Math.max(0, count - 3);
-            breakdownHtml += `
-                <div class="price-breakdown-row">
-                    <span>${currentLang === 'bm' ? `Harga Game (${count} game: 3 Percuma +${chargeableCount} Tambahan):` : `Games Price (${count} games: 3 Free +${chargeableCount} Addon):`}</span>
-                    <span>RM${Math.round(details.gamesPrice)}</span>
-                </div>
-            `;
+            breakdownHtml += `<div class="price-breakdown-row"><span>Games (${count} Total: 3 Free + ${chargeableCount} Addon):</span><span>RM${Math.round(priceDetails.gamesPrice)}</span></div>`;
         } else {
-            breakdownHtml += `
-                <div class="price-breakdown-row">
-                    <span>${currentLang === 'bm' ? `Harga Game (${count} game):` : `Games Price (${count} games):`}</span>
-                    <span>RM${Math.round(details.gamesPrice)}</span>
-                </div>
-            `;
+            breakdownHtml += `<div class="price-breakdown-row"><span>Games Only (${count} Games):</span><span>RM${Math.round(priceDetails.gamesPrice)}</span></div>`;
         }
 
-        breakdownHtml += `
-            <div class="price-breakdown-row total-row">
-                <span>${currentLang === 'bm' ? 'Jumlah Anggaran Bayaran:' : 'Total Estimated Payable:'}</span>
-                <span style="color:#00e676;">RM${Math.round(details.price)}</span>
-            </div>
-        `;
-
+        breakdownHtml += `<div class="price-breakdown-row total-row"><span>Total Estimated Price:</span><span style="color:#00e676;">RM${Math.round(priceDetails.price)}</span></div>`;
         breakdownBox.innerHTML = breakdownHtml;
         modalBody.appendChild(breakdownBox);
 
-        const remainderSize = Math.max(0, usableStorageLimit - totalGamesSize);
-        const warningBox = document.getElementById('sizeWarningBox');
-        warningBox.style.display = details.exceeded ? 'block' : 'none';
-
-        const tierRec = checkTierRecommendation(count, serviceType);
-        const modalTierBox = document.getElementById('modalTierWarning');
-        if (tierRec.hasWarning) {
-            modalTierBox.style.display = 'block';
-            modalTierBox.innerHTML = tierRec.msg;
+        const sizeWarningBox = document.getElementById('sizeWarningBox');
+        if (priceDetails.exceeded) {
+            sizeWarningBox.style.display = 'block';
         } else {
-            modalTierBox.style.display = 'none';
-            modalTierBox.innerHTML = '';
+            sizeWarningBox.style.display = 'none';
         }
 
-        let summaryText = currentLang === 'bm' ? `${count} game kesemuanya` : `${count} games total`;
-        if (serviceType === 'jailbreak') {
-            if (count <= 3) {
-                summaryText = currentLang === 'bm' ? `${count} game (${count} percuma)` : `${count} games (${count} free)`;
-            } else {
-                const chargeable = count - 3;
-                summaryText = currentLang === 'bm' ? `${count} game (3 percuma + ${chargeable} tambahan)` : `${count} games (3 free + ${chargeable} addon)`;
-            }
+        const modalTierWarning = document.getElementById('modalTierWarning');
+        const tierRec = checkTierRecommendation(count, serviceType);
+        if (tierRec.hasWarning) {
+            modalTierWarning.style.display = 'block';
+            modalTierWarning.innerHTML = tierRec.msg;
+        } else {
+            modalTierWarning.style.display = 'none';
         }
 
-        document.getElementById('modalTotal').innerHTML = `${summaryText} (<span style="color:#00e676;">${totalGamesSize.toFixed(1)} GB</span> | <span style="color:#ffb74d;">${remainderSize.toFixed(1)} GB ${currentLang === 'bm' ? 'baki' : 'left'}</span>)<br>${currentLang === 'bm' ? 'Jumlah' : 'Total'}: <strong style="color:#00e676; font-size:14px;">RM${Math.round(details.price)}</strong>`;
-        document.getElementById('cartModal').style.display = 'flex';
-    }
-
-    function removeSdCardFromCart() {
-        document.getElementById('sdSourceSelect').value = 'own';
-        updateSdLimit();
-        openCartModal();
-    }
-
-    function removeAndroidFromCart() {
-        document.getElementById('androidModeCheck').checked = false;
-        updateSdLimit();
-        openCartModal();
-    }
-
-    function removeLinuxFromCart() {
-        document.getElementById('linuxModeCheck').checked = false;
-        updateSdLimit();
-        openCartModal();
+        document.getElementById('modalTotal').innerText = `${count} games | ${totalGamesSize.toFixed(1)} GB | RM${Math.round(priceDetails.price)}`;
+        modal.style.display = 'flex';
     }
 
     function closeCartModal() {
         document.getElementById('cartModal').style.display = 'none';
     }
 
-    function removeGameFromCart(gameName) {
-        selectedGames.delete(gameName);
-        filterGames();
-        openCartModal();
-    }
-
     async function submitOrUpdateOrder() {
-        if (!validatePhoneProvided()) return;
-
         const phone = document.getElementById('phoneInput').value.trim();
-        const serviceType = document.getElementById('serviceTypeSelect').value;
-        const count = selectedGames.size;
-
-        const tierRec = checkTierRecommendation(count, serviceType);
-        if (tierRec.hasWarning) {
-            const confirmProceed = confirm(currentLang === 'bm'
-                ? `💡 Notis Pakej Peringkat:\n\nAnda memilih ${count} game.\n` +
-                  (serviceType === 'jailbreak' 
-                      ? (count < 3
-                          ? `Anda memilih ${count} game, tetapi Jailbreak anda merangkumi 3 game PERCUMA!\n\nAdakah anda mahu simpan pesanan sekarang atau kembali untuk memilih baki game percuma anda?`
-                          : `Oleh kerana Jailbreak anda merangkumi 3 game percuma, anda boleh memilih sehingga ${tierRec.targetCount} game (${tierRec.remaining} lagi game) tanpa kos tambahan!\n\nAdakah anda masih mahu simpan pesanan sekarang, atau kembali untuk menambah game?`)
-                      : `Anda boleh menambah ${tierRec.remaining} lagi game (sehingga ${tierRec.targetCount} game) untuk memaksimumkan peringkat harga semasa!\n\nAdakah anda masih mahu simpan pesanan sekarang, atau kembali untuk menambah game?`)
-                : `💡 Tier Package Notice:\n\nYou selected ${count} games.\n` +
-                  (serviceType === 'jailbreak' 
-                      ? (count < 3
-                          ? `You selected ${count} game(s), but your Jailbreak includes 3 FREE games!\n\nDo you want to save your order now or go back and pick your remaining free games?`
-                          : `Because your Jailbreak includes 3 free games, you can select up to ${tierRec.targetCount} games total (${tierRec.remaining} more games) at no additional tier cost!\n\nDo you still want to save your order now, or go back and add more games?`)
-                      : `You can add ${tierRec.remaining} more game(s) (up to ${tierRec.targetCount} games) to fully maximize your current pricing tier!\n\nDo you still want to save your order now, or go back and add more games?`)
-            );
-            if (!confirmProceed) return;
-        }
-
-        if (serviceType === 'jailbreak') {
-            if (count < 3) {
-                const confirmSave = confirm(currentLang === 'bm'
-                    ? `Anda hanya memilih ${count} game.\n\nPakej Full Jailbreak anda merangkumi 3 game PERCUMA! Adakah anda masih mahu menyimpan pesanan dengan kurang daripada 3 game?`
-                    : `You have selected only ${count} game(s).\n\nYour Full Jailbreak package includes 3 FREE games! Do you still want to save your order with fewer than 3 games?`);
-                if (!confirmSave) return;
-            }
-        } else {
-            const freeStorageInput = document.getElementById('userFreeStorageInput').value;
-            if (!freeStorageInput || parseFloat(freeStorageInput) <= 0) {
-                alert(currentLang === 'bm' ? 'Sila masukkan baki ruang storan kad SD percuma anda sebelum menghantar!' : 'Please enter your remaining free SD card storage space before submitting!');
-                document.getElementById('userFreeStorageInput').focus();
-                return;
-            }
-        }
-
-        const btn = document.querySelector('#cartModal .submit-btn');
-        btn.innerText = currentLang === 'bm' ? 'Menyimpan...' : 'Saving...';
-        btn.disabled = true;
-        btn.style.pointerEvents = 'none';
-
-        const gameNamesArray = Array.from(selectedGames.keys());
-        const remarksText = document.getElementById('orderRemarks').value.trim();
-        const consoleModel = document.getElementById('consoleModelSelect').value;
-        const freeStorageInput = document.getElementById('userFreeStorageInput').value;
-        
-        const sdSource = (serviceType === 'jailbreak') ? document.getElementById('sdSourceSelect').value : 'own';
-        const androidSelected = (serviceType === 'jailbreak') ? document.getElementById('androidModeCheck').checked : false;
-        const linuxSelected = (serviceType === 'jailbreak') ? document.getElementById('linuxModeCheck').checked : false;
-        
-        let totalGamesSize = 0;
-        selectedGames.forEach(size => { totalGamesSize += size; });
-        
-        const details = calculatePriceDetails(count, totalGamesSize);
-        const finalPrice = Math.round(details.price);
-
-        try {
-            const { data: existing, error: queryErr } = await supabaseClient
-                .from('orders')
-                .select('id, created_at')
-                .eq('phone_ending', phone);
-
-            if (queryErr) throw queryErr;
-
-            const nowIso = new Date().toISOString();
-            
-            const orderData = {
-                phone_ending: phone,
-                games: gameNamesArray,
-                total_games: count,
-                remarks: remarksText,
-                sd_card_size: serviceType === 'jailbreak' ? maxSdSize : null,
-                free_storage_gb: serviceType === 'games_only' ? parseFloat(freeStorageInput) : null,
-                sd_source: sdSource,
-                service_type: serviceType,
-                console_model: serviceType === 'jailbreak' ? consoleModel : null,
-                total_size_gb: totalGamesSize,
-                estimated_price: finalPrice,
-                android_mode: androidSelected,
-                linux_mode: linuxSelected,
-                status: 'Pending',
-                updated_at: nowIso
-            };
-
-            let saveResult;
-            if (existing && existing.length > 0) {
-                saveResult = await supabaseClient
-                    .from('orders')
-                    .update(orderData)
-                    .eq('phone_ending', phone);
-            } else {
-                orderData.created_at = nowIso;
-                saveResult = await supabaseClient
-                    .from('orders')
-                    .insert([orderData]);
-            }
-
-            if (saveResult.error) throw saveResult.error;
-
-            alert(currentLang === 'bm' ? 'Pesanan dikemas kini dan berjaya disimpan!' : 'Order updated and saved successfully!');
+        if (phone.length < 4) {
+            alert(currentLang === 'bm' ? 'Sila masukkan 4 digit terakhir nombor telefon anda!' : 'Please enter the last 4 digits of your phone number!');
             closeCartModal();
-            
-            const statusMsg = document.getElementById('statusMsg');
-            if (statusMsg) {
-                statusMsg.innerText = currentLang === 'bm' ? 'Pesanan berjaya dikemas kini dalam sistem!' : 'Order successfully updated in system!';
-            }
-
-            shareOrderViaWhatsApp();
-
-        } catch (err) {
-            console.error(err);
-            alert((currentLang === 'bm' ? 'Gagal menyimpan pesanan: ' : 'Failed to save order: ') + (err.message || 'Check console details.'));
-        } finally {
-            btn.innerText = currentLang === 'bm' ? 'Simpan Perubahan' : 'Save Changes';
-            btn.disabled = false;
-            btn.style.pointerEvents = 'auto';
+            document.getElementById('phoneInput').focus();
+            return;
         }
-    }
 
-    function shareOrderViaWhatsApp() {
-        const phone = document.getElementById('phoneInput').value.trim();
+        const saveBtn = document.getElementById('modalSaveBtn');
+        saveBtn.disabled = true;
+        saveBtn.innerText = currentLang === 'bm' ? 'Menyimpan...' : 'Saving...';
+
         const serviceType = document.getElementById('serviceTypeSelect').value;
         const consoleModel = document.getElementById('consoleModelSelect').value;
         const sdSource = document.getElementById('sdSourceSelect').value;
-        const androidChecked = document.getElementById('androidModeCheck').checked;
-        const linuxChecked = document.getElementById('linuxModeCheck').checked;
+        const androidMode = document.getElementById('androidModeCheck').checked;
+        const linuxMode = document.getElementById('linuxModeCheck').checked;
+        const freeStorageGb = parseFloat(document.getElementById('userFreeStorageInput').value) || 0;
         const remarks = document.getElementById('orderRemarks').value.trim();
-        
-        const count = selectedGames.size;
+
+        const gameArray = [];
         let totalGamesSize = 0;
-        selectedGames.forEach(size => { totalGamesSize += size; });
-        const details = calculatePriceDetails(count, totalGamesSize);
+        selectedGames.forEach((size, name) => {
+            gameArray.push(name);
+            totalGamesSize += size;
+        });
 
-        let message = `🎮 *New Pulai PC Order / Inquiry*\n`;
-        message += `━━━━━━━━━━━━━━━━━━━\n`;
-        message += `📱 *Phone ID (Last 4):* ${phone}\n`;
-        message += `🔧 *Service Type:* ${serviceType === 'jailbreak' ? `Full Jailbreak (${consoleModel})` : 'Games Only'}\n`;
+        const priceDetails = calculatePriceDetails(selectedGames.size, totalGamesSize);
 
-        if (serviceType === 'jailbreak') {
-            let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
-            message += `💾 *SD Card:* ${displayCardLabel} (${sdSource === 'buy' ? 'New Purchase' : 'Own Card'})\n`;
-            if (androidChecked) message += `🤖 *Addon:* Android Mode\n`;
-            if (linuxChecked) message += `🐧 *Addon:* Linux Mode\n`;
-        } else {
-            const freeStorageInput = document.getElementById('userFreeStorageInput').value;
-            message += `📊 *Free Storage:* ${freeStorageInput || 0} GB\n`;
+        const payload = {
+            phone_ending: phone,
+            service_type: serviceType,
+            console_model: serviceType === 'jailbreak' ? consoleModel : null,
+            sd_source: serviceType === 'jailbreak' ? sdSource : null,
+            sd_card_size: serviceType === 'jailbreak' ? maxSdSize : null,
+            free_storage_gb: serviceType === 'games_only' ? freeStorageGb : null,
+            android_mode: androidMode,
+            linux_mode: linuxMode,
+            games: gameArray,
+            total_games_count: gameArray.length,
+            total_games_size_gb: parseFloat(totalGamesSize.toFixed(1)),
+            estimated_price_rm: Math.round(priceDetails.price),
+            remarks: remarks,
+            updated_at: new Date().toISOString()
+        };
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('orders')
+                .upsert([payload], { onConflict: 'phone_ending' });
+
+            if (error) throw error;
+
+            alert(currentLang === 'bm' ? '✅ Pesanan anda berjaya disimpan! Terima kasih.' : '✅ Your order has been successfully saved! Thank you.');
+            closeCartModal();
+
+            const statusMsg = document.getElementById('statusMsg');
+            if (statusMsg) {
+                statusMsg.style.color = '#00e676';
+                statusMsg.innerText = currentLang === 'bm' ? 'Pesanan berjaya dihantar / dikemas kini!' : 'Order submitted / updated successfully!';
+            }
+        } catch (err) {
+            console.error(err);
+            alert(currentLang === 'bm' ? '❌ Gagal menyimpan pesanan. Sila cuba lagi.' : '❌ Failed to save order. Please try again.');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerText = currentLang === 'bm' ? 'Simpan Perubahan' : 'Save Changes';
         }
-
-        message += `━━━━━━━━━━━━━━━━━━━\n`;
-        message += `📦 *Selected Games:* ${count} games (${totalGamesSize.toFixed(1)} GB total)\n`;
-
-        if (remarks) {
-            message += `━━━━━━━━━━━━━━━━━━━\n`;
-            message += `📝 *Remarks:* ${remarks}\n`;
-        }
-
-        message += `━━━━━━━━━━━━━━━━━━━\n`;
-        message += `💰 *Total Estimated Price:* RM${Math.round(details.price)}`;
-
-        const businessWhatsAppNumber = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.whatsappNumber) ? APP_CONFIG.whatsappNumber : '';
-        if (!businessWhatsAppNumber) {
-            alert('WhatsApp number is not configured in APP_CONFIG.');
-            return;
-        }
-        const encodedMessage = encodeURIComponent(message);
-        const whatsappUrl = `https://wa.me/${businessWhatsAppNumber}?text=${encodedMessage}`;
-        
-        window.open(whatsappUrl, '_blank');
     }
     </script>
 </body>
