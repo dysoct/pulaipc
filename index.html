@@ -1666,64 +1666,68 @@
         };
     }
 
-    function checkTierRecommendation(count, serviceType) {
-        let targetCount = 0;
-        let isFreeGamesNotice = false;
+function checkTierRecommendation(count, serviceType) {
+    let targetCount = 0;
+    let isFreeGamesNotice = false;
+
+    if (serviceType === 'jailbreak') {
+        // If they are strictly below Tier 1 threshold (1-19 paid games, which means total count 4 to 22 including 3 free)
+        if (count < 3) {
+            targetCount = 3;
+            isFreeGamesNotice = true;
+        } else if (count >= 4 && count <= 21) { 
+            // e.g. 1 to 18 paid games (total 4 to 21), encourage reaching 22 total (19 paid)
+            targetCount = 22; 
+        } else if (count >= 24 && count <= 41) { 
+            // e.g. 20 to 37 paid games (total 24 to 41), encourage reaching 42 total (39 paid)
+            targetCount = 42; 
+        }
+    } else {
+        // Games only service type
+        if (count > 0 && count <= 18) {
+            targetCount = 19;
+        } else if (count >= 20 && count <= 38) {
+            targetCount = 39;
+        }
+    }
+
+    if (targetCount > 0 && count < targetCount) {
+        let diff = targetCount - count;
 
         if (serviceType === 'jailbreak') {
-            if (count < 3) {
-                targetCount = 3;
-                isFreeGamesNotice = true;
-            } else if (count >= 3 && count <= 22) {
-                targetCount = 22; // 3 free + 19 chargeable = 22 max for Tier 1
-            } else if (count >= 23 && count <= 42) {
-                targetCount = 42; // 3 free + 39 chargeable = 42 max for Tier 2
-            }
-        } else {
-            if (count > 0 && count <= 19) {
-                targetCount = 19;
-            } else if (count >= 20 && count <= 39) {
-                targetCount = 39;
-            }
-        }
-
-        if (targetCount > 0 && count < targetCount) {
-            let diff = targetCount - count;
-
-            if (serviceType === 'jailbreak') {
-                if (isFreeGamesNotice) {
-                    return {
-                        hasWarning: true,
-                        targetCount: targetCount,
-                        remaining: diff,
-                        msg: currentLang === 'bm' 
-                            ? `🎁 <strong>Game Percuma Tersedia:</strong> Anda memilih <strong>${count} game</strong>. Pakej Jailbreak Penuh anda merangkumi <strong>3 game PERCUMA</strong>—anda boleh pilih <strong>${diff} lagi game percuma</strong>!`
-                            : `🎁 <strong>Free Games Available:</strong> You selected <strong>${count} game(s)</strong>. Your Full Jailbreak package includes <strong>3 FREE games</strong>—you can select <strong>${diff} more free game(s)</strong>!`
-                    };
-                } else {
-                    return {
-                        hasWarning: true,
-                        targetCount: targetCount,
-                        remaining: diff,
-                        msg: currentLang === 'bm'
-                            ? `💡 <strong>Peluang Pakej:</strong> Anda memilih <strong>${count} game</strong> (${count - 3} berbayar). Anda boleh memilih <strong>${diff} lagi game</strong> (sehingga ${targetCount} jumlah keseluruhan) tanpa menaikkan peringkat harga!`
-                            : `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong> (${count - 3} paid). You can choose <strong>${diff} more game(s)</strong> (up to ${targetCount} total) without moving to a higher pricing tier!`
-                    };
-                }
+            if (isFreeGamesNotice) {
+                return {
+                    hasWarning: true,
+                    targetCount: targetCount,
+                    remaining: diff,
+                    msg: currentLang === 'bm' 
+                        ? `🎁 <strong>Game Percuma Tersedia:</strong> Anda memilih <strong>${count} game</strong>. Pakej Jailbreak Penuh anda merangkumi <strong>3 game PERCUMA</strong>—anda boleh pilih <strong>${diff} lagi game percuma</strong>!`
+                        : `🎁 <strong>Free Games Available:</strong> You selected <strong>${count} game(s)</strong>. Your Full Jailbreak package includes <strong>3 FREE games</strong>—you can select <strong>${diff} more free game(s)</strong>!`
+                };
             } else {
                 return {
                     hasWarning: true,
                     targetCount: targetCount,
                     remaining: diff,
                     msg: currentLang === 'bm'
-                        ? `💡 <strong>Peluang Pakej:</strong> Anda memilih <strong>${count} game</strong>. Anda boleh memilih <strong>${diff} lagi game</strong> (sehingga ${targetCount} game) untuk memaksimumkan kadar peringkat harga ini!`
-                        : `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong>. You can choose <strong>${diff} more game(s)</strong> (up to ${targetCount} games) to fully maximize this pricing tier rate!`
+                        ? `💡 <strong>Peluang Pakej:</strong> Anda memilih <strong>${count} game</strong>. Anda boleh memilih <strong>${diff} lagi game</strong> (sehingga ${targetCount} jumlah keseluruhan) tanpa menaikkan peringkat harga!`
+                        : `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong>. You can choose <strong>${diff} more game(s)</strong> (up to ${targetCount} total) without moving to a higher pricing tier!`
                 };
             }
+        } else {
+            return {
+                hasWarning: true,
+                targetCount: targetCount,
+                remaining: diff,
+                msg: currentLang === 'bm'
+                    ? `💡 <strong>Peluang Pakej:</strong> Anda memilih <strong>${count} game</strong>. Anda boleh memilih <strong>${diff} lagi game</strong> (sehingga ${targetCount} game) untuk memaksimumkan kadar peringkat harga ini!`
+                    : `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong>. You can choose <strong>${diff} more game(s)</strong> (up to ${targetCount} games) to fully maximize this pricing tier rate!`
+            };
         }
-
-        return { hasWarning: false, targetCount: 0, remaining: 0, msg: '' };
     }
+
+    return { hasWarning: false, targetCount: 0, remaining: 0, msg: '' };
+}
 
     function updateCartSummary() {
         const count = selectedGames.size;
