@@ -687,12 +687,11 @@
 
             <div class="pricing-details-grid">
                 <div class="pricing-col">
-                    <h4 data-i18n="gameCountTierTitle">🎮 Game Count Tiers (Baseline)</h4>
+                    <h4 data-i18n="gameCountTierTitle">🎮 Game Count Rates (Per Game Calculation)</h4>
                     <ul>
-                        <li><strong data-i18n="tier1Range">1 - 10 games:</strong> RM3 / game (Up to ~125 GB)</li>
-                        <li><strong data-i18n="tier2Range">11 - 20 games:</strong> RM50 flat (Up to ~240 GB)</li>
-                        <li><strong data-i18n="tier3Range">21 - 40 games:</strong> RM80 flat (Up to ~460 GB)</li>
-                        <li><strong data-i18n="tier4Range">40+ games:</strong> RM80 base + RM2 per extra game</li>
+                        <li><strong data-i18n="tier1Range">1 - 19 games:</strong> RM3.00 / game</li>
+                        <li><strong data-i18n="tier2Range">20 - 39 games:</strong> RM2.50 / game</li>
+                        <li><strong data-i18n="tier3Range">40 and above:</strong> RM2.00 / game</li>
                     </ul>
                 </div>
                 <div class="pricing-col">
@@ -883,11 +882,10 @@
             instructions: "1. Enter the <strong>Last 4 Digits</strong> of your phone number below.<br>2. Select your <strong>Service Type</strong> and specify your <strong>Storage Capacity</strong>.<br>3. Choose your games, then review and submit!",
             pricingSummary: "📦 View Pricing Tiers & Game Size Rates (Tap to expand)",
             free3Games: "Free 3 Games",
-            gameCountTierTitle: "🎮 Game Count Tiers (Baseline)",
-            tier1Range: "1 - 10 games:",
-            tier2Range: "11 - 20 games:",
-            tier3Range: "21 - 40 games:",
-            tier4Range: "40+ games:",
+            gameCountTierTitle: "🎮 Game Count Rates (Per Game Calculation)",
+            tier1Range: "1 - 19 games:",
+            tier2Range: "20 - 39 games:",
+            tier3Range: "40 and above:",
             gameSizeTierTitle: "📊 Game Size Volume Override",
             size1Range: "Up to 100 GB:",
             size2Range: "Up to 200 GB:",
@@ -945,11 +943,10 @@
             instructions: "1. Masukkan <strong>4 Digit Terakhir</strong> nombor telefon anda di bawah.<br>2. Pilih <strong>Jenis Perkhidmatan</strong> dan tetapkan <strong>Kapasiti Storan</strong> anda.<br>3. Pilih game anda, kemudian semak dan hantar!",
             pricingSummary: "📦 Lihat Peringkat Harga & Kadar Saiz Game (Tekan untuk buka)",
             free3Games: "Percuma 3 Game",
-            gameCountTierTitle: "🎮 Peringkat Jumlah Game (Asas)",
-            tier1Range: "1 - 10 game:",
-            tier2Range: "11 - 20 game:",
-            tier3Range: "21 - 40 game:",
-            tier4Range: "40+ game:",
+            gameCountTierTitle: "🎮 Kadar Jumlah Game (Kiraaan Per Game)",
+            tier1Range: "1 - 19 game:",
+            tier2Range: "20 - 39 game:",
+            tier3Range: "40 ke atas:",
             gameSizeTierTitle: "📊 Override Isipadu Saiz Game",
             size1Range: "Sehingga 100 GB:",
             size2Range: "Sehingga 200 GB:",
@@ -1026,7 +1023,6 @@
         document.querySelector('[data-i18n="tier1Range"]').innerText = t.tier1Range;
         document.querySelector('[data-i18n="tier2Range"]').innerText = t.tier2Range;
         document.querySelector('[data-i18n="tier3Range"]').innerText = t.tier3Range;
-        document.querySelector('[data-i18n="tier4Range"]').innerText = t.tier4Range;
 
         document.querySelector('[data-i18n="gameSizeTierTitle"]').innerText = t.gameSizeTierTitle;
         document.querySelector('[data-i18n="size1Range"]').innerText = t.size1Range;
@@ -1621,21 +1617,21 @@
             chargeableCount = Math.max(0, count - 3);
         }
 
-        let countTierPrice = 0;
+        let gamesPrice = 0;
         let targetGbLimit = 100;
 
-        if (chargeableCount <= 10) {
-            countTierPrice = chargeableCount * 3.0; 
-            targetGbLimit = 125; 
-        } else if (chargeableCount <= 20) {
-            countTierPrice = 50; 
-            targetGbLimit = 240; 
-        } else if (chargeableCount <= 40) {
-            countTierPrice = 50 + (chargeableCount - 20) * 1.5; 
-            targetGbLimit = 460; 
-        } else {
-            countTierPrice = 80 + (chargeableCount - 40) * 2.0;
-            targetGbLimit = totalGameSizeGb;
+        // Strict Per-Game Calculation without flat rates
+        if (chargeableCount > 0) {
+            if (chargeableCount <= 19) {
+                gamesPrice = chargeableCount * 3.0;
+                targetGbLimit = 150;
+            } else if (chargeableCount <= 39) {
+                gamesPrice = chargeableCount * 2.5;
+                targetGbLimit = 300;
+            } else {
+                gamesPrice = chargeableCount * 2.0;
+                targetGbLimit = totalGameSizeGb;
+            }
         }
 
         let sizeTierPrice = 0;
@@ -1649,10 +1645,8 @@
             sizeTierPrice = 80 + ((totalGameSizeGb - 400) / 100) * 20;
         }
 
-        let gamesPrice = countTierPrice;
         let isExceeded = false;
-
-        if (totalGameSizeGb > targetGbLimit && sizeTierPrice > countTierPrice) {
+        if (totalGameSizeGb > targetGbLimit && sizeTierPrice > gamesPrice) {
             gamesPrice = sizeTierPrice;
             isExceeded = true;
         }
@@ -1678,20 +1672,16 @@
             if (count < 3) {
                 targetCount = 3;
                 isFreeGamesNotice = true;
-            } else if (count > 3 && count <= 13) {
-                targetCount = 13; 
-            } else if (count >= 14 && count <= 23) {
-                targetCount = 23; 
-            } else if (count >= 24 && count <= 43) {
-                targetCount = 43; 
+            } else if (count > 3 && count <= 19) {
+                targetCount = 19; 
+            } else if (count >= 20 && count <= 39) {
+                targetCount = 39; 
             }
         } else {
-            if (count > 0 && count <= 10) {
-                targetCount = 10;
-            } else if (count >= 11 && count <= 20) {
-                targetCount = 20;
-            } else if (count >= 21 && count <= 40) {
-                targetCount = 40;
+            if (count > 0 && count <= 19) {
+                targetCount = 19;
+            } else if (count >= 20 && count <= 39) {
+                targetCount = 39;
             }
         }
 
@@ -1714,8 +1704,8 @@
                         targetCount: targetCount,
                         remaining: diff,
                         msg: currentLang === 'bm'
-                            ? `💡 <strong>Peluang Pakej:</strong> Anda memilih <strong>${count} game</strong> (${count - 3} berbayar). Anda boleh memilih <strong>${diff} lagi game</strong> (sehingga ${targetCount} jumlah keseluruhan) tanpa menaikkan peringkat harga!`
-                            : `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong> (${count - 3} paid). You can choose <strong>${diff} more game(s)</strong> (up to ${targetCount} total) without moving to a higher pricing tier!`
+                            ? `💡 <strong>Peluang Pakej:</strong> Anda memilih <strong>${count} game</strong> (${count - 3} berbayar). Anda boleh memilih <strong>${diff} lagi game</strong> (sehingga ${targetCount} jumlah keseluruhan) tanpa menaikkan peringkat harga per-game!`
+                            : `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong> (${count - 3} paid). You can choose <strong>${diff} more game(s)</strong> (up to ${targetCount} total) without moving to a higher per-game pricing tier!`
                     };
                 }
             } else {
@@ -1724,8 +1714,8 @@
                     targetCount: targetCount,
                     remaining: diff,
                     msg: currentLang === 'bm'
-                        ? `💡 <strong>Peluang Pakej:</strong> Anda memilih <strong>${count} game</strong>. Anda boleh memilih <strong>${diff} lagi game</strong> (sehingga ${targetCount} game) untuk memaksimumkan kadar peringkat harga ini!`
-                        : `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong>. You can choose <strong>${diff} more game(s)</strong> (up to ${targetCount} games) to fully maximize this pricing tier rate!`
+                        ? `💡 <strong>Peluang Pakej:</strong> Anda memilih <strong>${count} game</strong>. Anda boleh memilih <strong>${diff} lagi game</strong> (sehingga ${targetCount} game) untuk menikmati kadar per-game yang lebih rendah!`
+                        : `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong>. You can choose <strong>${diff} more game(s)</strong> (up to ${targetCount} games) to benefit from a better per-game rate!`
                 };
             }
         }
@@ -2157,14 +2147,14 @@
                   (serviceType === 'jailbreak' 
                       ? (count < 3
                           ? `Anda memilih ${count} game, tetapi Jailbreak anda merangkumi 3 game PERCUMA!\n\nAdakah anda mahu simpan pesanan sekarang atau kembali untuk memilih baki game percuma anda?`
-                          : `Oleh kerana Jailbreak anda merangkumi 3 game percuma, anda boleh memilih sehingga ${tierRec.targetCount} game (${tierRec.remaining} lagi game) tanpa kos tambahan!\n\nAdakah anda masih mahu simpan pesanan sekarang, atau kembali untuk menambah game?`)
-                      : `Anda boleh menambah ${tierRec.remaining} lagi game (sehingga ${tierRec.targetCount} game) untuk memaksimumkan peringkat harga semasa!\n\nAdakah anda masih mahu simpan pesanan sekarang, atau kembali untuk menambah game?`)
+                          : `Oleh kerana Jailbreak anda merangkumi 3 game percuma, anda boleh memilih sehingga ${tierRec.targetCount} game (${tierRec.remaining} lagi game) tanpa kos tambahan per-game!\n\nAdakah anda masih mahu simpan pesanan sekarang, atau kembali untuk menambah game?`)
+                      : `Anda boleh menambah ${tierRec.remaining} lagi game (sehingga ${tierRec.targetCount} game) untuk menikmati kadar per-game yang lebih rendah!\n\nAdakah anda masih mahu simpan pesanan sekarang, atau kembali untuk menambah game?`)
                 : `💡 Tier Package Notice:\n\nYou selected ${count} games.\n` +
                   (serviceType === 'jailbreak' 
                       ? (count < 3
                           ? `You selected ${count} game(s), but your Jailbreak includes 3 FREE games!\n\nDo you want to save your order now or go back and pick your remaining free games?`
-                          : `Because your Jailbreak includes 3 free games, you can select up to ${tierRec.targetCount} games total (${tierRec.remaining} more games) at no additional tier cost!\n\nDo you still want to save your order now, or go back and add more games?`)
-                      : `You can add ${tierRec.remaining} more game(s) (up to ${tierRec.targetCount} games) to fully maximize your current pricing tier!\n\nDo you still want to save your order now, or go back and add more games?`)
+                          : `Because your Jailbreak includes 3 free games, you can select up to ${tierRec.targetCount} games total (${tierRec.remaining} more games) at a better per-game rate!\n\nDo you still want to save your order now, or go back and add more games?`)
+                      : `You can add ${tierRec.remaining} more game(s) (up to ${tierRec.targetCount} games) to get a better per-game rate!\n\nDo you still want to save your order now, or go back and add more games?`)
             );
             if (!confirmProceed) return;
         }
