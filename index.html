@@ -2103,7 +2103,7 @@
         try {
             const { data, error } = await supabaseClient
                 .from('orders')
-                .upsert([payload], { onConflict: 'phone_ending' });
+                .upsert([payload]); // Defaults to upserting on the PRIMARY KEY ('id')
 
             if (error) throw error;
 
