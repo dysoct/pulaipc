@@ -1,5 +1,5 @@
 ﻿# =========================================================
-# Pulai PC - Game List Exporter & GitHub Auto-Sync
+# Pulai PC - Config & Game List Exporter & GitHub Auto-Sync
 # =========================================================
 
 $scriptDir =$PSScriptRoot
@@ -7,10 +7,10 @@ $scriptDir =$PSScriptRoot
 # Alternative method to go one folder up safely
 $parentDir = Split-Path $scriptDir -Parent
 $gameDirectoryPath = Join-Path $parentDir "nsp"
-$htmlPath = Join-Path $scriptDir "index.html"
+$configPath = Join-Path $scriptDir "config.js"
 
-if (-not (Test-Path $htmlPath)) {
-    Write-Host "[ERROR] index.html not found at: $htmlPath" -ForegroundColor Red
+if (-not (Test-Path $configPath)) {
+    Write-Host "[ERROR] config.js not found at: $configPath" -ForegroundColor Red
     pause
     exit 1
 }
@@ -39,17 +39,18 @@ $gameEntries = foreach ($dir in Get-ChildItem $resolvedGamePath -Directory) {
     '      { name: "' + $cleanName + '", size: ' + $gbSize + ' }'
 }
 
-$jsBlock = "const games = [`r`n" + ($gameEntries -join ",`r`n") + "`r`n    ];"
+$gamesJsBlock = "const games = [`r`n" + ($gameEntries -join ",`r`n") + "`r`n    ];"
 
-Write-Host "[2/3] Updating index.html dataset..." -ForegroundColor Cyan
+Write-Host "[2/3] Updating config.js game dataset..." -ForegroundColor Cyan
 
-$htmlContent = Get-Content $htmlPath -Raw
+$configContent = Get-Content $configPath -Raw
 
-$updatedHtml = [regex]::Replace($htmlContent, 'const games = \[[\s\S]*?\];', { param($m)$jsBlock })
+# Regex replace only the 'const games = [...]' section in config.js, preserving credentials & pricing settings
+$updatedConfig = [regex]::Replace($configContent, 'const games = \[[\s\S]*?\];', { param($m)$gamesJsBlock })
 
-Set-Content $htmlPath $updatedHtml -Encoding UTF8
+Set-Content $configPath $updatedConfig -Encoding UTF8
 
-Write-Host "[SUCCESS] index.html updated locally!" -ForegroundColor Green
+Write-Host "[SUCCESS] config.js updated locally!" -ForegroundColor Green
 
 Write-Host "[3/3] Syncing changes to GitHub..." -ForegroundColor Yellow
 
@@ -57,12 +58,12 @@ Set-Location $scriptDir
 
 $currentDate = Get-Date -Format "yyyy-MM-dd HH:mm"
 
-git add index.html
+git add config.js
 git commit -m "Auto-update game list: $currentDate"
 git push origin main
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "`n[COMPLETED] Live website updated successfully!" -ForegroundColor Green
+    Write-Host "`n[COMPLETED] Live website config updated successfully!" -ForegroundColor Green
 } else {
     Write-Host "`n[WARNING] Git push failed. Check network or credentials." -ForegroundColor Red
 }
