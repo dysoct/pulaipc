@@ -737,7 +737,7 @@
                 <!-- SD Card Size Selector (Jailbreak Only) -->
                 <div class="field-group" id="sdCardGroup">
                     <select id="sdCardSelect" class="sd-select" onchange="updateSdLimit()">
-                        <!-- Dynamically populated from config.js sdCardRetailPrices -->
+                        <!-- Dynamically populated via JavaScript -->
                     </select>
                     <span class="field-hint">Total capacity of memory card used</span>
                 </div>
@@ -886,7 +886,11 @@
     let isStorageConfigured = false;
 
     window.onload = function() {
-        // Populate only the SD card sizes available in config.js stock
+        const savedSdSource = localStorage.getItem('userSdSource');
+        if (savedSdSource) {
+            document.getElementById('sdSourceSelect').value = savedSdSource;
+        }
+
         populateSdCardOptions();
 
         const savedPhone = localStorage.getItem('userPhone4');
@@ -902,7 +906,6 @@
         const savedSd = localStorage.getItem('userSdSelect');
         if (savedSd) {
             const sdCardSelect = document.getElementById('sdCardSelect');
-            // Ensure saved size exists in the dropdown options
             if (sdCardSelect.querySelector(`option[value="${savedSd}"]`)) {
                 sdCardSelect.value = savedSd;
                 maxSdSize = parseInt(savedSd);
@@ -921,11 +924,6 @@
             document.getElementById('userFreeStorageInput').value = savedFreeStorage;
         }
 
-        const savedSdSource = localStorage.getItem('userSdSource');
-        if (savedSdSource) {
-            document.getElementById('sdSourceSelect').value = savedSdSource;
-        }
-
         const savedModel = localStorage.getItem('userConsoleModel');
         if (savedModel) {
             document.getElementById('consoleModelSelect').value = savedModel;
@@ -939,36 +937,60 @@
     function populateSdCardOptions() {
         const sdSelect = document.getElementById('sdCardSelect');
         if (!sdSelect) return;
+
+        const sdSource = document.getElementById('sdSourceSelect') ? document.getElementById('sdSourceSelect').value : 'own';
+        const currentValue = sdSelect.value;
         
         sdSelect.innerHTML = '';
 
-        if (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.sdCardRetailPrices) {
-            let hasValidOptions = false;
-            Object.entries(APP_CONFIG.sdCardRetailPrices).forEach(([size, price]) => {
-                const numericPrice = Number(price);
-                if (numericPrice > 0) {
-                    hasValidOptions = true;
-                    const option = document.createElement('option');
-                    option.value = size;
-                    if (size === '256') {
-                        option.selected = true;
+        if (sdSource === 'own') {
+            // Bring Own SD Card: Show size capacities from 64GB to 2TB without price tags
+            const ownSizes = [
+                { size: '64', label: '64 GB Card' },
+                { size: '128', label: '128 GB Card' },
+                { size: '256', label: '256 GB Card' },
+                { size: '512', label: '512 GB Card' },
+                { size: '1024', label: '1 TB Card' },
+                { size: '2048', label: '2 TB Card' }
+            ];
+
+            ownSizes.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.size;
+                option.textContent = item.label;
+                if (currentValue ? item.size === currentValue : item.size === '256') {
+                    option.selected = true;
+                }
+                sdSelect.appendChild(option);
+            });
+        } else {
+            // Purchase New SD Card: Show prices from config.js
+            if (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.sdCardRetailPrices) {
+                let hasValidOptions = false;
+                Object.entries(APP_CONFIG.sdCardRetailPrices).forEach(([size, price]) => {
+                    const numericPrice = Number(price);
+                    if (numericPrice > 0) {
+                        hasValidOptions = true;
+                        const option = document.createElement('option');
+                        option.value = size;
+                        
+                        let displaySize = size >= 1000 ? `${(size / 1024).toFixed(0)} TB` : `${size} GB`;
+                        option.textContent = `${displaySize} Card (RM${numericPrice})`;
+
+                        if (currentValue ? size === currentValue : size === '256') {
+                            option.selected = true;
+                        }
+                        sdSelect.appendChild(option);
                     }
-                    option.textContent = `${size} GB Card (RM${numericPrice})`;
+                });
+
+                if (!hasValidOptions) {
+                    const option = document.createElement('option');
+                    option.value = '256';
+                    option.textContent = '256 GB Card';
                     sdSelect.appendChild(option);
                 }
-            });
-
-            if (!hasValidOptions) {
-                const option = document.createElement('option');
-                option.value = '256';
-                option.textContent = '256 GB Card';
-                sdSelect.appendChild(option);
             }
-        } else {
-            const option = document.createElement('option');
-            option.value = '256';
-            option.textContent = '256 GB Card';
-            sdSelect.appendChild(option);
         }
     }
 
@@ -1062,13 +1084,16 @@
         localStorage.setItem('userServiceType', serviceType);
 
         if (serviceType === 'jailbreak') {
+            const sdSource = document.getElementById('sdSourceSelect').value;
+            localStorage.setItem('userSdSource', sdSource);
+
+            populateSdCardOptions();
+
             const select = document.getElementById('sdCardSelect');
             maxSdSize = parseInt(select.value) || 256;
             localStorage.setItem('userSdSelect', maxSdSize);
 
             const consoleModel = document.getElementById('consoleModelSelect').value;
-            const sdSource = document.getElementById('sdSourceSelect').value;
-            localStorage.setItem('userSdSource', sdSource);
             localStorage.setItem('userConsoleModel', consoleModel);
 
             const androidChecked = document.getElementById('androidModeCheck');
@@ -1093,24 +1118,28 @@
             let baseSystemOverhead = 0;
             let partitionPerMode = 0;
 
-            if (maxSdSize === 64) {
+            if (maxSdSize <= 64) {
                 baseSystemOverhead = 8;
-            } else if (maxSdSize === 128) {
+            } else if (maxSdSize <= 128) {
                 baseSystemOverhead = 10;
                 partitionPerMode = 10;
-            } else if (maxSdSize === 256) {
+            } else if (maxSdSize <= 256) {
                 baseSystemOverhead = 16;
                 partitionPerMode = 16;
-            } else if (maxSdSize >= 512) {
+            } else if (maxSdSize <= 512) {
                 baseSystemOverhead = 20;
                 partitionPerMode = 20;
+            } else {
+                // 1TB & 2TB Cards
+                baseSystemOverhead = 32;
+                partitionPerMode = 32;
             }
 
             let totalDeduction = baseSystemOverhead;
             if (androidChecked.checked) totalDeduction += partitionPerMode;
             if (linuxChecked.checked) totalDeduction += partitionPerMode;
 
-            usableStorageLimit = maxSdSize - totalDeduction;
+            usableStorageLimit = Math.max(0, maxSdSize - totalDeduction);
             isStorageConfigured = true;
 
             if (freeInput) freeInput.classList.remove('required-missing');
@@ -1119,8 +1148,10 @@
             if (browseBtn) browseBtn.disabled = false;
             if (submitBtn) submitBtn.disabled = false;
 
+            let formattedSdSize = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
             let cardSourceDesc = sdSource === 'buy' ? 'New SD Card' : 'Own SD Card';
-            let breakdownText = `Service: Full Jailbreak (${consoleModel}) | SD: ${maxSdSize}GB (${cardSourceDesc}) | System OS: -${baseSystemOverhead}GB`;
+            let breakdownText = `Service: Full Jailbreak (${consoleModel}) | SD: ${formattedSdSize} (${cardSourceDesc}) | System OS: -${baseSystemOverhead}GB`;
+            
             if (androidChecked.checked) breakdownText += ` | Android: -${partitionPerMode}GB`;
             if (linuxChecked.checked) breakdownText += ` | Linux: -${partitionPerMode}GB`;
 
@@ -1534,6 +1565,10 @@
                 
                 if (order.remarks) document.getElementById('orderRemarks').value = order.remarks;
                 if (order.service_type) document.getElementById('serviceTypeSelect').value = order.service_type;
+                if (order.sd_source) document.getElementById('sdSourceSelect').value = order.sd_source;
+                
+                populateSdCardOptions();
+
                 if (order.sd_card_size) {
                     const sdCardSelect = document.getElementById('sdCardSelect');
                     if (sdCardSelect.querySelector(`option[value="${order.sd_card_size}"]`)) {
@@ -1542,7 +1577,6 @@
                     }
                 }
                 if (order.free_storage_gb) document.getElementById('userFreeStorageInput').value = order.free_storage_gb;
-                if (order.sd_source) document.getElementById('sdSourceSelect').value = order.sd_source;
                 if (order.console_model) document.getElementById('consoleModelSelect').value = order.console_model;
 
                 document.getElementById('androidModeCheck').checked = !!order.android_mode;
@@ -1623,15 +1657,28 @@
             if (sdSource === 'buy') {
                 const sdItem = document.createElement('div');
                 sdItem.className = 'cart-item';
+                let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
                 sdItem.innerHTML = `
                     <div class="cart-item-details">
-                        <span class="cart-item-title">Purchase ${maxSdSize}GB SD Card</span>
+                        <span class="cart-item-title">Purchase ${displayCardLabel} SD Card</span>
                         <span class="cart-item-sub">Brand new pre-configured card</span>
                     </div>
                     <div style="display:flex; align-items:center; gap:8px;">
                         <span style="font-weight:bold; color:#00e676;">+RM${details.sdCardPrice}</span>
                         <button class="remove-btn" onclick="removeSdCardFromCart()">Remove</button>
                     </div>
+                `;
+                modalBody.appendChild(sdItem);
+            } else {
+                const sdItem = document.createElement('div');
+                sdItem.className = 'cart-item';
+                let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
+                sdItem.innerHTML = `
+                    <div class="cart-item-details">
+                        <span class="cart-item-title">Bring Own SD Card (${displayCardLabel})</span>
+                        <span class="cart-item-sub">Provided by customer</span>
+                    </div>
+                    <span class="lock-badge">Free</span>
                 `;
                 modalBody.appendChild(sdItem);
             }
@@ -1740,9 +1787,10 @@
                 </div>
             `;
             if (sdSource === 'buy') {
+                let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
                 breakdownHtml += `
                     <div class="price-breakdown-row">
-                        <span>New ${maxSdSize}GB SD Card:</span>
+                        <span>New ${displayCardLabel} SD Card:</span>
                         <span>RM${details.sdCardPrice}</span>
                     </div>
                 `;
