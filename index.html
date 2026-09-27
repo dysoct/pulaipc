@@ -1170,8 +1170,21 @@
         let currentGamesSize = 0;
         selectedGames.forEach(size => { currentGamesSize += size; });
 
+        // Fix #3: Automatically trim games if the newly set storage limit is lower than current selection size
         if (isStorageConfigured && usableStorageLimit > 0 && currentGamesSize > usableStorageLimit) {
-            alert(`Warning: Selected games (${currentGamesSize.toFixed(1)} GB) exceed available limit (${usableStorageLimit} GB)!`);
+            alert(`⚠️ Your new storage limit (${usableStorageLimit} GB) is smaller than your selected games (${currentGamesSize.toFixed(1)} GB). Excess games will be automatically removed.`);
+            
+            let accumulatedSize = 0;
+            const gamesToRemove = [];
+            selectedGames.forEach((size, name) => {
+                accumulatedSize += size;
+                if (accumulatedSize > usableStorageLimit) {
+                    gamesToRemove.push(name);
+                }
+            });
+
+            gamesToRemove.forEach(name => selectedGames.delete(name));
+            filterGames();
         }
         
         updateCartSummary();
@@ -1913,6 +1926,8 @@
         const btn = document.querySelector('#cartModal .submit-btn');
         btn.innerText = 'Saving...';
         btn.disabled = true;
+        // Fix #2: Disable pointer events to fully prevent double-clicks/multi-taps
+        btn.style.pointerEvents = 'none';
 
         const gameNamesArray = Array.from(selectedGames.keys());
         const remarksText = document.getElementById('orderRemarks').value.trim();
@@ -1989,6 +2004,8 @@
         } finally {
             btn.innerText = 'Save Changes';
             btn.disabled = false;
+            // Re-enable pointer events after finishing request
+            btn.style.pointerEvents = 'auto';
         }
     }
 
