@@ -398,7 +398,7 @@
             padding: 20px;
             border-radius: 8px;
             width: 90%;
-            max-width: 500px;
+            max-width: 520px;
             max-height: 85vh;
             display: flex;
             flex-direction: column;
@@ -430,15 +430,49 @@
             margin-bottom: 15px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 12px;
+        }
+        .modal-section-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #888;
+            font-weight: bold;
+            margin-bottom: 4px;
         }
         .cart-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: #2a2a2a;
-            padding: 10px 15px;
+            padding: 10px 12px;
             border-radius: 6px;
+            font-size: 13.5px;
+        }
+        .cart-item.fixed-item {
+            background: #1a2a20;
+            border: 1px solid #00e676;
+        }
+        .cart-item-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .cart-item-title {
+            font-weight: 600;
+            color: #fff;
+        }
+        .cart-item-sub {
+            font-size: 11.5px;
+            color: #aaa;
+        }
+        .lock-badge {
+            font-size: 11px;
+            color: #00e676;
+            background: rgba(0, 230, 118, 0.1);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
         }
         .remove-btn {
             background: #ff5252;
@@ -449,6 +483,7 @@
             cursor: pointer;
             font-size: 12px;
             font-weight: bold;
+            shrink: 0;
         }
         .remove-btn:hover {
             background: #ff1744;
@@ -462,6 +497,29 @@
             font-size: 13px;
             margin-bottom: 10px;
             display: none;
+        }
+        .price-breakdown-box {
+            background: #161616;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .price-breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            color: #bbb;
+        }
+        .price-breakdown-row.total-row {
+            border-top: 1px solid #333;
+            padding-top: 6px;
+            margin-top: 2px;
+            color: #fff;
+            font-weight: bold;
+            font-size: 14px;
         }
         .remarks-container {
             margin-top: 10px;
@@ -964,14 +1022,15 @@
         const serviceType = document.getElementById('serviceTypeSelect').value;
         const consoleModel = document.getElementById('consoleModelSelect').value;
         
-        let baseOnlyPrice = 0;
+        let androidPrice = 0;
+        let linuxPrice = 0;
         let sdCardPrice = 0;
         let serviceBasePrice = 0;
 
         if (serviceType === 'jailbreak') {
             serviceBasePrice = APP_CONFIG.jailbreakPrices[consoleModel] || 190;
-            if (document.getElementById('androidModeCheck').checked) baseOnlyPrice += APP_CONFIG.addonPrices.android;
-            if (document.getElementById('linuxModeCheck').checked) baseOnlyPrice += APP_CONFIG.addonPrices.linux;
+            if (document.getElementById('androidModeCheck').checked) androidPrice = APP_CONFIG.addonPrices.android;
+            if (document.getElementById('linuxModeCheck').checked) linuxPrice = APP_CONFIG.addonPrices.linux;
             
             const sdSource = document.getElementById('sdSourceSelect').value;
             if (sdSource === 'buy') {
@@ -979,8 +1038,18 @@
             }
         }
 
+        let baseOnlyPrice = androidPrice + linuxPrice;
+
         if (count <= 0) {
-            return { price: serviceBasePrice + sdCardPrice + baseOnlyPrice, exceeded: false };
+            return { 
+                price: serviceBasePrice + sdCardPrice + baseOnlyPrice, 
+                exceeded: false,
+                serviceBasePrice,
+                sdCardPrice,
+                androidPrice,
+                linuxPrice,
+                gamesPrice: 0
+            };
         }
 
         let chargeableCount = count;
@@ -1026,7 +1095,15 @@
 
         let finalPrice = serviceBasePrice + sdCardPrice + gamesPrice + baseOnlyPrice;
 
-        return { price: finalPrice, exceeded: isExceeded };
+        return { 
+            price: finalPrice, 
+            exceeded: isExceeded,
+            serviceBasePrice,
+            sdCardPrice,
+            androidPrice,
+            linuxPrice,
+            gamesPrice
+        };
     }
 
     function updateCartSummary() {
@@ -1152,28 +1229,209 @@
         const modalBody = document.getElementById('cartModalBody');
         modalBody.innerHTML = '';
 
-        selectedGames.forEach((size, gameName) => {
-            const item = document.createElement('div');
-            item.className = 'cart-item';
-            item.innerHTML = `
-                <span>${gameName} <span style="color:#00e676; font-size:0.85em;">(${size} GB)</span></span>
-                <button class="remove-btn" onclick="removeGameFromCart('${gameName.replace(/'/g, "\\'")}')">Remove</button>
-            `;
-            modalBody.appendChild(item);
-        });
-
-        if (selectedGames.size === 0) {
-            modalBody.innerHTML = '<p style="text-align:center; color:#888; margin:5px 0;">No individual games selected.</p>';
-        }
+        const serviceType = document.getElementById('serviceTypeSelect').value;
+        const consoleModel = document.getElementById('consoleModelSelect').value;
+        const sdSource = document.getElementById('sdSourceSelect').value;
+        const androidChecked = document.getElementById('androidModeCheck').checked;
+        const linuxChecked = document.getElementById('linuxModeCheck').checked;
 
         const count = selectedGames.size;
-        const serviceType = document.getElementById('serviceTypeSelect').value;
         let totalGamesSize = 0;
         selectedGames.forEach(size => { totalGamesSize += size; });
-        
-        const remainderSize = Math.max(0, usableStorageLimit - totalGamesSize);
+
         const details = calculatePriceDetails(count, totalGamesSize);
-        
+
+        // --- Section 1: Services & Addons ---
+        const serviceSectionTitle = document.createElement('div');
+        serviceSectionTitle.className = 'modal-section-title';
+        serviceSectionTitle.innerText = '1. Service Package & Hardware Options';
+        modalBody.appendChild(serviceSectionTitle);
+
+        if (serviceType === 'jailbreak') {
+            // Main Jailbreak Service (Fixed)
+            const serviceItem = document.createElement('div');
+            serviceItem.className = 'cart-item fixed-item';
+            serviceItem.innerHTML = `
+                <div class="cart-item-details">
+                    <span class="cart-item-title">Full Jailbreak (${consoleModel})</span>
+                    <span class="cart-item-sub">Includes console modification + 3 FREE Games</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-weight:bold; color:#00e676;">RM${details.serviceBasePrice}</span>
+                    <span class="lock-badge">🔒 Core Service</span>
+                </div>
+            `;
+            modalBody.appendChild(serviceItem);
+
+            // SD Card Purchased Addon (Removable)
+            if (sdSource === 'buy') {
+                const sdItem = document.createElement('div');
+                sdItem.className = 'cart-item';
+                sdItem.innerHTML = `
+                    <div class="cart-item-details">
+                        <span class="cart-item-title">Purchase ${maxSdSize}GB SD Card</span>
+                        <span class="cart-item-sub">Brand new pre-configured card</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-weight:bold; color:#00e676;">+RM${details.sdCardPrice}</span>
+                        <button class="remove-btn" onclick="removeSdCardFromCart()">Remove</button>
+                    </div>
+                `;
+                modalBody.appendChild(sdItem);
+            }
+
+            // Android Mode Addon (Removable)
+            if (androidChecked) {
+                const androidItem = document.createElement('div');
+                androidItem.className = 'cart-item';
+                androidItem.innerHTML = `
+                    <div class="cart-item-details">
+                        <span class="cart-item-title">🤖 Android Mode Partition</span>
+                        <span class="cart-item-sub">LineageOS dual-boot setup</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-weight:bold; color:#00e676;">+RM${details.androidPrice}</span>
+                        <button class="remove-btn" onclick="removeAndroidFromCart()">Remove</button>
+                    </div>
+                `;
+                modalBody.appendChild(androidItem);
+            }
+
+            // Linux Mode Addon (Removable)
+            if (linuxChecked) {
+                const linuxItem = document.createElement('div');
+                linuxItem.className = 'cart-item';
+                linuxItem.innerHTML = `
+                    <div class="cart-item-details">
+                        <span class="cart-item-title">🐧 Linux Mode Partition</span>
+                        <span class="cart-item-sub">Ubuntu Linux desktop environment</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-weight:bold; color:#00e676;">+RM${details.linuxPrice}</span>
+                        <button class="remove-btn" onclick="removeLinuxFromCart()">Remove</button>
+                    </div>
+                `;
+                modalBody.appendChild(linuxItem);
+            }
+        } else {
+            const gamesOnlyItem = document.createElement('div');
+            gamesOnlyItem.className = 'cart-item fixed-item';
+            gamesOnlyItem.innerHTML = `
+                <div class="cart-item-details">
+                    <span class="cart-item-title">Games Installation Only</span>
+                    <span class="cart-item-sub">Game flashing on existing jailbroken console</span>
+                </div>
+                <span class="lock-badge">🔒 Games Only</span>
+            `;
+            modalBody.appendChild(gamesOnlyItem);
+        }
+
+        // --- Section 2: Selected Games ---
+        const gamesSectionTitle = document.createElement('div');
+        gamesSectionTitle.className = 'modal-section-title';
+        gamesSectionTitle.style.marginTop = '10px';
+        gamesSectionTitle.innerText = `2. Selected Games (${count} games - ${totalGamesSize.toFixed(1)} GB)`;
+        modalBody.appendChild(gamesSectionTitle);
+
+        if (selectedGames.size === 0) {
+            const emptyGames = document.createElement('p');
+            emptyGames.style.textAlign = 'center';
+            emptyGames.style.color = '#888';
+            emptyGames.style.margin = '5px 0';
+            emptyGames.style.fontSize = '13px';
+            emptyGames.innerText = serviceType === 'jailbreak' ? 'No games selected yet (3 Free Games available!).' : 'No games selected.';
+            modalBody.appendChild(emptyGames);
+        } else {
+            let index = 1;
+            selectedGames.forEach((size, gameName) => {
+                const item = document.createElement('div');
+                item.className = 'cart-item';
+                
+                let gameTag = '';
+                if (serviceType === 'jailbreak') {
+                    gameTag = index <= 3 ? ' <span style="color:#00e676; font-size:10px;">[FREE]</span>' : ' <span style="color:#ffb74d; font-size:10px;">[ADDON]</span>';
+                }
+
+                item.innerHTML = `
+                    <span>${index}. ${gameName} ${gameTag} <span style="color:#00e676; font-size:0.85em;">(${size} GB)</span></span>
+                    <button class="remove-btn" onclick="removeGameFromCart('${gameName.replace(/'/g, "\\'")}')">Remove</button>
+                `;
+                modalBody.appendChild(item);
+                index++;
+            });
+        }
+
+        // --- Section 3: Detailed Price Breakdown ---
+        const breakdownTitle = document.createElement('div');
+        breakdownTitle.className = 'modal-section-title';
+        breakdownTitle.style.marginTop = '10px';
+        breakdownTitle.innerText = '3. Payment Breakdown';
+        modalBody.appendChild(breakdownTitle);
+
+        const breakdownBox = document.createElement('div');
+        breakdownBox.className = 'price-breakdown-box';
+
+        let breakdownHtml = '';
+        if (serviceType === 'jailbreak') {
+            breakdownHtml += `
+                <div class="price-breakdown-row">
+                    <span>Full Jailbreak Service (${consoleModel}):</span>
+                    <span>RM${details.serviceBasePrice}</span>
+                </div>
+            `;
+            if (sdSource === 'buy') {
+                breakdownHtml += `
+                    <div class="price-breakdown-row">
+                        <span>New ${maxSdSize}GB SD Card:</span>
+                        <span>RM${details.sdCardPrice}</span>
+                    </div>
+                `;
+            }
+            if (androidChecked) {
+                breakdownHtml += `
+                    <div class="price-breakdown-row">
+                        <span>Android Mode:</span>
+                        <span>RM${details.androidPrice}</span>
+                    </div>
+                `;
+            }
+            if (linuxChecked) {
+                breakdownHtml += `
+                    <div class="price-breakdown-row">
+                        <span>Linux Mode:</span>
+                        <span>RM${details.linuxPrice}</span>
+                    </div>
+                `;
+            }
+            
+            const chargeableCount = Math.max(0, count - 3);
+            breakdownHtml += `
+                <div class="price-breakdown-row">
+                    <span>Games Price (${count} games total: 3 Free + ${chargeableCount} Addon):</span>
+                    <span>RM${Math.round(details.gamesPrice)}</span>
+                </div>
+            `;
+        } else {
+            breakdownHtml += `
+                <div class="price-breakdown-row">
+                    <span>Games Price (${count} games):</span>
+                    <span>RM${Math.round(details.gamesPrice)}</span>
+                </div>
+            `;
+        }
+
+        breakdownHtml += `
+            <div class="price-breakdown-row total-row">
+                <span>Total Estimated Payable:</span>
+                <span style="color:#00e676;">RM${Math.round(details.price)}</span>
+            </div>
+        `;
+
+        breakdownBox.innerHTML = breakdownHtml;
+        modalBody.appendChild(breakdownBox);
+
+        // Warning & Footer updates
+        const remainderSize = Math.max(0, usableStorageLimit - totalGamesSize);
         const warningBox = document.getElementById('sizeWarningBox');
         if (details.exceeded) {
             warningBox.style.display = 'block';
@@ -1187,14 +1445,30 @@
                 summaryText = `${count} games (${count} free, 0 chargeable)`;
             } else {
                 const chargeable = count - 3;
-                let tierHint = '';
-                if (count === 10) tierHint = ' (Note: 7 chargeable; select 13 for a full 10-game addon)';
-                summaryText = `${count} games (3 free + ${chargeable} addon chargeable)${tierHint}`;
+                summaryText = `${count} games (3 free + ${chargeable} addon)`;
             }
         }
 
-        document.getElementById('modalTotal').innerHTML = `${summaryText} (<span style="color:#00e676;">${totalGamesSize.toFixed(1)} GB</span> | <span style="color:#ffb74d;">${remainderSize.toFixed(1)} GB left</span>) | Total: <strong style="color:#00e676;">RM${Math.round(details.price)}</strong>`;
+        document.getElementById('modalTotal').innerHTML = `${summaryText} (<span style="color:#00e676;">${totalGamesSize.toFixed(1)} GB</span> | <span style="color:#ffb74d;">${remainderSize.toFixed(1)} GB left</span>)<br>Total: <strong style="color:#00e676; font-size:14px;">RM${Math.round(details.price)}</strong>`;
         document.getElementById('cartModal').style.display = 'flex';
+    }
+
+    function removeSdCardFromCart() {
+        document.getElementById('sdSourceSelect').value = 'own';
+        updateSdLimit();
+        openCartModal();
+    }
+
+    function removeAndroidFromCart() {
+        document.getElementById('androidModeCheck').checked = false;
+        updateSdLimit();
+        openCartModal();
+    }
+
+    function removeLinuxFromCart() {
+        document.getElementById('linuxModeCheck').checked = false;
+        updateSdLimit();
+        openCartModal();
     }
 
     function closeCartModal() {
@@ -1234,7 +1508,7 @@
 
                 // Check if total selection is short of a clean addon package tier
                 for (let addonCount of packageAddons) {
-                    const milestoneTotal = addonCount + 3; // e.g., 13, 23, 43 total games
+                    const milestoneTotal = addonCount + 3; // e.g. 13, 23, 43 total games
                     
                     if (count >= addonCount && count < milestoneTotal) {
                         matchedAddonTier = addonCount;
