@@ -26,7 +26,8 @@
         .search-box { flex: 1; min-width: 200px; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 6px; }
         .filter-btn { background: #1a1a1a; color: #ccc; border: 1px solid #333; padding: 8px 14px; border-radius: 6px; cursor: pointer; }
         .filter-btn.active { background: #00e676; color: #121212; font-weight: bold; }
-        .btn-action { background: #2196F3; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-action { background: #2196F3; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; font-size: 13px; line-height: normal; }
+        .btn-action:hover { opacity: 0.9; }
         .btn-logout { background: #ff5252; }
         .orders-grid { display: flex; flex-direction: column; gap: 15px; }
         .order-card { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; border-left: 4px solid #888; transition: transform 0.1s, border-color 0.2s; }
@@ -89,7 +90,8 @@
     <div class="admin-container" id="adminDashboard" style="display:none;">
         <div class="header-bar">
             <h1>⚙️ Admin Dashboard</h1>
-            <div>
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <a href="index.html" target="_blank" class="btn-action" style="background:#444; color:#fff;">🏠 Main Page</a>
                 <button class="btn-action" onclick="loadOrders()">🔄 Refresh</button>
                 <button class="btn-action btn-logout" onclick="logout()">Logout</button>
             </div>
@@ -155,7 +157,7 @@
         const supabaseClient = supabase.createClient(APP_CONFIG.supabaseUrl, APP_CONFIG.supabaseAnonKey);
         let allOrders = [];
         let currentStatusFilter = 'ALL';
-        let currentModalGames = []; // Stores currently opened order's sorted games for copying
+        let currentModalGames = [];
 
         window.onload = async function() {
             const { data: { session } } = await supabaseClient.auth.getSession();
@@ -166,7 +168,6 @@
             }
         };
 
-        // Event listener delegation for buttons
         document.addEventListener('click', function(e) {
             if (e.target) {
                 if (e.target.classList.contains('view-btn')) {
@@ -442,7 +443,7 @@
             }
 
             sortGameList(gameList);
-            currentModalGames = gameList; // Save for the copy button action
+            currentModalGames = gameList;
 
             if (gameList && gameList.length > 0) {
                 document.getElementById('modalGameCount').innerText = `${gameList.length} Games Total`;
@@ -460,7 +461,6 @@
             document.getElementById('orderModalOverlay').style.display = 'flex';
         }
 
-        // ONE-CLICK COPY TO CLIPBOARD FOR SCRIPT TEXT FILE
         function copyGamesForScript() {
             if (!currentModalGames || currentModalGames.length === 0) {
                 alert("No games to copy!");
