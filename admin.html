@@ -35,13 +35,15 @@
         .order-card.status-In-Progress { border-left-color: #2196F3; }
         .order-card.status-Completed { border-left-color: #00e676; }
         .order-card.status-Cancelled { border-left-color: #ff5252; }
-        .order-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
-        .customer-id { font-size: 18px; font-weight: bold; }
+        .order-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .customer-info { font-size: 15px; font-weight: bold; display: flex; flex-direction: column; gap: 4px; }
         .order-body { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #141414; padding: 12px; border-radius: 6px; }
         @media (max-width: 700px) { .order-body { grid-template-columns: 1fr; } }
         .status-select { padding: 8px; border-radius: 6px; background: #252525; color: #fff; border: 1px solid #444; cursor: pointer; }
         .delete-btn { background: transparent; color: #ff5252; border: 1px solid #ff5252; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
         .view-btn { background: #00e676; color: #121212; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 8px; }
+        .edit-wa-btn { background: #25D366; border: none; color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .edit-wa-btn:hover { opacity: 0.9; }
         .no-orders { text-align: center; padding: 40px; color: #666; background: #1a1a1a; border-radius: 8px; }
 
         /* FULL ORDER DETAILS MODAL */
@@ -97,7 +99,7 @@
         </div>
 
         <div class="controls-row">
-            <input type="text" id="adminSearchInput" class="search-box" placeholder="🔍 Search phone or game..." onkeyup="filterAndRenderOrders()">
+            <input type="text" id="adminSearchInput" class="search-box" placeholder="🔍 Search phone, WhatsApp, or game..." onkeyup="filterAndRenderOrders()">
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
                 <button class="filter-btn active" data-status="ALL" onclick="setStatusFilter('ALL', this)">All</button>
                 <button class="filter-btn" data-status="Pending" onclick="setStatusFilter('Pending', this)">Pending</button>
@@ -114,17 +116,18 @@
     <div id="orderModalOverlay" onclick="closeModalOnBackdrop(event)">
         <div class="modal-card">
             <div class="modal-header">
-                <h2 id="modalPhone">📱 Order Details</h2>
+                <h2 id="modalTitle">📱 Order Details</h2>
                 <button class="close-modal-btn" onclick="closeOrderModal()">✕</button>
             </div>
             <div class="modal-body">
                 <div class="modal-info-grid">
-                    <div class="modal-info-item"><div class="lbl">Phone ID</div><div class="val" id="modalPhoneVal">-</div></div>
+                    <div class="modal-info-item"><div class="lbl">Inputted Phone / ID</div><div class="val" id="modalPhoneVal">-</div></div>
+                    <div class="modal-info-item"><div class="lbl">WhatsApp Username</div><div class="val" id="modalWaVal" style="color:#25D366;">-</div></div>
                     <div class="modal-info-item"><div class="lbl">Service Type</div><div class="val" id="modalServiceVal">-</div></div>
                     <div class="modal-info-item"><div class="lbl">Storage Size</div><div class="val" id="modalStorageVal">-</div></div>
                     <div class="modal-info-item"><div class="lbl">Total Estimated Price</div><div class="val" id="modalPriceVal" style="color:#00e676;">-</div></div>
                     <div class="modal-info-item"><div class="lbl">Date Created</div><div class="val" id="modalDateVal">-</div></div>
-                    <div class="modal-info-item"><div class="lbl">Remarks</div><div class="val" id="modalRemarksVal">-</div></div>
+                    <div class="modal-info-item" style="grid-column: 1 / -1;"><div class="lbl">Remarks</div><div class="val" id="modalRemarksVal">-</div></div>
                 </div>
 
                 <div class="game-list-container">
@@ -153,7 +156,7 @@
             }
         };
 
-        // Event listener delegation for View Modal and Delete Buttons
+        // Event listener delegation for buttons
         document.addEventListener('click', function(e) {
             if (e.target) {
                 if (e.target.classList.contains('view-btn')) {
@@ -162,6 +165,9 @@
                 } else if (e.target.classList.contains('delete-btn')) {
                     const id = e.target.getAttribute('data-order-id');
                     deleteOrder(id);
+                } else if (e.target.classList.contains('edit-wa-btn')) {
+                    const id = e.target.getAttribute('data-order-id');
+                    editWhatsappUsername(id);
                 }
             }
         });
@@ -216,13 +222,12 @@
             filterAndRenderOrders();
         }
 
-        // Update order status in Supabase and refresh UI instantly
         async function updateStatus(orderId, newStatus) {
             const order = allOrders.find(item => String(item.id) === String(orderId) || String(item.order_id) === String(orderId));
             if (!order) return;
 
             const oldStatus = order.status;
-            order.status = newStatus; // Update local state immediately
+            order.status = newStatus;
 
             const idField = order.id ? 'id' : 'order_id';
             const { error } = await supabaseClient
@@ -232,10 +237,38 @@
 
             if (error) {
                 alert('Failed to update status in Supabase: ' + error.message);
-                order.status = oldStatus; // Revert on failure
+                order.status = oldStatus;
             }
 
             updateStats();
+            filterAndRenderOrders();
+        }
+
+        // Add or edit WhatsApp Username
+        async function editWhatsappUsername(orderId) {
+            const order = allOrders.find(o => String(o.id) === String(orderId) || String(o.order_id) === String(orderId));
+            if (!order) return;
+
+            const currentWa = order.whatsapp_username || '';
+            const newWa = prompt("Enter WhatsApp Username or Contact Name:", currentWa);
+            
+            if (newWa === null) return; // Cancelled
+
+            const trimmedWa = newWa.trim();
+            const oldWa = order.whatsapp_username;
+            order.whatsapp_username = trimmedWa;
+
+            const idField = order.id ? 'id' : 'order_id';
+            const { error } = await supabaseClient
+                .from('orders')
+                .update({ whatsapp_username: trimmedWa })
+                .eq(idField, orderId);
+
+            if (error) {
+                alert('Failed to update WhatsApp username: ' + error.message);
+                order.whatsapp_username = oldWa;
+            }
+
             filterAndRenderOrders();
         }
 
@@ -248,6 +281,7 @@
                 if (currentStatusFilter !== 'ALL' && orderStatus !== currentStatusFilter) return false;
                 if (query) {
                     const phoneMatch = order.phone_ending && order.phone_ending.toLowerCase().includes(query);
+                    const waMatch = order.whatsapp_username && order.whatsapp_username.toLowerCase().includes(query);
                     
                     let gameList = [];
                     if (Array.isArray(order.games)) gameList = order.games;
@@ -255,7 +289,7 @@
                         try { gameList = JSON.parse(order.games); } catch(e) { gameList = order.games.split(','); }
                     }
                     const gameMatch = gameList.some(g => String(g).toLowerCase().includes(query));
-                    return phoneMatch || gameMatch;
+                    return phoneMatch || waMatch || gameMatch;
                 }
                 return true;
             });
@@ -285,9 +319,19 @@
                     ? gameList.slice(0, 3).map((g, i) => `<div>${i + 1}. ${g}</div>`).join('') + (gameList.length > 3 ? `<div style="color:#00e676; margin-top:4px;">+ ${gameList.length - 3} more games...</div>` : '')
                     : '<em>No games selected</em>';
 
+                const waDisplay = order.whatsapp_username 
+                    ? `<span style="color:#25D366;">💬 WA: ${order.whatsapp_username}</span>` 
+                    : `<span style="color:#777; font-style:italic;">💬 WA: Not assigned</span>`;
+
                 card.innerHTML = `
                     <div class="order-header">
-                        <div class="customer-id">📱 Phone ID: ${order.phone_ending || 'N/A'}</div>
+                        <div class="customer-info">
+                            <div>📱 Phone Input: ${order.phone_ending || 'N/A'}</div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                ${waDisplay}
+                                <button class="edit-wa-btn" data-order-id="${orderId}">✏️ Edit WA</button>
+                            </div>
+                        </div>
                         <div style="font-size:12px; color:#888;">${order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}</div>
                     </div>
                     <div class="order-body">
@@ -301,7 +345,7 @@
                             <div style="max-height:80px; overflow-y:auto; font-size:12px; margin-top:4px;">${gamesPreview}</div>
                         </div>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                         <div>
                             <span style="font-size:12px; color:#aaa;">Status: </span>
                             <select class="status-select" onchange="updateStatus('${orderId}', this.value)">
@@ -329,8 +373,9 @@
                 return;
             }
 
-            document.getElementById('modalPhone').innerText = `📱 Order Details: ${order.phone_ending || 'N/A'}`;
+            document.getElementById('modalTitle').innerText = `📱 Order Details: ${order.phone_ending || 'N/A'}`;
             document.getElementById('modalPhoneVal').innerText = order.phone_ending || 'N/A';
+            document.getElementById('modalWaVal').innerText = order.whatsapp_username || 'Not assigned';
             document.getElementById('modalServiceVal').innerText = order.service_type || 'N/A';
             document.getElementById('modalStorageVal').innerText = `${order.sd_card_size || order.free_storage_gb || 0} GB`;
             document.getElementById('modalPriceVal').innerText = `RM${Math.round(order.estimated_price || 0)}`;
