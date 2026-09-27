@@ -1672,16 +1672,20 @@
             if (count < 3) {
                 targetCount = 3;
                 isFreeGamesNotice = true;
-            } else if (count > 3 && count <= 19) {
-                targetCount = 19; 
-            } else if (count >= 20 && count <= 39) {
-                targetCount = 39; 
+            } else if (count >= 3 && count < 10) {
+                targetCount = 10;
+            } else if (count >= 10 && count < 20) {
+                targetCount = 20;
+            } else if (count >= 20 && count < 40) {
+                targetCount = 40;
             }
         } else {
-            if (count > 0 && count <= 19) {
-                targetCount = 19;
-            } else if (count >= 20 && count <= 39) {
-                targetCount = 39;
+            if (count > 0 && count < 10) {
+                targetCount = 10;
+            } else if (count >= 10 && count < 20) {
+                targetCount = 20;
+            } else if (count >= 20 && count < 40) {
+                targetCount = 40;
             }
         }
 
@@ -1704,8 +1708,8 @@
                         targetCount: targetCount,
                         remaining: diff,
                         msg: currentLang === 'bm'
-                            ? `💡 <strong>Peluang Pakej:</strong> Anda memilih <strong>${count} game</strong> (${count - 3} berbayar). Anda boleh memilih <strong>${diff} lagi game</strong> (sehingga ${targetCount} jumlah keseluruhan) tanpa menaikkan peringkat harga per-game!`
-                            : `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong> (${count - 3} paid). You can choose <strong>${diff} more game(s)</strong> (up to ${targetCount} total) without moving to a higher per-game pricing tier!`
+                            ? `💡 <strong>Peluang Pakej:</strong> Anda memilih <strong>${count} game</strong>. Anda boleh memilih <strong>${diff} lagi game</strong> (sehingga <strong>${targetCount} game</strong>) untuk mencapai tier ${targetCount} game!`
+                            : `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong>. You can choose <strong>${diff} more game(s)</strong> (up to <strong>${targetCount} total</strong>) to reach the ${targetCount} games tier!`
                     };
                 }
             } else {
@@ -1714,8 +1718,8 @@
                     targetCount: targetCount,
                     remaining: diff,
                     msg: currentLang === 'bm'
-                        ? `💡 <strong>Peluang Pakej:</strong> Anda memilih <strong>${count} game</strong>. Anda boleh memilih <strong>${diff} lagi game</strong> (sehingga ${targetCount} game) untuk menikmati kadar per-game yang lebih rendah!`
-                        : `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong>. You can choose <strong>${diff} more game(s)</strong> (up to ${targetCount} games) to benefit from a better per-game rate!`
+                        ? `💡 <strong>Peluang Pakej:</strong> Anda memilih <strong>${count} game</strong>. Anda boleh memilih <strong>${diff} lagi game</strong> (sehingga <strong>${targetCount} game</strong>) untuk mencapai tier ${targetCount} game!`
+                        : `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong>. You can choose <strong>${diff} more game(s)</strong> (up to <strong>${targetCount} total</strong>) to reach the ${targetCount} games tier!`
                 };
             }
         }
