@@ -13,7 +13,7 @@
             color: #ffffff;
             margin: 0;
             padding: 20px;
-            padding-bottom: 100px;
+            padding-bottom: 110px;
         }
         .container {
             max-width: 900px;
@@ -243,6 +243,20 @@
         .storage-warning-banner .warning-icon {
             font-size: 20px;
         }
+        /* Tier Warning Banner */
+        .tier-warning-banner {
+            background: #2d2612;
+            border: 1px solid #ffca28;
+            color: #fff8e1;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 15px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            line-height: 1.4;
+        }
         /* Search Bar Section */
         .search-container {
             margin-bottom: 15px;
@@ -416,7 +430,7 @@
             width: 100%;
             background: #1e1e1e;
             border-top: 1px solid #333;
-            padding: 15px 20px;
+            padding: 12px 20px;
             box-sizing: border-box;
             display: flex;
             justify-content: space-between;
@@ -562,6 +576,15 @@
             border-radius: 6px;
             font-size: 13px;
             margin-bottom: 10px;
+            display: none;
+        }
+        .modal-tier-warning {
+            background: #2d2612;
+            border: 1px solid #ffca28;
+            color: #fff8e1;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 13px;
             display: none;
         }
         .price-breakdown-box {
@@ -783,6 +806,12 @@
             <span id="storageWarningText">Please enter your <strong>Phone ID (4 digits)</strong> and storage capacity to unlock game selection.</span>
         </div>
 
+        <!-- Dynamic Package Tier Recommendation Banner -->
+        <div id="tierWarningBanner" class="tier-warning-banner">
+            <span>💡</span>
+            <span id="tierWarningText">You can add more games to reach your package limit at no extra cost!</span>
+        </div>
+
         <!-- Jailbreak Notice Card -->
         <div id="jailbreakNoticeCard" class="jailbreak-notice-card">
             <h3>🎁 You get 3 Free Games with your Full Jailbreak!</h3>
@@ -827,6 +856,8 @@
                 <button class="close-modal" onclick="closeCartModal()">&times;</button>
             </div>
             <div id="cartModalBody" class="modal-body"></div>
+
+            <div id="modalTierWarning" class="modal-tier-warning"></div>
             
             <div id="sizeWarningBox" class="warning-box">
                 ⚠️ <strong>Size Tolerance Alert:</strong> Your total storage size has exceeded standard buffer limits for this tier. Pricing has adjusted accordingly.
@@ -944,7 +975,6 @@
                 gameSectionWrapper.style.display = 'block';
             }
         } else {
-            // Games Only Flow
             consoleModelGroup.style.display = 'none';
             sdSourceGroup.style.display = 'none';
             sdCardGroup.style.display = 'none';
@@ -1053,7 +1083,6 @@
             document.getElementById('storageBreakdown').innerHTML = breakdownText;
 
         } else {
-            // Games Only Logic - Enforce Free Storage Entry
             const userSpace = parseFloat(freeInput.value);
 
             if (isNaN(userSpace) || userSpace <= 0) {
@@ -1337,6 +1366,51 @@
         };
     }
 
+    function checkTierRecommendation(count, serviceType) {
+        let targetCount = 0;
+        let freeBonus = (serviceType === 'jailbreak') ? 3 : 0;
+        let effectiveCount = count;
+
+        if (serviceType === 'jailbreak') {
+            if (count > 0 && count < 13) {
+                targetCount = 13; // 3 Free + 10 Paid
+            } else if (count >= 14 && count < 23) {
+                targetCount = 23; // 3 Free + 20 Paid (Flat RM50)
+            } else if (count >= 24 && count < 43) {
+                targetCount = 43; // 3 Free + 40 Paid (Flat RM80)
+            }
+        } else {
+            if (count > 0 && count < 10) {
+                targetCount = 10;
+            } else if (count >= 11 && count < 20) {
+                targetCount = 20;
+            } else if (count >= 21 && count < 40) {
+                targetCount = 40;
+            }
+        }
+
+        if (targetCount > 0 && count < targetCount) {
+            let diff = targetCount - count;
+            if (serviceType === 'jailbreak') {
+                return {
+                    hasWarning: true,
+                    targetCount: targetCount,
+                    remaining: diff,
+                    msg: `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong>. Your full jailbreak includes <strong>3 free games</strong>, so you can select up to <strong>${targetCount} games total</strong> (${diff} more games) without moving to a higher pricing tier!`
+                };
+            } else {
+                return {
+                    hasWarning: true,
+                    targetCount: targetCount,
+                    remaining: diff,
+                    msg: `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong>. You can choose <strong>${diff} more game(s)</strong> (up to ${targetCount} games) to fully maximize this pricing tier rate!`
+                };
+            }
+        }
+
+        return { hasWarning: false, targetCount: 0, remaining: 0, msg: '' };
+    }
+
     function updateCartSummary() {
         const count = selectedGames.size;
         const serviceType = document.getElementById('serviceTypeSelect').value;
@@ -1351,6 +1425,18 @@
         document.getElementById('remainderSize').innerText = remainderSize.toFixed(1);
         document.getElementById('selectedPrice').innerText = `RM${Math.round(details.price)}`;
 
+        // Dynamic Tier Recommendation Check
+        const tierRec = checkTierRecommendation(count, serviceType);
+        const banner = document.getElementById('tierWarningBanner');
+        const bannerText = document.getElementById('tierWarningText');
+
+        if (tierRec.hasWarning) {
+            banner.style.display = 'flex';
+            bannerText.innerHTML = tierRec.msg;
+        } else {
+            banner.style.display = 'none';
+        }
+
         const subtext = document.getElementById('checkoutSubtext');
         if (serviceType === 'jailbreak') {
             if (count === 0) {
@@ -1359,10 +1445,10 @@
                 subtext.innerHTML = `(${count} free games selected, ${3 - count} more free available) | Tap to review`;
             } else {
                 const chargeable = count - 3;
-                subtext.innerHTML = `(3 free + ${chargeable} addon chargeable) | Tap to review`;
+                subtext.innerHTML = `(3 free + ${chargeable} addon) ${tierRec.hasWarning ? '⚠️ Package limit incomplete' : ''} | Tap to review`;
             }
         } else {
-            subtext.innerHTML = 'Tap here to review & add remarks';
+            subtext.innerHTML = `${tierRec.hasWarning ? '⚠️ Tier package limit incomplete | ' : ''}Tap here to review & add remarks`;
         }
     }
 
@@ -1663,6 +1749,16 @@
             warningBox.style.display = 'none';
         }
 
+        // Modal Tier Recommendation Alert
+        const tierRec = checkTierRecommendation(count, serviceType);
+        const modalTierBox = document.getElementById('modalTierWarning');
+        if (tierRec.hasWarning) {
+            modalTierBox.style.display = 'block';
+            modalTierBox.innerHTML = tierRec.msg;
+        } else {
+            modalTierBox.style.display = 'none';
+        }
+
         let summaryText = `${count} games total`;
         if (serviceType === 'jailbreak') {
             if (count <= 3) {
@@ -1711,6 +1807,17 @@
         const phone = document.getElementById('phoneInput').value.trim();
         const serviceType = document.getElementById('serviceTypeSelect').value;
         const count = selectedGames.size;
+
+        const tierRec = checkTierRecommendation(count, serviceType);
+        if (tierRec.hasWarning) {
+            const confirmProceed = confirm(
+                `💡 Tier Package Notice:\n\nYou selected ${count} games.\n` +
+                (serviceType === 'jailbreak' 
+                    ? `Because your Jailbreak includes 3 free games, you can select up to ${tierRec.targetCount} games total (${tierRec.remaining} more games) at no additional tier cost!\n\nDo you still want to save your order now, or go back and add more games?`
+                    : `You can add ${tierRec.remaining} more game(s) (up to ${tierRec.targetCount} games) to fully maximize your current pricing tier!\n\nDo you still want to save your order now, or go back and add more games?`)
+            );
+            if (!confirmProceed) return;
+        }
 
         if (serviceType === 'jailbreak') {
             if (count < 3) {
@@ -1784,7 +1891,6 @@
                     .insert([orderData]);
             }
 
-            // Fallback: If free_storage_gb column missing, strip it and retry so order save never crashes
             if (saveResult.error && saveResult.error.message.includes('free_storage_gb')) {
                 delete orderData.free_storage_gb;
                 if (existing && existing.length > 0) {
