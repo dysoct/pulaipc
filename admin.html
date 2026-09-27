@@ -366,7 +366,7 @@
             });
         }
 
-        // OPEN MODAL POPUP (Fetches fresh data from database to ensure latest edits are shown)
+        // OPEN MODAL POPUP (Fetches fresh data and sorts games by config.js order)
         async function openOrderModal(orderId) {
             const idField = String(orderId).length > 10 ? 'id' : 'order_id';
             
@@ -409,6 +409,18 @@
                 } catch(e) {
                     gameList = order.games.split(',').map(g => g.trim());
                 }
+            }
+
+            // Sort games by config.js master list order if available
+            const masterList = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.gamesList) ? APP_CONFIG.gamesList : [];
+            if (masterList.length > 0) {
+                gameList.sort((a, b) => {
+                    const indexA = masterList.indexOf(a);
+                    const indexB = masterList.indexOf(b);
+                    if (indexA === -1) return 1;
+                    if (indexB === -1) return -1;
+                    return indexA - indexB;
+                });
             }
 
             if (gameList && gameList.length > 0) {
