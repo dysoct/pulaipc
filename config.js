@@ -1,4 +1,4 @@
-﻿// config.js - Central configuration for pricing, games, and backend credentials
+// config.js - Central configuration for pricing, games, and backend credentials
 
 const APP_CONFIG = {
     // Supabase Backend Credentials
@@ -14,12 +14,9 @@ const APP_CONFIG = {
 
     // SD Card retail prices if they buy a card from you (RM)
     sdCardRetailPrices: {
-        64: 30,
-        128: 45,
-        256: 75,
-        512: 140,
-        1024: 280,
-        2048: 600
+        128: 110,
+        256: 200,
+        512: 400,
     },
 
     // Additional system mode pricing (+RM30 each)
