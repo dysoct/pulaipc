@@ -1875,7 +1875,7 @@
         openCartModal();
     }
 
-    async function submitOrUpdateOrder() {
+async function submitOrUpdateOrder() {
         if (!validatePhoneProvided()) return;
 
         const phone = document.getElementById('phoneInput').value.trim();
@@ -1889,8 +1889,8 @@
                 (serviceType === 'jailbreak' 
                     ? (count < 3
                         ? `You selected ${count} game(s), but your Jailbreak includes 3 FREE games!\n\nDo you want to save your order now or go back and pick your remaining free games?`
-                        : `Because your Jailbreak includes 3 free games, you can select up to ${tierRec.targetCount} games total (${tierRec.remaining} more games) at no additional tier cost!\n\nDo you still want to save your order now, or go back and add more games?`)
-                    : `You can add ${tierRec.remaining} more game(s) (up to ${tierRec.targetCount} games) to fully maximize your current pricing tier!\n\nDo you still want to save your order now, or go back and add more games?`)
+                        : `Because your Jailbreak includes 3 free games, you can select up to \({tierRec.targetCount} games total (\){tierRec.remaining} more games) at no additional tier cost!\n\nDo you still want to save your order now, or go back and add more games?`)
+                    : `You can add \({tierRec.remaining} more game(s) (up to\){tierRec.targetCount} games) to fully maximize your current pricing tier!\n\nDo you still want to save your order now, or go back and add more games?`)
             );
             if (!confirmProceed) return;
         }
@@ -1929,113 +1929,68 @@
         const finalPrice = Math.round(details.price);
 
         try {
-            const { data: existing, error: queryErr } = await supabaseClient
-                .from('orders')
-                .select('id, created_at')
-                .eq('phone_ending', phone);
-
-            if (queryErr) throw queryErr;
-
-            const nowIso = new Date().toISOString();
-            
-            const orderData = {
+            const orderPayload = {
                 phone_ending: phone,
-                games: gameNamesArray,
-                total_games: count,
-                remarks: remarksText,
-                sd_card_size: serviceType === 'jailbreak' ? maxSdSize : null,
-                free_storage_gb: serviceType === 'games_only' ? parseFloat(freeStorageInput) : null,
-                sd_source: sdSource,
                 service_type: serviceType,
                 console_model: serviceType === 'jailbreak' ? consoleModel : null,
-                total_size_gb: totalGamesSize,
-                estimated_price: finalPrice,
+                sd_source: sdSource,
+                sd_card_size: serviceType === 'jailbreak' ? maxSdSize : null,
+                free_storage_gb: serviceType === 'games_only' ? parseFloat(freeStorageInput) : null,
                 android_mode: androidSelected,
                 linux_mode: linuxSelected,
-                status: 'Pending',
-                updated_at: nowIso
+                games: gameNamesArray,
+                total_size_gb: parseFloat(totalGamesSize.toFixed(1)),
+                estimated_price: finalPrice,
+                remarks: remarksText,
+                updated_at: new Date().toISOString()
             };
 
-            let saveResult;
-            if (existing && existing.length > 0) {
-                saveResult = await supabaseClient
-                    .from('orders')
-                    .update(orderData)
-                    .eq('phone_ending', phone);
-            } else {
-                orderData.created_at = nowIso;
-                saveResult = await supabaseClient
-                    .from('orders')
-                    .insert([orderData]);
-            }
+            // Upsert order in Supabase based on phone_ending
+            const { error } = await supabaseClient
+                .from('orders')
+                .upsert(orderPayload, { onConflict: 'phone_ending' });
 
-            if (saveResult.error) throw saveResult.error;
+            if (error) throw error;
 
-            alert('Order updated and saved successfully!');
             closeCartModal();
             
-            const statusMsg = document.getElementById('statusMsg');
-            if (statusMsg) {
-                statusMsg.innerText = 'Order successfully updated in system!';
+            // Build WhatsApp message
+            let msg = `🎮 *New Pulai PC Order / Update*\n`;
+            msg += `📱 Customer ID (Phone Last 4): *${phone}*\n`;
+            msg += `🛠️ Service: *\({serviceType === 'jailbreak' ? `Full Jailbreak (\){consoleModel})` : 'Games Only'}*\n`;
+            
+            if (serviceType === 'jailbreak') {
+                msg += `💾 SD Card: *\({maxSdSize}GB (\){sdSource === 'buy' ? 'Purchasing New' : 'Own Card'})*\n`;
+                if (androidSelected) msg += `🤖 Addon: *Android Mode*\n`;
+                if (linuxSelected) msg += `🐧 Addon: *Linux Mode*\n`;
+            } else {
+                msg += `📊 Stated Free Space: *${freeStorageInput} GB*\n`;
             }
 
-            // Immediately trigger WhatsApp prompt after a successful save
-            shareOrderViaWhatsApp();
+            msg += `📦 Selected Games (\({count} games, ~\){totalGamesSize.toFixed(1)} GB):\n`;
+            gameNamesArray.forEach((g, idx) => {
+                msg += `\({idx + 1}.\){g}\n`;
+            });
+
+            if (remarksText) {
+                msg += `💬 Remarks: ${remarksText}\n`;
+            }
+
+            msg += `\n💰 *Total Estimated Price: RM${finalPrice}*`;
+
+            // Retrieve WhatsApp number dynamically from config.js
+            const whatsappNum = APP_CONFIG.whatsappNumber;
+            const whatsappUrl = `https://wa.me/\({whatsappNum}?text=\){encodeURIComponent(msg)}`;
+            
+            window.open(whatsappUrl, '_blank');
 
         } catch (err) {
             console.error(err);
-            alert('Failed to save order: ' + (err.message || 'Check console details.'));
+            alert('Failed to save order. Please check your connection and try again.');
         } finally {
             btn.innerText = 'Save Changes';
             btn.disabled = false;
         }
-    }
-
-    function shareOrderViaWhatsApp() {
-        const phone = document.getElementById('phoneInput').value.trim();
-        const serviceType = document.getElementById('serviceTypeSelect').value;
-        const consoleModel = document.getElementById('consoleModelSelect').value;
-        const sdSource = document.getElementById('sdSourceSelect').value;
-        const androidChecked = document.getElementById('androidModeCheck').checked;
-        const linuxChecked = document.getElementById('linuxModeCheck').checked;
-        const remarks = document.getElementById('orderRemarks').value.trim();
-        
-        const count = selectedGames.size;
-        let totalGamesSize = 0;
-        selectedGames.forEach(size => { totalGamesSize += size; });
-        const details = calculatePriceDetails(count, totalGamesSize);
-
-        let message = `🎮 *New Pulai PC Order / Inquiry*\n`;
-        message += `━━━━━━━━━━━━━━━━━━━\n`;
-        message += `📱 *Phone ID (Last 4):* ${phone}\n`;
-        message += `🔧 *Service Type:* ${serviceType === 'jailbreak' ? `Full Jailbreak (${consoleModel})` : 'Games Only'}\n`;
-
-        if (serviceType === 'jailbreak') {
-            let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
-            message += `💾 *SD Card:* ${displayCardLabel} (${sdSource === 'buy' ? 'New Purchase' : 'Own Card'})\n`;
-            if (androidChecked) message += `🤖 *Addon:* Android Mode\n`;
-            if (linuxChecked) message += `🐧 *Addon:* Linux Mode\n`;
-        } else {
-            const freeStorageInput = document.getElementById('userFreeStorageInput').value;
-            message += `📊 *Free Storage:* ${freeStorageInput || 0} GB\n`;
-        }
-
-        message += `━━━━━━━━━━━━━━━━━━━\n`;
-        message += `📦 *Selected Games:* ${count} games (${totalGamesSize.toFixed(1)} GB total)\n`;
-
-        if (remarks) {
-            message += `━━━━━━━━━━━━━━━━━━━\n`;
-            message += `📝 *Remarks:* ${remarks}\n`;
-        }
-
-        message += `━━━━━━━━━━━━━━━━━━━\n`;
-        message += `💰 *Total Estimated Price:* RM${Math.round(details.price)}`;
-
-        const businessWhatsAppNumber = '601165676869';
-        const encodedMessage = encodeURIComponent(message);
-        const whatsappUrl = `https://wa.me/${businessWhatsAppNumber}?text=${encodedMessage}`;
-        
-        window.open(whatsappUrl, '_blank');
     }
     </script>
 </body>

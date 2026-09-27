@@ -5,6 +5,9 @@ const APP_CONFIG = {
     supabaseUrl: 'https://mwxndccwzkcsyvslucjg.supabase.co',
     supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13eG5kY2N3emtjc3l2c2x1Y2pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0MTY1MjksImV4cCI6MjEwNTk5MjUyOX0.61NvDZ6cPnxLqoxJ4tr-H729a99h_XOAZDXo3zfx25g',
 
+    // Business WhatsApp Number (format without '+' or spaces, e.g. Country Code + Number)
+    whatsappNumber: '601165676869',
+
     // Jailbreak base prices by console model
     jailbreakPrices: {
         'OLED': 300,
@@ -366,8 +369,3 @@ const games = [
       { name: "YS X Nordics (JAP)", size: 4.9 },
       { name: "Zombie Army Trilogy", size: 3.98 }
     ];
-
-
-
-
-
