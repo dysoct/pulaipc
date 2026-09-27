@@ -1665,64 +1665,58 @@
         };
     }
 
-    function checkTierRecommendation(count, serviceType) {
-        let targetCount = 0;
-        let isFreeGamesNotice = false;
+function checkTierRecommendation(count, serviceType) {
+    let targetCount = 0;
+    let isFreeGamesNotice = false;
 
-        if (serviceType === 'jailbreak') {
-            if (count < 3) {
-                targetCount = 3;
-                isFreeGamesNotice = true;
-            } else if (count >= 3 && count < 10) {
-                targetCount = 10;
-            } else if (count >= 10 && count < 20) {
-                targetCount = 20;
-            } else if (count >= 20 && count < 40) {
-                targetCount = 40;
-            }
-        } else {
-            if (count > 0 && count < 10) {
-                targetCount = 10;
-            } else if (count >= 10 && count < 20) {
-                targetCount = 20;
-            } else if (count >= 20 && count < 40) {
-                targetCount = 40;
-            }
+    if (serviceType === 'jailbreak') {
+        if (count < 3) {
+            targetCount = 3;
+            isFreeGamesNotice = true;
+        } else if (count >= 3 && count < 10) {
+            targetCount = 10;
+        } else if (count >= 10 && count < 20) {
+            targetCount = 20;
+        } else if (count >= 20 && count < 40) {
+            targetCount = 40;
         }
-
-        if (targetCount > 0 && count < targetCount) {
-            let diff = targetCount - count;
-
-            if (serviceType === 'jailbreak') {
-                if (isFreeGamesNotice) {
-                    return {
-                        hasWarning: true,
-                        targetCount: targetCount,
-                        remaining: diff,
-                        msg: currentLang === 'bm' 
-                            ? `🎁 <strong>Game Percuma Tersedia:</strong> Anda memilih <strong>${count} game</strong>. Pakej Jailbreak Penuh anda merangkumi <strong>3 game PERCUMA</strong>—anda boleh pilih <strong>${diff} lagi game percuma</strong>!`
-                            : `🎁 <strong>Free Games Available:</strong> You selected <strong>${count} game(s)</strong>. Your Full Jailbreak package includes <strong>3 FREE games</strong>—you can select <strong>${diff} more free game(s)</strong>!`
-                    };
-                } else {
-                    return {
-                        hasWarning: false,
-                        targetCount: targetCount,
-                        remaining: diff,
-                        msg: ''
-                    };
-                }
-            } else {
-                return {
-                    hasWarning: false,
-                    targetCount: targetCount,
-                    remaining: diff,
-                    msg: ''
-                };
-            }
+    } else {
+        if (count > 0 && count < 10) {
+            targetCount = 10;
+        } else if (count >= 10 && count < 20) {
+            targetCount = 20;
+        } else if (count >= 20 && count < 40) {
+            targetCount = 40;
         }
-
-        return { hasWarning: false, targetCount: 0, remaining: 0, msg: '' };
     }
+
+    if (targetCount > 0 && count < targetCount) {
+        let diff = targetCount - count;
+
+        if (serviceType === 'jailbreak' && isFreeGamesNotice) {
+            return {
+                hasWarning: true,
+                targetCount: targetCount,
+                remaining: diff,
+                msg: currentLang === 'bm' 
+                    ? `🎁 **Game Percuma Tersedia:** Anda memilih **${count} game**. Pakej Jailbreak Penuh anda merangkumi **3 game PERCUMA**—anda boleh pilih **${diff} lagi game percuma**!`
+                    : `🎁 **Free Games Available:** You selected **${count} game(s)**. Your Full Jailbreak package includes **3 FREE games**—you can select **${diff} more free game(s)**!`
+            };
+        } else {
+            // Enable warning and text for tier upgrades (10, 20, 40 games)
+            return {
+                hasWarning: true,
+                targetCount: targetCount,
+                remaining: diff,
+                msg: currentLang === 'bm'
+                    ? `💡 **Tingkatkan Pakej:** Tambah **${diff} lagi game** untuk mencapai **${targetCount} game** dan menikmati kadar harga yang lebih murah!`
+                    : `💡 **Tier Upgrade:** Add **${diff} more game(s)** to reach **${targetCount} games** and unlock better per-game rates!`
+            };
+        }
+    }
+
+    return { hasWarning: false, targetCount: 0, remaining: 0, msg: '' };
+}
 
     function updateCartSummary() {
         const count = selectedGames.size;
