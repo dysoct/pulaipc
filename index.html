@@ -841,7 +841,10 @@
 
             <div class="modal-footer">
                 <span id="modalTotal" style="color: #aaa; font-size: 12px; line-height: 1.4;">0 games total</span>
-                <button class="submit-btn" onclick="submitOrUpdateOrder()">Save Changes</button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="submit-btn" onclick="submitOrUpdateOrder()">Save Changes</button>
+                    <button id="whatsappShareBtn" class="submit-btn" style="background-color: #25D366; color: #fff; display: none;" onclick="shareOrderViaWhatsApp()">📱 Send to WhatsApp</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1571,6 +1574,9 @@
                 
                 if (selectedGames.size > 0) revealGameSection();
 
+                // Show WhatsApp button since order exists
+                document.getElementById('whatsappShareBtn').style.display = 'block';
+
                 if (statusMsg) {
                     statusMsg.style.color = '#00e676';
                     statusMsg.innerText = `Loaded previous order! (${selectedGames.size} games found)`;
@@ -1970,6 +1976,10 @@
             if (saveResult.error) throw saveResult.error;
 
             alert('Order updated and saved successfully!');
+            
+            // Reveal the WhatsApp share button upon successful save
+            document.getElementById('whatsappShareBtn').style.display = 'block';
+
             closeCartModal();
             const statusMsg = document.getElementById('statusMsg');
             if (statusMsg) {
@@ -1983,6 +1993,59 @@
             btn.innerText = 'Save Changes';
             btn.disabled = false;
         }
+    }
+
+    function shareOrderViaWhatsApp() {
+        const phone = document.getElementById('phoneInput').value.trim();
+        const serviceType = document.getElementById('serviceTypeSelect').value;
+        const consoleModel = document.getElementById('consoleModelSelect').value;
+        const sdSource = document.getElementById('sdSourceSelect').value;
+        const androidChecked = document.getElementById('androidModeCheck').checked;
+        const linuxChecked = document.getElementById('linuxModeCheck').checked;
+        const remarks = document.getElementById('orderRemarks').value.trim();
+        
+        const count = selectedGames.size;
+        let totalGamesSize = 0;
+        selectedGames.forEach(size => { totalGamesSize += size; });
+        const details = calculatePriceDetails(count, totalGamesSize);
+
+        let message = `🎮 *New Pulai PC Order / Inquiry*\n`;
+        message += `━━━━━━━━━━━━━━━━━━━\n`;
+        message += `📱 *Phone ID (Last 4):* ${phone}\n`;
+        message += `🔧 *Service Type:* ${serviceType === 'jailbreak' ? `Full Jailbreak (${consoleModel})` : 'Games Only'}\n`;
+
+        if (serviceType === 'jailbreak') {
+            let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
+            message += `💾 *SD Card:* ${displayCardLabel} (${sdSource === 'buy' ? 'New Purchase' : 'Own Card'})\n`;
+            if (androidChecked) message += `🤖 *Addon:* Android Mode\n`;
+            if (linuxChecked) message += `🐧 *Addon:* Linux Mode\n`;
+        } else {
+            const freeStorageInput = document.getElementById('userFreeStorageInput').value;
+            message += `📊 *Free Storage:* ${freeStorageInput || 0} GB\n`;
+        }
+
+        message += `━━━━━━━━━━━━━━━━━━━\n`;
+        message += `📦 *Selected Games (${count} games - ${totalGamesSize.toFixed(1)} GB):*\n`;
+        
+        let index = 1;
+        selectedGames.forEach((size, gameName) => {
+            message += `${index}. ${gameName} (${size}GB)\n`;
+            index++;
+        });
+
+        if (remarks) {
+            message += `━━━━━━━━━━━━━━━━━━━\n`;
+            message += `📝 *Remarks:* ${remarks}\n`;
+        }
+
+        message += `━━━━━━━━━━━━━━━━━━━\n`;
+        message += `💰 *Total Estimated Price:* RM${Math.round(details.price)}`;
+
+        const businessWhatsAppNumber = '601165676869';
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappUrl = `https://wa.me/${businessWhatsAppNumber}?text=${encodedMessage}`;
+        
+        window.open(whatsappUrl, '_blank');
     }
     </script>
 </body>
