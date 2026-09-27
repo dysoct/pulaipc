@@ -179,42 +179,44 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            min-width: 110px;
+            min-width: 120px;
         }
         .phone-input {
             width: 100%;
             text-align: center;
         }
         .input-hint {
-            font-size: 11px;
+            font-size: 10.5px;
             color: #888;
             margin-top: 3px;
             text-align: center;
         }
         .btn-group {
             display: flex;
-            gap: 5px;
+            gap: 6px;
         }
         .lookup-btn {
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            padding: 12px 14px;
-            font-size: 14px;
-            font-weight: bold;
+            background-color: #2a2a2a;
+            color: #2196F3;
+            border: 1px solid #2196F3;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-weight: 600;
             border-radius: 6px;
             cursor: pointer;
             height: 47px;
+            white-space: nowrap;
         }
         .lookup-btn:hover {
-            background-color: #1976D2;
+            background-color: #2196F3;
+            color: #ffffff;
         }
         .clear-btn {
             background-color: #424242;
             color: #ff5252;
             border: 1px solid #ff5252;
-            padding: 12px 14px;
-            font-size: 14px;
+            padding: 10px 12px;
+            font-size: 13px;
             font-weight: bold;
             border-radius: 6px;
             cursor: pointer;
@@ -720,7 +722,7 @@
                 </div>
 
                 <div class="btn-group">
-                    <button class="lookup-btn" onclick="fetchExistingOrder()" title="Load Saved Order">Load</button>
+                    <button class="lookup-btn" onclick="fetchExistingOrder()" title="Returning customer? Load your saved game list">📂 Load Saved Order</button>
                     <button class="clear-btn" onclick="clearAllSelections()" title="Clear All Games">Clear</button>
                 </div>
             </div>
@@ -1318,14 +1320,14 @@
         const statusMsg = document.getElementById('statusMsg');
 
         if (phone.length !== 4) {
-            alert('Please enter the exact last 4 digits of your phone number!');
+            alert('ℹ️ "Load Saved Order" is for returning customers who previously submitted an order.\n\nFirst time here? Just select your storage capacity and pick your games below!');
             document.getElementById('phoneInput').focus();
             return;
         }
 
         if (statusMsg) {
             statusMsg.style.color = '#2196F3';
-            statusMsg.innerText = 'Searching for your order...';
+            statusMsg.innerText = 'Searching for your saved order...';
         }
 
         try {
@@ -1346,30 +1348,15 @@
                     selectedGames.set(gameName, size);
                 });
                 
-                if (data[0].remarks) {
-                    document.getElementById('orderRemarks').value = data[0].remarks;
-                }
-
-                if (data[0].service_type) {
-                    document.getElementById('serviceTypeSelect').value = data[0].service_type;
-                }
-
+                if (data[0].remarks) document.getElementById('orderRemarks').value = data[0].remarks;
+                if (data[0].service_type) document.getElementById('serviceTypeSelect').value = data[0].service_type;
                 if (data[0].sd_card_size) {
                     document.getElementById('sdCardSelect').value = data[0].sd_card_size;
                     maxSdSize = parseInt(data[0].sd_card_size);
                 }
-
-                if (data[0].free_storage_gb) {
-                    document.getElementById('userFreeStorageInput').value = data[0].free_storage_gb;
-                }
-
-                if (data[0].sd_source) {
-                    document.getElementById('sdSourceSelect').value = data[0].sd_source;
-                }
-
-                if (data[0].console_model) {
-                    document.getElementById('consoleModelSelect').value = data[0].console_model;
-                }
+                if (data[0].free_storage_gb) document.getElementById('userFreeStorageInput').value = data[0].free_storage_gb;
+                if (data[0].sd_source) document.getElementById('sdSourceSelect').value = data[0].sd_source;
+                if (data[0].console_model) document.getElementById('consoleModelSelect').value = data[0].console_model;
 
                 document.getElementById('androidModeCheck').checked = !!data[0].android_mode;
                 document.getElementById('linuxModeCheck').checked = !!data[0].linux_mode;
@@ -1378,18 +1365,17 @@
                 updateSdLimit();
                 filterGames();
                 
-                if (selectedGames.size > 0) {
-                    revealGameSection();
-                }
+                if (selectedGames.size > 0) revealGameSection();
 
                 if (statusMsg) {
                     statusMsg.style.color = '#00e676';
                     statusMsg.innerText = `Loaded previous order! (${selectedGames.size} games found)`;
                 }
             } else {
+                alert('No previous saved order found for ID "' + phone + '". If this is your first visit, you can start picking games below!');
                 if (statusMsg) {
-                    statusMsg.style.color = '#ff5252';
-                    statusMsg.innerText = 'No existing order found for this 4-digit ID.';
+                    statusMsg.style.color = '#ff9800';
+                    statusMsg.innerText = 'No order found. Start picking games below!';
                 }
             }
         } catch (err) {
