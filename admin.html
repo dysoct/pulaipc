@@ -45,7 +45,7 @@
         .no-orders { text-align: center; padding: 40px; color: #666; background: #1a1a1a; border-radius: 8px; }
 
         /* FULL ORDER DETAILS MODAL */
-        #orderModalOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 10000; padding: 20px; box-sizing: border-box; }
+        #orderModalOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 99999; padding: 20px; box-sizing: border-box; }
         .modal-card { background: #1e1e1e; border: 1px solid #444; border-radius: 12px; width: 100%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .modal-header { padding: 18px 24px; background: #252525; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
         .modal-header h2 { margin: 0; color: #00e676; font-size: 20px; }
@@ -153,6 +153,19 @@
             }
         };
 
+        // Event listener delegation for View Modal and Delete Buttons
+        document.addEventListener('click', function(e) {
+            if (e.target) {
+                if (e.target.classList.contains('view-btn')) {
+                    const id = e.target.getAttribute('data-order-id');
+                    openOrderModal(id);
+                } else if (e.target.classList.contains('delete-btn')) {
+                    const id = e.target.getAttribute('data-order-id');
+                    deleteOrder(id);
+                }
+            }
+        });
+
         async function login() {
             const email = document.getElementById('adminEmail').value;
             const password = document.getElementById('adminPassword').value;
@@ -203,28 +216,25 @@
             filterAndRenderOrders();
         }
 
-        // Function to update order status in Supabase and refresh UI immediately
+        // Update order status in Supabase and refresh UI instantly
         async function updateStatus(orderId, newStatus) {
-            // 1. Find order in local array
-            const order = allOrders.find(item => item.id === orderId);
+            const order = allOrders.find(item => String(item.id) === String(orderId) || String(item.order_id) === String(orderId));
             if (!order) return;
 
-            // Save old status in case Supabase update fails
             const oldStatus = order.status;
-            order.status = newStatus; // Update locally right away for instant feedback
+            order.status = newStatus; // Update local state immediately
 
-            // 2. Send update request to Supabase
+            const idField = order.id ? 'id' : 'order_id';
             const { error } = await supabaseClient
                 .from('orders')
                 .update({ status: newStatus })
-                .eq('id', orderId);
+                .eq(idField, orderId);
 
             if (error) {
                 alert('Failed to update status in Supabase: ' + error.message);
-                order.status = oldStatus; // Revert back on error
+                order.status = oldStatus; // Revert on failure
             }
 
-            // 3. Re-calculate stats and re-render grid with new border colors/states
             updateStats();
             filterAndRenderOrders();
         }
@@ -238,7 +248,13 @@
                 if (currentStatusFilter !== 'ALL' && orderStatus !== currentStatusFilter) return false;
                 if (query) {
                     const phoneMatch = order.phone_ending && order.phone_ending.toLowerCase().includes(query);
-                    const gameMatch = order.games && order.games.some(g => g.toLowerCase().includes(query));
+                    
+                    let gameList = [];
+                    if (Array.isArray(order.games)) gameList = order.games;
+                    else if (typeof order.games === 'string') {
+                        try { gameList = JSON.parse(order.games); } catch(e) { gameList = order.games.split(','); }
+                    }
+                    const gameMatch = gameList.some(g => String(g).toLowerCase().includes(query));
                     return phoneMatch || gameMatch;
                 }
                 return true;
@@ -252,21 +268,27 @@
             container.innerHTML = '';
             filtered.forEach(order => {
                 const card = document.createElement('div');
+                const orderId = order.id || order.order_id;
                 
-                // Dynamically compute class based on current order.status
                 const currentStatus = order.status || 'Pending';
                 const statusClass = currentStatus.replace(/\s+/g, '-');
                 
                 card.className = `order-card status-${statusClass}`;
 
-                const gamesPreview = (order.games && order.games.length > 0) 
-                    ? order.games.slice(0, 3).map((g, i) => `<div>${i + 1}. ${g}</div>`).join('') + (order.games.length > 3 ? `<div style="color:#00e676; margin-top:4px;">+ ${order.games.length - 3} more games...</div>` : '')
+                let gameList = [];
+                if (Array.isArray(order.games)) gameList = order.games;
+                else if (typeof order.games === 'string') {
+                    try { gameList = JSON.parse(order.games); } catch(e) { gameList = order.games.split(','); }
+                }
+
+                const gamesPreview = (gameList && gameList.length > 0) 
+                    ? gameList.slice(0, 3).map((g, i) => `<div>${i + 1}. ${g}</div>`).join('') + (gameList.length > 3 ? `<div style="color:#00e676; margin-top:4px;">+ ${gameList.length - 3} more games...</div>` : '')
                     : '<em>No games selected</em>';
 
                 card.innerHTML = `
                     <div class="order-header">
-                        <div class="customer-id">📱 Phone ID: ${order.phone_ending}</div>
-                        <div style="font-size:12px; color:#888;">${new Date(order.created_at).toLocaleString()}</div>
+                        <div class="customer-id">📱 Phone ID: ${order.phone_ending || 'N/A'}</div>
+                        <div style="font-size:12px; color:#888;">${order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}</div>
                     </div>
                     <div class="order-body">
                         <div>
@@ -275,14 +297,14 @@
                             <strong>Remarks:</strong> ${order.remarks || 'None'}
                         </div>
                         <div>
-                            <strong>Games (${order.games ? order.games.length : 0}):</strong>
+                            <strong>Games (${gameList.length}):</strong>
                             <div style="max-height:80px; overflow-y:auto; font-size:12px; margin-top:4px;">${gamesPreview}</div>
                         </div>
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div>
                             <span style="font-size:12px; color:#aaa;">Status: </span>
-                            <select class="status-select" onchange="updateStatus('${order.id}', this.value)">
+                            <select class="status-select" onchange="updateStatus('${orderId}', this.value)">
                                 <option value="Pending" ${currentStatus === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
                                 <option value="In Progress" ${currentStatus === 'In Progress' ? 'selected' : ''}>🔧 In Progress</option>
                                 <option value="Completed" ${currentStatus === 'Completed' ? 'selected' : ''}>✅ Completed</option>
@@ -290,8 +312,8 @@
                             </select>
                         </div>
                         <div>
-                            <button class="view-btn" onclick="openOrderModal('${order.id}')">🔍 View Full Order</button>
-                            <button class="delete-btn" onclick="deleteOrder('${order.id}')">Delete</button>
+                            <button class="view-btn" data-order-id="${orderId}">🔍 View Full Order</button>
+                            <button class="delete-btn" data-order-id="${orderId}">Delete</button>
                         </div>
                     </div>
                 `;
@@ -301,23 +323,37 @@
 
         // OPEN MODAL POPUP
         function openOrderModal(orderId) {
-            const order = allOrders.find(o => o.id === orderId);
-            if (!order) return;
+            const order = allOrders.find(o => String(o.id) === String(orderId) || String(o.order_id) === String(orderId));
+            if (!order) {
+                alert("Could not load order details.");
+                return;
+            }
 
-            document.getElementById('modalPhone').innerText = `📱 Order Details: ${order.phone_ending}`;
+            document.getElementById('modalPhone').innerText = `📱 Order Details: ${order.phone_ending || 'N/A'}`;
             document.getElementById('modalPhoneVal').innerText = order.phone_ending || 'N/A';
             document.getElementById('modalServiceVal').innerText = order.service_type || 'N/A';
             document.getElementById('modalStorageVal').innerText = `${order.sd_card_size || order.free_storage_gb || 0} GB`;
             document.getElementById('modalPriceVal').innerText = `RM${Math.round(order.estimated_price || 0)}`;
-            document.getElementById('modalDateVal').innerText = new Date(order.created_at).toLocaleString();
+            document.getElementById('modalDateVal').innerText = order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A';
             document.getElementById('modalRemarksVal').innerText = order.remarks || 'None';
 
             const gameGrid = document.getElementById('modalGameGrid');
             gameGrid.innerHTML = '';
 
-            if (order.games && order.games.length > 0) {
-                document.getElementById('modalGameCount').innerText = `${order.games.length} Games Total`;
-                order.games.forEach((game, index) => {
+            let gameList = [];
+            if (Array.isArray(order.games)) {
+                gameList = order.games;
+            } else if (typeof order.games === 'string') {
+                try {
+                    gameList = JSON.parse(order.games);
+                } catch(e) {
+                    gameList = order.games.split(',').map(g => g.trim());
+                }
+            }
+
+            if (gameList && gameList.length > 0) {
+                document.getElementById('modalGameCount').innerText = `${gameList.length} Games Total`;
+                gameList.forEach((game, index) => {
                     const item = document.createElement('div');
                     item.className = 'game-item';
                     item.innerHTML = `<span class="game-num">${index + 1}</span> <span>${game}</span>`;
@@ -331,7 +367,6 @@
             document.getElementById('orderModalOverlay').style.display = 'flex';
         }
 
-        // CLOSE MODAL POPUP
         function closeOrderModal() {
             document.getElementById('orderModalOverlay').style.display = 'none';
         }
@@ -344,10 +379,14 @@
 
         async function deleteOrder(orderId) {
             if (!confirm('Are you sure you want to delete this order?')) return;
-            const { error } = await supabaseClient.from('orders').delete().eq('id', orderId);
-            if (error) alert('Delete failed: ' + error.message);
-            else {
-                allOrders = allOrders.filter(o => o.id !== orderId);
+            const order = allOrders.find(o => String(o.id) === String(orderId) || String(o.order_id) === String(orderId));
+            const idField = (order && order.id) ? 'id' : 'order_id';
+
+            const { error } = await supabaseClient.from('orders').delete().eq(idField, orderId);
+            if (error) {
+                alert('Delete failed: ' + error.message);
+            } else {
+                allOrders = allOrders.filter(o => String(o.id) !== String(orderId) && String(o.order_id) !== String(orderId));
                 updateStats();
                 filterAndRenderOrders();
             }
