@@ -1680,10 +1680,12 @@
                 targetCount = 42; // 3 free + 39 chargeable = 42 max for Tier 2
             }
         } else {
-            if (count > 0 && count <= 19) {
-                targetCount = 19;
-            } else if (count >= 20 && count <= 39) {
-                targetCount = 39;
+            if (count > 0 && count < 10) {
+                targetCount = 10;
+            } else if (count >= 10 && count < 20) {
+                targetCount = 20;
+            } else if (count >= 20 && count < 40) {
+                targetCount = 40;
             }
         }
 
