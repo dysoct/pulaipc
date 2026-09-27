@@ -944,9 +944,9 @@
             pricingSummary: "📦 Lihat Peringkat Harga & Kadar Saiz Game (Tekan untuk buka)",
             free3Games: "Percuma 3 Game",
             gameCountTierTitle: "🎮 Peringkat Jumlah Game (Asas)",
-            tier1Range: "1 - 19 game:",
-            tier2Range: "20 - 39 game:",
-            tier3Range: "40+ game:",
+            tier1Range: "1 - 10 game:",
+            tier2Range: "11 - 20 game:",
+            tier3Range: "21+ game:",
             gameSizeTierTitle: "📊 Override Isipadu Saiz Game",
             size1Range: "Sehingga 100 GB:",
             size2Range: "Sehingga 200 GB:",
@@ -1674,18 +1674,16 @@
             if (count < 3) {
                 targetCount = 3;
                 isFreeGamesNotice = true;
-            } else if (count >= 3 && count < 22) {
-                targetCount = 22; // 3 free + 19 chargeable = 22 max for Tier 1
-            } else if (count >= 22 && count < 42) {
-                targetCount = 42; // 3 free + 39 chargeable = 42 max for Tier 2
+            } else if (count >= 3 && count < 13) {
+                targetCount = 13; // 3 free + 10 chargeable = 13 max for Tier 1
+            } else if (count >= 13 && count < 23) {
+                targetCount = 23; // 3 free + 20 chargeable = 23 max for Tier 2
             }
         } else {
             if (count > 0 && count < 10) {
                 targetCount = 10;
             } else if (count >= 10 && count < 20) {
                 targetCount = 20;
-            } else if (count >= 20 && count < 40) {
-                targetCount = 40;
             }
         }
 
@@ -1763,7 +1761,7 @@
                 subtext.innerHTML = currentLang === 'bm' ? `(3 percuma + ${chargeable} addon) ${tierRec.hasWarning ? '⚠️ Had pakej belum penuh' : ''} | Tekan untuk semak` : `(3 free + ${chargeable} addon) ${tierRec.hasWarning ? '⚠️ Package limit incomplete' : ''} | Tap to review`;
             }
         } else {
-            subtext.innerHTML = currentLang === 'bm' ? `${tierRec.hasWarning ? '⚠️ Had pakej belum penuh | ' : ''}Tekan di sini untuk semak & tambah nota` : `${tierRec.hasWarning ? '⚠️ Tier package limit incomplete | ' : ''}Tap here to review & add remarks`;
+            subtext.innerHTML = currentLang === 'bm' ? `${tierRec.hasWarning ? '⚠️ Had pakej belum penuh | ' : ''}Tekan di sini untuk semak & tambah nota` : `${tierRec.hasWarning ? '⚠️ Tier package limit incomplete' : ''}Tap here to review & add remarks`;
         }
     }
 
