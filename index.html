@@ -113,13 +113,20 @@
         }
         .config-row {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
-            align-items: center;
+            align-items: flex-start;
+        }
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 140px;
         }
         .phone-input, .sd-select, .service-select, .model-select, .sd-source-select, .free-storage-input {
+            width: 100%;
             padding: 12px;
-            font-size: 15px;
+            font-size: 14.5px;
             border-radius: 6px;
             border: 1px solid #333;
             background: #1e1e1e;
@@ -127,18 +134,12 @@
             box-sizing: border-box;
         }
         .sd-select, .service-select, .model-select, .sd-source-select {
-            flex: 1;
-            min-width: 130px;
             cursor: pointer;
         }
         .free-storage-container {
             display: none;
-            flex: 1;
             flex-direction: column;
             gap: 4px;
-            min-width: 180px;
-        }
-        .free-storage-input {
             width: 100%;
         }
         .free-storage-input.required-missing, .phone-input.required-missing {
@@ -151,10 +152,10 @@
             border: 1px solid #00e676;
             padding: 6px 10px;
             border-radius: 4px;
-            font-size: 11.5px;
+            font-size: 11px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 2px;
+            margin-top: 4px;
         }
         .guide-btn:hover {
             background: #00e676;
@@ -175,21 +176,19 @@
             margin: 0 0 8px 0;
             color: #00e676;
         }
-        .phone-group {
-            flex: 1;
+        .phone-input {
+            text-align: center;
+        }
+        .field-hint {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+            line-height: 1.3;
+        }
+        .btn-group-wrapper {
             display: flex;
             flex-direction: column;
-            min-width: 130px;
-        }
-        .phone-input {
-            width: 100%;
-            text-align: center;
-        }
-        .input-hint {
-            font-size: 10.5px;
-            color: #888;
-            margin-top: 3px;
-            text-align: center;
+            gap: 4px;
         }
         .btn-group {
             display: flex;
@@ -204,7 +203,7 @@
             font-weight: 600;
             border-radius: 6px;
             cursor: pointer;
-            height: 47px;
+            height: 45px;
             white-space: nowrap;
         }
         .lookup-btn:hover {
@@ -220,7 +219,7 @@
             font-weight: bold;
             border-radius: 6px;
             cursor: pointer;
-            height: 47px;
+            height: 45px;
             white-space: nowrap;
         }
         .clear-btn:hover {
@@ -248,6 +247,12 @@
         .search-container {
             margin-bottom: 15px;
             position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .search-input-wrapper {
+            position: relative;
+            width: 100%;
             display: flex;
             align-items: center;
         }
@@ -279,10 +284,9 @@
         /* Top Mode Toggles */
         .modes-container {
             display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            align-items: center;
-            padding-top: 5px;
+            flex-direction: column;
+            gap: 8px;
+            padding-top: 10px;
             border-top: 1px solid #2a2a2a;
         }
         .addon-label-title {
@@ -290,36 +294,23 @@
             color: #888;
             font-weight: bold;
         }
+        .mode-options-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
         .mode-wrapper {
-            position: relative;
-            display: inline-block;
+            display: flex;
+            flex-direction: column;
         }
         .mode-checkbox-label {
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 13px;
+            font-size: 13.5px;
             color: #ccc;
             cursor: pointer;
-        }
-        .mode-tooltip {
-            display: none;
-            position: absolute;
-            bottom: 125%;
-            left: 0;
-            width: 240px;
-            background: #252525;
-            border: 1px solid #00e676;
-            color: #ddd;
-            padding: 8px 10px;
-            border-radius: 6px;
-            font-size: 11.5px;
-            line-height: 1.4;
-            z-index: 50;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-        .mode-wrapper:hover .mode-tooltip {
-            display: block;
         }
         .storage-breakdown {
             font-size: 12px;
@@ -330,6 +321,7 @@
             border-radius: 4px;
             border: 1px solid #222;
             line-height: 1.5;
+            box-sizing: border-box;
         }
         .status-msg {
             text-align: center;
@@ -558,7 +550,6 @@
             cursor: pointer;
             font-size: 12px;
             font-weight: bold;
-            shrink: 0;
         }
         .remove-btn:hover {
             background: #ff1744;
@@ -683,50 +674,67 @@
         <!-- Top Configuration Control Center -->
         <div class="config-card">
             <div class="config-row">
-                <!-- Phone Number Field Mandatory First -->
-                <div class="phone-group">
+                <!-- Phone Number Field -->
+                <div class="field-group">
                     <input type="text" id="phoneInput" class="phone-input" maxlength="4" placeholder="e.g. 5678" oninput="savePhone()">
-                    <span class="input-hint">Last 4 digits phone no (Required)</span>
+                    <span class="field-hint">Last 4 digits phone no (Required ID)</span>
                 </div>
 
                 <!-- Service Type Selector -->
-                <select id="serviceTypeSelect" class="service-select" onchange="toggleServiceFields()">
-                    <option value="jailbreak">Full Jailbreak (Free 3 Games)</option>
-                    <option value="games_only">Games Only</option>
-                </select>
+                <div class="field-group">
+                    <select id="serviceTypeSelect" class="service-select" onchange="toggleServiceFields()">
+                        <option value="jailbreak">Full Jailbreak (Free 3 Games)</option>
+                        <option value="games_only">Games Only</option>
+                    </select>
+                    <span class="field-hint">Choose full modding setup or game installs only</span>
+                </div>
 
                 <!-- Console Model Selector (Jailbreak Only) -->
-                <select id="consoleModelSelect" class="model-select" onchange="updateSdLimit()">
-                    <option value="OLED">OLED (RM300)</option>
-                    <option value="V1_V2">V1/V2 (RM190)</option>
-                    <option value="LITE">LITE (RM230)</option>
-                </select>
+                <div class="field-group" id="consoleModelGroup">
+                    <select id="consoleModelSelect" class="model-select" onchange="updateSdLimit()">
+                        <option value="OLED">OLED (RM300)</option>
+                        <option value="V1_V2">V1/V2 (RM190)</option>
+                        <option value="LITE">LITE (RM230)</option>
+                    </select>
+                    <span class="field-hint">Select your Nintendo Switch model variant</span>
+                </div>
 
                 <!-- SD Card Source Selector (Jailbreak Only) -->
-                <select id="sdSourceSelect" class="sd-source-select" onchange="updateSdLimit()">
-                    <option value="own">Bring Own SD Card</option>
-                    <option value="buy">Purchase New SD Card</option>
-                </select>
+                <div class="field-group" id="sdSourceGroup">
+                    <select id="sdSourceSelect" class="sd-source-select" onchange="updateSdLimit()">
+                        <option value="own">Bring Own SD Card</option>
+                        <option value="buy">Purchase New SD Card</option>
+                    </select>
+                    <span class="field-hint">Providing your own card or buying a new one</span>
+                </div>
 
                 <!-- SD Card Size Selector (Jailbreak Only) -->
-                <select id="sdCardSelect" class="sd-select" onchange="updateSdLimit()">
-                    <option value="64">64 GB Card</option>
-                    <option value="128">128 GB Card</option>
-                    <option value="256" selected>256 GB Card</option>
-                    <option value="512">512 GB Card</option>
-                    <option value="1024">1 TB Card</option>
-                    <option value="2048">2 TB Card</option>
-                </select>
+                <div class="field-group" id="sdCardGroup">
+                    <select id="sdCardSelect" class="sd-select" onchange="updateSdLimit()">
+                        <option value="64">64 GB Card</option>
+                        <option value="128">128 GB Card</option>
+                        <option value="256" selected>256 GB Card</option>
+                        <option value="512">512 GB Card</option>
+                        <option value="1024">1 TB Card</option>
+                        <option value="2048">2 TB Card</option>
+                    </select>
+                    <span class="field-hint">Total capacity of memory card used</span>
+                </div>
 
                 <!-- Free Storage Input (Games Only) -->
                 <div id="freeStorageContainer" class="free-storage-container">
                     <input type="number" id="userFreeStorageInput" class="free-storage-input" placeholder="Free Storage Space (GB)" min="1" step="1" oninput="updateSdLimit()">
                     <button type="button" class="guide-btn" onclick="toggleStorageGuide()">❓ How to check free storage?</button>
+                    <span class="field-hint">Remaining GB available on your Switch SD card</span>
                 </div>
 
-                <div class="btn-group">
-                    <button class="lookup-btn" onclick="fetchExistingOrder()" title="Returning customer? Load your saved game list">📂 Load Saved Order</button>
-                    <button class="clear-btn" onclick="clearAllSelections()" title="Clear selected games & mode addons">Clear Games</button>
+                <!-- Buttons Group -->
+                <div class="btn-group-wrapper">
+                    <div class="btn-group">
+                        <button class="lookup-btn" onclick="fetchExistingOrder()" title="Returning customer? Load your saved game list">📂 Load Saved Order</button>
+                        <button class="clear-btn" onclick="clearAllSelections()" title="Clear selected games & mode addons">Clear Games</button>
+                    </div>
+                    <span class="field-hint">Retrieve existing order or reset game choices</span>
                 </div>
             </div>
 
@@ -742,26 +750,24 @@
                 2. Check the bottom-left text: <em>Free: XX.X GB</em> and enter that number above.</p>
             </div>
 
-            <!-- Mode Selection Checkboxes with Tooltips -->
+            <!-- Mode Selection Checkboxes with Hints -->
             <div id="jailbreakModesContainer" class="modes-container">
-                <span class="addon-label-title">Addon:</span>
-                <div class="mode-wrapper">
-                    <label class="mode-checkbox-label">
-                        <input type="checkbox" id="androidModeCheck" onchange="updateSdLimit()"> 
-                        <span>🤖 Android Mode (+RM30)</span>
-                    </label>
-                    <div class="mode-tooltip">
-                        <strong>Android (LineageOS):</strong> Turns your Switch into an Android tablet. Great for native Android games, Xbox Game Pass cloud streaming, Netflix, and emulators.
+                <span class="addon-label-title">Dual-Boot System Addons:</span>
+                <div class="mode-options-row">
+                    <div class="mode-wrapper">
+                        <label class="mode-checkbox-label">
+                            <input type="checkbox" id="androidModeCheck" onchange="updateSdLimit()"> 
+                            <span>🤖 Android Mode (+RM30)</span>
+                        </label>
+                        <span class="field-hint">Runs Android OS for cloud gaming (Game Pass), streaming & Android games</span>
                     </div>
-                </div>
 
-                <div class="mode-wrapper">
-                    <label class="mode-checkbox-label">
-                        <input type="checkbox" id="linuxModeCheck" onchange="updateSdLimit()"> 
-                        <span>🐧 Linux Mode (+RM30)</span>
-                    </label>
-                    <div class="mode-tooltip">
-                        <strong>Ubuntu Linux:</strong> Gives you a full desktop environment on your Switch for lightweight productivity, retro PC gaming, and custom media center setups.
+                    <div class="mode-wrapper">
+                        <label class="mode-checkbox-label">
+                            <input type="checkbox" id="linuxModeCheck" onchange="updateSdLimit()"> 
+                            <span>🐧 Linux Mode (+RM30)</span>
+                        </label>
+                        <span class="field-hint">Runs Ubuntu Linux desktop for retro emulation & lightweight PC apps</span>
                     </div>
                 </div>
             </div>
@@ -788,8 +794,11 @@
         <div id="gameSectionWrapper" class="game-section-wrapper" style="display: none;">
             <!-- Search Bar Section -->
             <div class="search-container">
-                <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search games in library..." onkeyup="filterGames()">
-                <button id="clearSearchBtn" class="clear-search-btn" onclick="clearSearch()" title="Clear search">&times;</button>
+                <div class="search-input-wrapper">
+                    <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search games in library..." onkeyup="filterGames()">
+                    <button id="clearSearchBtn" class="clear-search-btn" onclick="clearSearch()" title="Clear search">&times;</button>
+                </div>
+                <span class="field-hint" style="margin-left: 2px;">Type game title or keyword to filter the game list</span>
             </div>
 
             <div id="statusMsg" class="status-msg"></div>
@@ -825,7 +834,8 @@
 
             <div class="remarks-container">
                 <label for="orderRemarks">Remarks / Notes (Optional):</label>
-                <textarea id="orderRemarks" class="remarks-input" placeholder="e.g. mention trilogies, specific requests..."></textarea>
+                <textarea id="orderRemarks" class="remarks-input" placeholder="e.g. mention specific game DLCs, trilogies, or special requests..."></textarea>
+                <span class="field-hint">Add special notes, preferred game versions, or custom requests</span>
             </div>
 
             <div class="modal-footer">
@@ -911,18 +921,18 @@
 
     function toggleServiceFields() {
         const serviceType = document.getElementById('serviceTypeSelect').value;
-        const modelSelect = document.getElementById('consoleModelSelect');
-        const sdSourceSelect = document.getElementById('sdSourceSelect');
-        const sdSelect = document.getElementById('sdCardSelect');
+        const consoleModelGroup = document.getElementById('consoleModelGroup');
+        const sdSourceGroup = document.getElementById('sdSourceGroup');
+        const sdCardGroup = document.getElementById('sdCardGroup');
         const freeStorageContainer = document.getElementById('freeStorageContainer');
         const jailbreakModesContainer = document.getElementById('jailbreakModesContainer');
         const jailbreakNoticeCard = document.getElementById('jailbreakNoticeCard');
         const gameSectionWrapper = document.getElementById('gameSectionWrapper');
         
         if (serviceType === 'jailbreak') {
-            modelSelect.style.display = 'block';
-            sdSourceSelect.style.display = 'block';
-            sdSelect.style.display = 'block';
+            consoleModelGroup.style.display = 'flex';
+            sdSourceGroup.style.display = 'flex';
+            sdCardGroup.style.display = 'flex';
             freeStorageContainer.style.display = 'none';
             jailbreakModesContainer.style.display = 'flex';
             
@@ -935,9 +945,9 @@
             }
         } else {
             // Games Only Flow
-            modelSelect.style.display = 'none';
-            sdSourceSelect.style.display = 'none';
-            sdSelect.style.display = 'none';
+            consoleModelGroup.style.display = 'none';
+            sdSourceGroup.style.display = 'none';
+            sdCardGroup.style.display = 'none';
             freeStorageContainer.style.display = 'flex';
             jailbreakModesContainer.style.display = 'none';
             
@@ -1120,6 +1130,9 @@
             const isSelected = selectedGames.has(game.name);
             const card = document.createElement('div');
             card.className = `game-card ${isSelected ? 'selected' : ''}`;
+            card.dataset.gameName = game.name;
+            card.dataset.gameSize = game.size;
+
             card.onclick = (e) => {
                 if (!validatePhoneProvided()) return;
 
@@ -1129,68 +1142,77 @@
                     return;
                 }
 
-                if (e.target.tagName !== 'INPUT') {
-                    const cb = card.querySelector('input');
-                    let currentGamesSize = 0;
-                    selectedGames.forEach(s => { currentGamesSize += s; });
-                    
-                    if (!isSelected && usableStorageLimit > 0 && (currentGamesSize + game.size > usableStorageLimit)) {
-                        alert(`Cannot add "${game.name}" (${game.size} GB). It exceeds your available remaining space (${usableStorageLimit} GB)!`);
-                        return;
-                    }
-
+                const cb = card.querySelector('input');
+                if (e.target !== cb) {
                     cb.checked = !cb.checked;
-                    toggleGame(game.name, game.size, cb.checked);
                 }
+
+                let currentGamesSize = 0;
+                selectedGames.forEach(s => { currentGamesSize += s; });
+
+                if (cb.checked && usableStorageLimit > 0 && (currentGamesSize + game.size > usableStorageLimit)) {
+                    alert(`Cannot add "${game.name}" (${game.size} GB). It exceeds your available remaining space (${usableStorageLimit} GB)!`);
+                    cb.checked = false;
+                    return;
+                }
+
+                toggleGame(game.name, game.size, cb.checked, card);
             };
 
-            card.innerHTML = `
-                <div class="game-info">
-                    <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="handleCheckboxChange(event, '${game.name.replace(/'/g, "\\'")}', ${game.size}, this)">
-                    <span class="game-title">${game.name}</span>
-                </div>
-                <span class="game-size">${game.size} GB</span>
-            `;
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.checked = isSelected;
+            cb.onclick = (e) => e.stopPropagation();
+            cb.onchange = (e) => {
+                if (!validatePhoneProvided()) {
+                    cb.checked = false;
+                    return;
+                }
+                if (!isStorageConfigured) {
+                    alert('Please enter your available Free Storage Space (GB) first!');
+                    cb.checked = false;
+                    document.getElementById('userFreeStorageInput').focus();
+                    return;
+                }
+                let currentGamesSize = 0;
+                selectedGames.forEach(s => { currentGamesSize += s; });
+                if (cb.checked && usableStorageLimit > 0 && (currentGamesSize + game.size > usableStorageLimit)) {
+                    alert(`Cannot add "${game.name}" (${game.size} GB). It exceeds your remaining usable storage (${usableStorageLimit} GB)!`);
+                    cb.checked = false;
+                    return;
+                }
+                toggleGame(game.name, game.size, cb.checked, card);
+            };
+
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'game-info';
+            infoDiv.appendChild(cb);
+
+            const titleSpan = document.createElement('span');
+            titleSpan.className = 'game-title';
+            titleSpan.textContent = game.name;
+            infoDiv.appendChild(titleSpan);
+
+            const sizeSpan = document.createElement('span');
+            sizeSpan.className = 'game-size';
+            sizeSpan.textContent = `${game.size} GB`;
+
+            card.appendChild(infoDiv);
+            card.appendChild(sizeSpan);
             container.appendChild(card);
         });
         updateSdLimit();
     }
 
-    function handleCheckboxChange(event, name, size, checkbox) {
-        if (!validatePhoneProvided()) {
-            checkbox.checked = false;
-            event.preventDefault();
-            return;
-        }
-
-        if (!isStorageConfigured) {
-            alert('Please enter your available Free Storage Space (GB) first!');
-            checkbox.checked = false;
-            event.preventDefault();
-            document.getElementById('userFreeStorageInput').focus();
-            return;
-        }
-
-        let currentGamesSize = 0;
-        selectedGames.forEach(s => { currentGamesSize += s; });
-
-        if (checkbox.checked && usableStorageLimit > 0 && (currentGamesSize + size > usableStorageLimit)) {
-            alert(`Cannot add "${name}" (${size} GB). It exceeds your remaining usable storage (${usableStorageLimit} GB)!`);
-            checkbox.checked = false;
-            event.preventDefault();
-            return;
-        }
-
-        toggleGame(name, size, checkbox.checked);
-    }
-
-    function toggleGame(name, size, isChecked) {
+    function toggleGame(name, size, isChecked, cardElement) {
         if (isChecked) {
             selectedGames.set(name, size);
+            if (cardElement) cardElement.classList.add('selected');
         } else {
             selectedGames.delete(name);
+            if (cardElement) cardElement.classList.remove('selected');
         }
-        filterGames();
+        updateSdLimit();
     }
 
     function filterGames() {
@@ -1549,10 +1571,16 @@
                     gameTag = index <= 3 ? ' <span style="color:#00e676; font-size:10px;">[FREE]</span>' : ' <span style="color:#ffb74d; font-size:10px;">[ADDON]</span>';
                 }
 
-                item.innerHTML = `
-                    <span>${index}. ${gameName} ${gameTag} <span style="color:#00e676; font-size:0.85em;">(${size} GB)</span></span>
-                    <button class="remove-btn" onclick="removeGameFromCart('${gameName.replace(/'/g, "\\'")}')">Remove</button>
-                `;
+                const titleSpan = document.createElement('span');
+                titleSpan.innerHTML = `${index}. ${gameName} ${gameTag} <span style="color:#00e676; font-size:0.85em;">(${size} GB)</span>`;
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn';
+                removeBtn.textContent = 'Remove';
+                removeBtn.onclick = () => removeGameFromCart(gameName);
+
+                item.appendChild(titleSpan);
+                item.appendChild(removeBtn);
                 modalBody.appendChild(item);
                 index++;
             });
