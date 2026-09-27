@@ -38,12 +38,12 @@ foreach ($gameName in $requestedGames) {
     $foundFolder = Get-ChildItem -Path $MasterRepoPath -Directory | Where-Object { $_.Name -like "*$gameName*" } | Select-Object -First 1
 
     if ($foundFolder) {
-        $folderPaths.Add($foundFolder.FullName)
+        [void]$folderPaths.Add($foundFolder.FullName)
         Write-Host "Found: $($foundFolder.Name)" -ForegroundColor Green
-        $successCount++
+        [void]($successCount++)
     } else {
         Write-Host "Not Found: $gameName" -ForegroundColor Red
-        $notFoundCount++
+        [void]($notFoundCount++)
     }
 }
 
