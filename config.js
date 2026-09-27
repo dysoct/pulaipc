@@ -15,6 +15,9 @@ const APP_CONFIG = {
         'LITE': 230
     },
 
+    // System Setup flat base price (RM)
+    systemSetupPrice: 50,
+
     // SD Card retail prices if they buy a card from you (RM)
     sdCardRetailPrices: {
         128: 110,
