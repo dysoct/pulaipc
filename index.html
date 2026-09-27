@@ -141,6 +141,10 @@
         .free-storage-input {
             width: 100%;
         }
+        .free-storage-input.required-missing {
+            border: 2px solid #ff5252 !important;
+            background-color: #2c1a1a !important;
+        }
         .guide-btn {
             background: #2a2a2a;
             color: #00e676;
@@ -219,6 +223,23 @@
         .clear-btn:hover {
             background-color: #ff5252;
             color: white;
+        }
+        /* Storage Warning Banner */
+        .storage-warning-banner {
+            background: #3a1c00;
+            border: 1px solid #ff9800;
+            color: #ffe0b2;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 13.5px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            line-height: 1.4;
+        }
+        .storage-warning-banner .warning-icon {
+            font-size: 20px;
         }
         /* Search Bar Section */
         .search-container {
@@ -349,6 +370,12 @@
         }
         .game-section-wrapper {
             display: block;
+            position: relative;
+        }
+        .game-section-wrapper.locked {
+            opacity: 0.4;
+            pointer-events: none;
+            user-select: none;
         }
         .game-list {
             display: grid;
@@ -419,6 +446,11 @@
         }
         .submit-btn:hover {
             background-color: #00c853;
+        }
+        .submit-btn:disabled {
+            background-color: #444;
+            color: #888;
+            cursor: not-allowed;
         }
         /* Cart Modal Styles */
         .modal {
@@ -596,7 +628,7 @@
     <div class="container">
         <h1>Pulai PC Jailbreak & Game Service</h1>
         <div class="instructions">
-            1. Select your <strong>Service Type</strong> (Jailbreak Package or Games Only).<br>
+            1. Select your <strong>Service Type</strong> and specify your <strong>Storage Capacity</strong>.<br>
             2. Choose your games, then review and submit!
         </div>
 
@@ -734,11 +766,17 @@
             </div>
         </div>
 
+        <!-- Dynamic Storage Warning Banner -->
+        <div id="storageWarningBanner" class="storage-warning-banner">
+            <span class="warning-icon">⚠️</span>
+            <span id="storageWarningText">Please enter your <strong>Free Storage Space (GB)</strong> above to unlock game selection.</span>
+        </div>
+
         <!-- Jailbreak Notice Card -->
         <div id="jailbreakNoticeCard" class="jailbreak-notice-card">
             <h3>🎁 You get 3 Free Games with your Full Jailbreak!</h3>
             <p>Your jailbreak service package includes your first 3 games free. Pick 3 free games + additional addon games if desired!</p>
-            <button class="browse-games-btn" onclick="revealGameSection()">Browse & Choose Games</button>
+            <button id="browseGamesBtn" class="browse-games-btn" onclick="revealGameSection()">Browse & Choose Games</button>
         </div>
 
         <!-- Game Section Wrapper -->
@@ -764,7 +802,7 @@
             <span id="selectedPrice" style="color: #00e676; font-weight: bold;">RM0</span>
             <br><span id="checkoutSubtext" style="font-size: 11px; color: #aaa;">Tap here to review & add remarks</span>
         </div>
-        <button class="submit-btn" onclick="openCartModal()">Review & Submit</button>
+        <button id="mainSubmitBtn" class="submit-btn" onclick="openCartModal()">Review & Submit</button>
     </div>
 
     <!-- Cart Review / Edit Modal -->
@@ -800,7 +838,8 @@
 
     let selectedGames = new Map(); 
     let maxSdSize = 256; 
-    let usableStorageLimit = 240; 
+    let usableStorageLimit = 0; 
+    let isStorageConfigured = false;
 
     window.onload = function() {
         const savedPhone = localStorage.getItem('userPhone4');
@@ -891,17 +930,29 @@
     }
 
     function revealGameSection() {
+        if (!isStorageConfigured) {
+            alert('Please enter your available Free Storage Space (GB) first!');
+            document.getElementById('userFreeStorageInput').focus();
+            return;
+        }
         document.getElementById('jailbreakNoticeCard').style.display = 'none';
         document.getElementById('gameSectionWrapper').style.display = 'block';
     }
 
     function updateSdLimit() {
         const serviceType = document.getElementById('serviceTypeSelect').value;
+        const warningBanner = document.getElementById('storageWarningBanner');
+        const warningText = document.getElementById('storageWarningText');
+        const freeInput = document.getElementById('userFreeStorageInput');
+        const gameWrapper = document.getElementById('gameSectionWrapper');
+        const browseBtn = document.getElementById('browseGamesBtn');
+        const submitBtn = document.getElementById('mainSubmitBtn');
+
         localStorage.setItem('userServiceType', serviceType);
 
         if (serviceType === 'jailbreak') {
             const select = document.getElementById('sdCardSelect');
-            maxSdSize = parseInt(select.value);
+            maxSdSize = parseInt(select.value) || 256;
             localStorage.setItem('userSdSelect', maxSdSize);
 
             const consoleModel = document.getElementById('consoleModelSelect').value;
@@ -949,6 +1000,13 @@
             if (linuxChecked.checked) totalDeduction += partitionPerMode;
 
             usableStorageLimit = maxSdSize - totalDeduction;
+            isStorageConfigured = true;
+
+            if (freeInput) freeInput.classList.remove('required-missing');
+            if (warningBanner) warningBanner.style.display = 'none';
+            if (gameWrapper) gameWrapper.classList.remove('locked');
+            if (browseBtn) browseBtn.disabled = false;
+            if (submitBtn) submitBtn.disabled = false;
 
             let cardSourceDesc = sdSource === 'buy' ? 'New SD Card' : 'Own SD Card';
             let breakdownText = `Service: Full Jailbreak (${consoleModel}) | SD: ${maxSdSize}GB (${cardSourceDesc}) | System OS: -${baseSystemOverhead}GB`;
@@ -962,26 +1020,46 @@
             document.getElementById('storageBreakdown').innerHTML = breakdownText;
 
         } else {
-            // Games Only Calculation
-            const freeStorageInput = document.getElementById('userFreeStorageInput').value;
-            const userSpace = parseFloat(freeStorageInput) || 0;
-            localStorage.setItem('userFreeStorage', userSpace);
+            // Games Only Logic - Enforce Free Storage Entry
+            const userSpace = parseFloat(freeInput.value);
 
-            usableStorageLimit = userSpace > 0 ? userSpace : 0;
+            if (isNaN(userSpace) || userSpace <= 0) {
+                usableStorageLimit = 0;
+                isStorageConfigured = false;
 
-            let currentGamesSize = 0;
-            selectedGames.forEach(size => { currentGamesSize += size; });
+                if (freeInput) freeInput.classList.add('required-missing');
+                if (warningBanner) {
+                    warningBanner.style.display = 'flex';
+                    warningText.innerHTML = '⚠️ Please enter your available <strong>Free Storage Space (GB)</strong> above to unlock game selection.';
+                }
+                if (gameWrapper) gameWrapper.classList.add('locked');
+                if (submitBtn) submitBtn.disabled = true;
 
-            let breakdownText = `Service: Games Only | Stated Free Storage: <strong>${userSpace} GB</strong>`;
-            breakdownText += `<br>📊 <strong>Selected Games: ${currentGamesSize.toFixed(1)} GB</strong> / Available Balance: <strong>${(usableStorageLimit - currentGamesSize).toFixed(1)} GB</strong>`;
-            
-            document.getElementById('storageBreakdown').innerHTML = breakdownText;
+                document.getElementById('storageBreakdown').innerHTML = `Service: Games Only | <span style="color:#ff5252;">⚠️ Storage space missing! Enter free GB to continue.</span>`;
+            } else {
+                usableStorageLimit = userSpace;
+                isStorageConfigured = true;
+
+                localStorage.setItem('userFreeStorage', userSpace);
+                if (freeInput) freeInput.classList.remove('required-missing');
+                if (warningBanner) warningBanner.style.display = 'none';
+                if (gameWrapper) gameWrapper.classList.remove('locked');
+                if (submitBtn) submitBtn.disabled = false;
+
+                let currentGamesSize = 0;
+                selectedGames.forEach(size => { currentGamesSize += size; });
+
+                let breakdownText = `Service: Games Only | Stated Free Storage: <strong>${userSpace} GB</strong>`;
+                breakdownText += `<br>📊 <strong>Selected Games: ${currentGamesSize.toFixed(1)} GB</strong> / Available Balance: <strong>${(usableStorageLimit - currentGamesSize).toFixed(1)} GB</strong>`;
+                
+                document.getElementById('storageBreakdown').innerHTML = breakdownText;
+            }
         }
 
         let currentGamesSize = 0;
         selectedGames.forEach(size => { currentGamesSize += size; });
 
-        if (usableStorageLimit > 0 && currentGamesSize > usableStorageLimit) {
+        if (isStorageConfigured && usableStorageLimit > 0 && currentGamesSize > usableStorageLimit) {
             alert(`Warning: Selected games (${currentGamesSize.toFixed(1)} GB) exceed available limit (${usableStorageLimit} GB)!`);
         }
         
@@ -1020,6 +1098,12 @@
             const card = document.createElement('div');
             card.className = `game-card ${isSelected ? 'selected' : ''}`;
             card.onclick = (e) => {
+                if (!isStorageConfigured) {
+                    alert('Please enter your available Free Storage Space (GB) at the top before picking games!');
+                    document.getElementById('userFreeStorageInput').focus();
+                    return;
+                }
+
                 if (e.target.tagName !== 'INPUT') {
                     const cb = card.querySelector('input');
                     let currentGamesSize = 0;
@@ -1048,6 +1132,14 @@
     }
 
     function handleCheckboxChange(event, name, size, checkbox) {
+        if (!isStorageConfigured) {
+            alert('Please enter your available Free Storage Space (GB) first!');
+            checkbox.checked = false;
+            event.preventDefault();
+            document.getElementById('userFreeStorageInput').focus();
+            return;
+        }
+
         let currentGamesSize = 0;
         selectedGames.forEach(s => { currentGamesSize += s; });
 
@@ -1310,6 +1402,12 @@
     }
 
     function openCartModal() {
+        if (!isStorageConfigured) {
+            alert('Please specify your free storage space before proceeding!');
+            document.getElementById('userFreeStorageInput').focus();
+            return;
+        }
+
         const modalBody = document.getElementById('cartModalBody');
         modalBody.innerHTML = '';
 
@@ -1574,7 +1672,7 @@
 
         if (serviceType === 'jailbreak') {
             if (count < 3) {
-                const confirmSave = confirm(` You have selected only ${count} game(s).\n\nYour Full Jailbreak package includes 3 FREE games! Do you still want to save your order with fewer than 3 games?`);
+                const confirmSave = confirm(`You have selected only ${count} game(s).\n\nYour Full Jailbreak package includes 3 FREE games! Do you still want to save your order with fewer than 3 games?`);
                 if (!confirmSave) return;
             }
         } else {
