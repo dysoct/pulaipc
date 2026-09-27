@@ -132,6 +132,8 @@
             background: #1e1e1e;
             color: #fff;
             box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
         }
         .sd-select, .service-select, .model-select, .sd-source-select {
             cursor: pointer;
@@ -279,6 +281,7 @@
             background: #1a1a1a;
             color: #fff;
             box-sizing: border-box;
+            outline: none;
         }
         .clear-search-btn {
             position: absolute;
@@ -399,7 +402,7 @@
             align-items: center;
             border: 1px solid #2a2a2a;
             cursor: pointer;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, background-color 0.2s;
         }
         .game-card.selected {
             border-color: #00e676;
@@ -925,8 +928,8 @@
     };
 
     function validatePhoneProvided() {
-        const phone = document.getElementById('phoneInput').value.trim();
         const phoneInput = document.getElementById('phoneInput');
+        const phone = phoneInput.value.trim();
         if (!phone || phone.length < 4) {
             alert('📱 Please enter the last 4 digits of your phone number first at the top before choosing games!');
             phoneInput.classList.add('required-missing');
@@ -1251,11 +1254,7 @@
         const query = searchInput.value.toLowerCase();
         const clearBtn = document.getElementById('clearSearchBtn');
         
-        if (query.length > 0) {
-            clearBtn.style.display = 'block';
-        } else {
-            clearBtn.style.display = 'none';
-        }
+        clearBtn.style.display = query.length > 0 ? 'block' : 'none';
 
         const sourceList = typeof games !== 'undefined' ? games : [];
         const filtered = sourceList.filter(g => g.name.toLowerCase().includes(query));
@@ -1368,16 +1367,14 @@
 
     function checkTierRecommendation(count, serviceType) {
         let targetCount = 0;
-        let freeBonus = (serviceType === 'jailbreak') ? 3 : 0;
-        let effectiveCount = count;
 
         if (serviceType === 'jailbreak') {
             if (count > 0 && count < 13) {
                 targetCount = 13; // 3 Free + 10 Paid
             } else if (count >= 14 && count < 23) {
-                targetCount = 23; // 3 Free + 20 Paid (Flat RM50)
+                targetCount = 23; // 3 Free + 20 Paid
             } else if (count >= 24 && count < 43) {
-                targetCount = 43; // 3 Free + 40 Paid (Flat RM80)
+                targetCount = 43; // 3 Free + 40 Paid
             }
         } else {
             if (count > 0 && count < 10) {
@@ -1425,7 +1422,6 @@
         document.getElementById('remainderSize').innerText = remainderSize.toFixed(1);
         document.getElementById('selectedPrice').innerText = `RM${Math.round(details.price)}`;
 
-        // Dynamic Tier Recommendation Check
         const tierRec = checkTierRecommendation(count, serviceType);
         const banner = document.getElementById('tierWarningBanner');
         const bannerText = document.getElementById('tierWarningText');
@@ -1453,13 +1449,14 @@
     }
 
     async function fetchExistingOrder() {
-        const phone = document.getElementById('phoneInput').value.trim();
+        const phoneInput = document.getElementById('phoneInput');
+        const phone = phoneInput.value.trim();
         const statusMsg = document.getElementById('statusMsg');
 
         if (phone.length !== 4) {
             alert('ℹ️ "Load Saved Order" is for returning customers who previously submitted an order.\n\nPlease enter the last 4 digits of your phone number in the top field!');
-            document.getElementById('phoneInput').focus();
-            document.getElementById('phoneInput').classList.add('required-missing');
+            phoneInput.focus();
+            phoneInput.classList.add('required-missing');
             return;
         }
 
@@ -1479,25 +1476,29 @@
             if (error) throw error;
 
             if (data && data.length > 0) {
+                const order = data[0];
                 selectedGames.clear();
-                data[0].games.forEach(gameName => {
-                    const found = games.find(g => g.name === gameName);
-                    const size = found ? found.size : 0;
-                    selectedGames.set(gameName, size);
-                });
                 
-                if (data[0].remarks) document.getElementById('orderRemarks').value = data[0].remarks;
-                if (data[0].service_type) document.getElementById('serviceTypeSelect').value = data[0].service_type;
-                if (data[0].sd_card_size) {
-                    document.getElementById('sdCardSelect').value = data[0].sd_card_size;
-                    maxSdSize = parseInt(data[0].sd_card_size);
+                if (order.games && Array.isArray(order.games)) {
+                    order.games.forEach(gameName => {
+                        const found = games.find(g => g.name === gameName);
+                        const size = found ? found.size : 0;
+                        selectedGames.set(gameName, size);
+                    });
                 }
-                if (data[0].free_storage_gb) document.getElementById('userFreeStorageInput').value = data[0].free_storage_gb;
-                if (data[0].sd_source) document.getElementById('sdSourceSelect').value = data[0].sd_source;
-                if (data[0].console_model) document.getElementById('consoleModelSelect').value = data[0].console_model;
+                
+                if (order.remarks) document.getElementById('orderRemarks').value = order.remarks;
+                if (order.service_type) document.getElementById('serviceTypeSelect').value = order.service_type;
+                if (order.sd_card_size) {
+                    document.getElementById('sdCardSelect').value = order.sd_card_size;
+                    maxSdSize = parseInt(order.sd_card_size);
+                }
+                if (order.free_storage_gb) document.getElementById('userFreeStorageInput').value = order.free_storage_gb;
+                if (order.sd_source) document.getElementById('sdSourceSelect').value = order.sd_source;
+                if (order.console_model) document.getElementById('consoleModelSelect').value = order.console_model;
 
-                document.getElementById('androidModeCheck').checked = !!data[0].android_mode;
-                document.getElementById('linuxModeCheck').checked = !!data[0].linux_mode;
+                document.getElementById('androidModeCheck').checked = !!order.android_mode;
+                document.getElementById('linuxModeCheck').checked = !!order.linux_mode;
 
                 toggleServiceFields();
                 updateSdLimit();
@@ -1743,13 +1744,8 @@
 
         const remainderSize = Math.max(0, usableStorageLimit - totalGamesSize);
         const warningBox = document.getElementById('sizeWarningBox');
-        if (details.exceeded) {
-            warningBox.style.display = 'block';
-        } else {
-            warningBox.style.display = 'none';
-        }
+        warningBox.style.display = details.exceeded ? 'block' : 'none';
 
-        // Modal Tier Recommendation Alert
         const tierRec = checkTierRecommendation(count, serviceType);
         const modalTierBox = document.getElementById('modalTierWarning');
         if (tierRec.hasWarning) {
@@ -1853,10 +1849,12 @@
         const finalPrice = Math.round(details.price);
 
         try {
-            const { data: existing } = await supabaseClient
+            const { data: existing, error: queryErr } = await supabaseClient
                 .from('orders')
                 .select('id, created_at')
                 .eq('phone_ending', phone);
+
+            if (queryErr) throw queryErr;
 
             const nowIso = new Date().toISOString();
             
@@ -1891,15 +1889,6 @@
                     .insert([orderData]);
             }
 
-            if (saveResult.error && saveResult.error.message.includes('free_storage_gb')) {
-                delete orderData.free_storage_gb;
-                if (existing && existing.length > 0) {
-                    saveResult = await supabaseClient.from('orders').update(orderData).eq('phone_ending', phone);
-                } else {
-                    saveResult = await supabaseClient.from('orders').insert([orderData]);
-                }
-            }
-
             if (saveResult.error) throw saveResult.error;
 
             alert('Order updated and saved successfully!');
@@ -1911,7 +1900,7 @@
 
         } catch (err) {
             console.error(err);
-            alert('Failed to save order. Check console for details.');
+            alert('Failed to save order: ' + (err.message || 'Check console details.'));
         } finally {
             btn.innerText = 'Save Changes';
             btn.disabled = false;
