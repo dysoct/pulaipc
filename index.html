@@ -141,7 +141,7 @@
         .free-storage-input {
             width: 100%;
         }
-        .free-storage-input.required-missing {
+        .free-storage-input.required-missing, .phone-input.required-missing {
             border: 2px solid #ff5252 !important;
             background-color: #2c1a1a !important;
         }
@@ -179,7 +179,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            min-width: 120px;
+            min-width: 130px;
         }
         .phone-input {
             width: 100%;
@@ -631,8 +631,9 @@
     <div class="container">
         <h1>Pulai PC Jailbreak & Game Service</h1>
         <div class="instructions">
-            1. Select your <strong>Service Type</strong> and specify your <strong>Storage Capacity</strong>.<br>
-            2. Choose your games, then review and submit!
+            1. Enter the <strong>Last 4 Digits</strong> of your phone number below.<br>
+            2. Select your <strong>Service Type</strong> and specify your <strong>Storage Capacity</strong>.<br>
+            3. Choose your games, then review and submit!
         </div>
 
         <!-- Pricing Guide Dropdown -->
@@ -682,6 +683,12 @@
         <!-- Top Configuration Control Center -->
         <div class="config-card">
             <div class="config-row">
+                <!-- Phone Number Field Mandatory First -->
+                <div class="phone-group">
+                    <input type="text" id="phoneInput" class="phone-input" maxlength="4" placeholder="e.g. 5678" oninput="savePhone()">
+                    <span class="input-hint">Last 4 digits phone no (Required)</span>
+                </div>
+
                 <!-- Service Type Selector -->
                 <select id="serviceTypeSelect" class="service-select" onchange="toggleServiceFields()">
                     <option value="jailbreak">Full Jailbreak (Free 3 Games)</option>
@@ -715,11 +722,6 @@
                 <div id="freeStorageContainer" class="free-storage-container">
                     <input type="number" id="userFreeStorageInput" class="free-storage-input" placeholder="Free Storage Space (GB)" min="1" step="1" oninput="updateSdLimit()">
                     <button type="button" class="guide-btn" onclick="toggleStorageGuide()">❓ How to check free storage?</button>
-                </div>
-
-                <div class="phone-group">
-                    <input type="text" id="phoneInput" class="phone-input" maxlength="4" placeholder="e.g. 5678" oninput="savePhone()">
-                    <span class="input-hint">Last 4 digits phone no</span>
                 </div>
 
                 <div class="btn-group">
@@ -772,7 +774,7 @@
         <!-- Dynamic Storage Warning Banner -->
         <div id="storageWarningBanner" class="storage-warning-banner">
             <span class="warning-icon">⚠️</span>
-            <span id="storageWarningText">Please enter your <strong>Free Storage Space (GB)</strong> above to unlock game selection.</span>
+            <span id="storageWarningText">Please enter your <strong>Phone ID (4 digits)</strong> and storage capacity to unlock game selection.</span>
         </div>
 
         <!-- Jailbreak Notice Card -->
@@ -881,9 +883,25 @@
         filterGames();
     };
 
+    function validatePhoneProvided() {
+        const phone = document.getElementById('phoneInput').value.trim();
+        const phoneInput = document.getElementById('phoneInput');
+        if (!phone || phone.length < 4) {
+            alert('📱 Please enter the last 4 digits of your phone number first at the top before choosing games!');
+            phoneInput.classList.add('required-missing');
+            phoneInput.focus();
+            return false;
+        }
+        phoneInput.classList.remove('required-missing');
+        return true;
+    }
+
     function savePhone() {
-        const phone = document.getElementById('phoneInput').value;
+        const phone = document.getElementById('phoneInput').value.trim();
         localStorage.setItem('userPhone4', phone);
+        if (phone.length >= 4) {
+            document.getElementById('phoneInput').classList.remove('required-missing');
+        }
     }
 
     function toggleStorageGuide() {
@@ -933,6 +951,8 @@
     }
 
     function revealGameSection() {
+        if (!validatePhoneProvided()) return;
+
         if (!isStorageConfigured) {
             alert('Please enter your available Free Storage Space (GB) first!');
             document.getElementById('userFreeStorageInput').focus();
@@ -1101,6 +1121,8 @@
             const card = document.createElement('div');
             card.className = `game-card ${isSelected ? 'selected' : ''}`;
             card.onclick = (e) => {
+                if (!validatePhoneProvided()) return;
+
                 if (!isStorageConfigured) {
                     alert('Please enter your available Free Storage Space (GB) at the top before picking games!');
                     document.getElementById('userFreeStorageInput').focus();
@@ -1135,6 +1157,12 @@
     }
 
     function handleCheckboxChange(event, name, size, checkbox) {
+        if (!validatePhoneProvided()) {
+            checkbox.checked = false;
+            event.preventDefault();
+            return;
+        }
+
         if (!isStorageConfigured) {
             alert('Please enter your available Free Storage Space (GB) first!');
             checkbox.checked = false;
@@ -1321,8 +1349,9 @@
         const statusMsg = document.getElementById('statusMsg');
 
         if (phone.length !== 4) {
-            alert('ℹ️ "Load Saved Order" is for returning customers who previously submitted an order.\n\nFirst time here? Just select your storage capacity and pick your games below!');
+            alert('ℹ️ "Load Saved Order" is for returning customers who previously submitted an order.\n\nPlease enter the last 4 digits of your phone number in the top field!');
             document.getElementById('phoneInput').focus();
+            document.getElementById('phoneInput').classList.add('required-missing');
             return;
         }
 
@@ -1389,6 +1418,8 @@
     }
 
     function openCartModal() {
+        if (!validatePhoneProvided()) return;
+
         if (!isStorageConfigured) {
             alert('Please specify your free storage space before proceeding!');
             document.getElementById('userFreeStorageInput').focus();
@@ -1647,13 +1678,9 @@
     }
 
     async function submitOrUpdateOrder() {
-        const phone = document.getElementById('phoneInput').value.trim();
-        if (phone.length !== 4) {
-            alert('Please enter your 4-digit phone ID at the top!');
-            document.getElementById('phoneInput').focus();
-            return;
-        }
+        if (!validatePhoneProvided()) return;
 
+        const phone = document.getElementById('phoneInput').value.trim();
         const serviceType = document.getElementById('serviceTypeSelect').value;
         const count = selectedGames.size;
 
