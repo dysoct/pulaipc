@@ -3,43 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<<<<<<< HEAD
-    <title>Pulai PC - Nintendo Switch Jailbreak & Game Service</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase Client CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    </style>
-</head>
-<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased">
-
-    <!-- Header / Navbar -->
-    <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-30 shadow-md">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div class="flex items-center space-x-3">
-                <div class="bg-red-600 p-2 rounded-xl text-white font-black text-xl shadow-inner">PPC</div>
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight text-white">Pulai PC Jailbreak Portal</h1>
-                    <p class="text-xs text-slate-400">Skudai / Johor Bahru • WhatsApp: 011-65676869</p>
-                </div>
-            </div>
-            <!-- Customer Phone Lookup Bar -->
-            <div class="flex items-center bg-slate-900 border border-slate-700 rounded-lg p-1.5 w-full sm:w-auto">
-                <span class="text-xs text-slate-400 px-2 font-medium">Load Saved Order:</span>
-                <input type="text" id="lookupPhone" maxlength="4" placeholder="Last 4 digits" class="bg-transparent text-white text-sm px-2 py-1 w-28 focus:outline-none placeholder-slate-500 font-mono">
-                <button onclick="loadCustomerOrder()" class="bg-red-600 hover:bg-red-500 text-white text-xs px-3 py-1.5 rounded font-semibold transition">Search</button>
-            </div>
-=======
-<<<<<<< HEAD
-    <title>Pulai PC Jailbreak Service</title>
-=======
     <title>Pulai PC Jailbreak & Game Service</title>
->>>>>>> parent of c4ed9bd (Update index.html)
     <!-- Include Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -49,11 +13,7 @@
             color: #ffffff;
             margin: 0;
             padding: 20px;
-<<<<<<< HEAD
-            padding-bottom: 100px;
-=======
             padding-bottom: 110px;
->>>>>>> parent of c4ed9bd (Update index.html)
         }
         .container {
             max-width: 900px;
@@ -71,10 +31,6 @@
             margin-bottom: 15px;
             line-height: 1.5;
         }
-<<<<<<< HEAD
-        /* Pricing Guide Box */
-=======
->>>>>>> parent of c4ed9bd (Update index.html)
         .pricing-guide {
             background: #1a1a1a;
             border: 1px solid #333;
@@ -143,10 +99,6 @@
             color: #bbb;
             line-height: 1.4;
         }
-<<<<<<< HEAD
-        /* Top Configuration Card */
-=======
->>>>>>> parent of c4ed9bd (Update index.html)
         .config-card {
             background: #1a1a1a;
             border: 1px solid #333;
@@ -159,15 +111,6 @@
         }
         .config-row {
             display: flex;
-<<<<<<< HEAD
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .phone-input, .sd-select, .service-select, .model-select, .sd-source-select {
-            padding: 12px;
-            font-size: 15px;
-=======
             gap: 12px;
             flex-wrap: wrap;
             align-items: flex-start;
@@ -182,53 +125,11 @@
             width: 100%;
             padding: 12px;
             font-size: 14.5px;
->>>>>>> parent of c4ed9bd (Update index.html)
             border-radius: 6px;
             border: 1px solid #333;
             background: #1e1e1e;
             color: #fff;
             box-sizing: border-box;
-<<<<<<< HEAD
-        }
-        .sd-select, .service-select, .model-select, .sd-source-select {
-            flex: 1;
-            min-width: 130px;
-            cursor: pointer;
-        }
-        .phone-group {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-width: 110px;
-        }
-        .phone-input {
-            width: 100%;
-            text-align: center;
-        }
-        .input-hint {
-            font-size: 11px;
-            color: #888;
-            margin-top: 3px;
-            text-align: center;
-        }
-        .btn-group {
-            display: flex;
-            gap: 5px;
-        }
-        .lookup-btn {
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            padding: 12px 14px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            height: 47px;
-        }
-        .lookup-btn:hover {
-            background-color: #1976D2;
-=======
             outline: none;
             transition: border-color 0.2s;
         }
@@ -308,20 +209,11 @@
         .lookup-btn:hover {
             background-color: #2196F3;
             color: #ffffff;
->>>>>>> parent of c4ed9bd (Update index.html)
         }
         .clear-btn {
             background-color: #424242;
             color: #ff5252;
             border: 1px solid #ff5252;
-<<<<<<< HEAD
-            padding: 12px 14px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            height: 47px;
-=======
             padding: 10px 12px;
             font-size: 13px;
             font-weight: bold;
@@ -329,15 +221,11 @@
             cursor: pointer;
             height: 45px;
             white-space: nowrap;
->>>>>>> parent of c4ed9bd (Update index.html)
         }
         .clear-btn:hover {
             background-color: #ff5252;
             color: white;
         }
-<<<<<<< HEAD
-        /* Search Bar Section */
-=======
         .storage-warning-banner {
             background: #3a1c00;
             border: 1px solid #ff9800;
@@ -367,20 +255,16 @@
             gap: 10px;
             line-height: 1.4;
         }
->>>>>>> parent of c4ed9bd (Update index.html)
         .search-container {
             margin-bottom: 15px;
             position: relative;
             display: flex;
-<<<<<<< HEAD
-=======
             flex-direction: column;
         }
         .search-input-wrapper {
             position: relative;
             width: 100%;
             display: flex;
->>>>>>> parent of c4ed9bd (Update index.html)
             align-items: center;
         }
         .search-box {
@@ -392,10 +276,7 @@
             background: #1a1a1a;
             color: #fff;
             box-sizing: border-box;
-<<<<<<< HEAD
-=======
             outline: none;
->>>>>>> parent of c4ed9bd (Update index.html)
         }
         .clear-search-btn {
             position: absolute;
@@ -412,21 +293,11 @@
         .clear-search-btn:hover {
             color: #fff;
         }
-<<<<<<< HEAD
-        /* Top Mode Toggles */
-        .modes-container {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            align-items: center;
-            padding-top: 5px;
-=======
         .modes-container {
             display: flex;
             flex-direction: column;
             gap: 8px;
             padding-top: 10px;
->>>>>>> parent of c4ed9bd (Update index.html)
             border-top: 1px solid #2a2a2a;
         }
         .addon-label-title {
@@ -434,11 +305,6 @@
             color: #888;
             font-weight: bold;
         }
-<<<<<<< HEAD
-        .mode-wrapper {
-            position: relative;
-            display: inline-block;
-=======
         .mode-options-row {
             display: flex;
             gap: 20px;
@@ -448,42 +314,15 @@
         .mode-wrapper {
             display: flex;
             flex-direction: column;
->>>>>>> parent of c4ed9bd (Update index.html)
         }
         .mode-checkbox-label {
             display: flex;
             align-items: center;
             gap: 8px;
-<<<<<<< HEAD
-            font-size: 13px;
-            color: #ccc;
-            cursor: pointer;
-        }
-        .mode-tooltip {
-            display: none;
-            position: absolute;
-            bottom: 125%;
-            left: 0;
-            width: 240px;
-            background: #252525;
-            border: 1px solid #00e676;
-            color: #ddd;
-            padding: 8px 10px;
-            border-radius: 6px;
-            font-size: 11.5px;
-            line-height: 1.4;
-            z-index: 50;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-        .mode-wrapper:hover .mode-tooltip {
-            display: block;
-        }
-=======
             font-size: 13.5px;
             color: #ccc;
             cursor: pointer;
         }
->>>>>>> parent of c4ed9bd (Update index.html)
         .storage-breakdown {
             font-size: 12px;
             color: #00e676;
@@ -493,10 +332,7 @@
             border-radius: 4px;
             border: 1px solid #222;
             line-height: 1.5;
-<<<<<<< HEAD
-=======
             box-sizing: border-box;
->>>>>>> parent of c4ed9bd (Update index.html)
         }
         .status-msg {
             text-align: center;
@@ -505,10 +341,6 @@
             margin-bottom: 15px;
             min-height: 20px;
         }
-<<<<<<< HEAD
-        /* Jailbreak Notice Card */
-=======
->>>>>>> parent of c4ed9bd (Update index.html)
         .jailbreak-notice-card {
             background: #1a2e22;
             border: 1px solid #00e676;
@@ -543,15 +375,12 @@
         }
         .game-section-wrapper {
             display: block;
-<<<<<<< HEAD
-=======
             position: relative;
         }
         .game-section-wrapper.locked {
             opacity: 0.4;
             pointer-events: none;
             user-select: none;
->>>>>>> parent of c4ed9bd (Update index.html)
         }
         .game-list {
             display: grid;
@@ -566,11 +395,7 @@
             align-items: center;
             border: 1px solid #2a2a2a;
             cursor: pointer;
-<<<<<<< HEAD
-            transition: border-color 0.2s;
-=======
             transition: border-color 0.2s, background-color 0.2s;
->>>>>>> parent of c4ed9bd (Update index.html)
         }
         .game-card.selected {
             border-color: #00e676;
@@ -593,10 +418,6 @@
             accent-color: #00e676;
             cursor: pointer;
         }
-<<<<<<< HEAD
-        /* Sticky Checkout Bar */
-=======
->>>>>>> parent of c4ed9bd (Update index.html)
         .checkout-bar {
             position: fixed;
             bottom: 0;
@@ -604,11 +425,7 @@
             width: 100%;
             background: #1e1e1e;
             border-top: 1px solid #333;
-<<<<<<< HEAD
-            padding: 15px 20px;
-=======
             padding: 12px 20px;
->>>>>>> parent of c4ed9bd (Update index.html)
             box-sizing: border-box;
             display: flex;
             justify-content: space-between;
@@ -634,15 +451,11 @@
         .submit-btn:hover {
             background-color: #00c853;
         }
-<<<<<<< HEAD
-        /* Cart Modal Styles */
-=======
         .submit-btn:disabled {
             background-color: #444;
             color: #888;
             cursor: not-allowed;
         }
->>>>>>> parent of c4ed9bd (Update index.html)
         .modal {
             display: none;
             position: fixed;
@@ -660,11 +473,7 @@
             padding: 20px;
             border-radius: 8px;
             width: 90%;
-<<<<<<< HEAD
-            max-width: 500px;
-=======
             max-width: 520px;
->>>>>>> parent of c4ed9bd (Update index.html)
             max-height: 85vh;
             display: flex;
             flex-direction: column;
@@ -696,9 +505,6 @@
             margin-bottom: 15px;
             display: flex;
             flex-direction: column;
-<<<<<<< HEAD
-            gap: 8px;
-=======
             gap: 12px;
         }
         .modal-section-title {
@@ -708,17 +514,12 @@
             color: #888;
             font-weight: bold;
             margin-bottom: 4px;
->>>>>>> parent of c4ed9bd (Update index.html)
         }
         .cart-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: #2a2a2a;
-<<<<<<< HEAD
-            padding: 10px 15px;
-            border-radius: 6px;
-=======
             padding: 10px 12px;
             border-radius: 6px;
             font-size: 13.5px;
@@ -747,7 +548,6 @@
             padding: 3px 8px;
             border-radius: 4px;
             font-weight: bold;
->>>>>>> parent of c4ed9bd (Update index.html)
         }
         .remove-btn {
             background: #ff5252;
@@ -772,8 +572,6 @@
             margin-bottom: 10px;
             display: none;
         }
-<<<<<<< HEAD
-=======
         .modal-tier-warning {
             background: #2d2612;
             border: 1px solid #ffca28;
@@ -806,7 +604,6 @@
             font-weight: bold;
             font-size: 14px;
         }
->>>>>>> parent of c4ed9bd (Update index.html)
         .remarks-container {
             margin-top: 10px;
             display: flex;
@@ -840,21 +637,6 @@
 </head>
 <body>
     <div class="container">
-<<<<<<< HEAD
-        <h1>Pulai PC Jailbreak Service</h1>
-        <div class="instructions">
-            1. Choose your <strong>Service Type, Console Model & SD Card Size</strong> upfront.<br>
-            2. Select your games if needed, then review and save!
->>>>>>> 900c39a (merge)
-        </div>
-    </header>
-
-<<<<<<< HEAD
-    <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-=======
-        <!-- Pricing Guide Dropdown -->
-=======
         <h1>Pulai PC Jailbreak & Game Service</h1>
         <div class="instructions">
             1. Enter the <strong>Last 4 Digits</strong> of your phone number below.<br>
@@ -862,7 +644,6 @@
             3. Choose your games, then review and submit!
         </div>
 
->>>>>>> parent of c4ed9bd (Update index.html)
         <details class="pricing-guide">
             <summary>📦 View Pricing Tiers & Game Size Rates (Tap to expand)</summary>
             <div class="pricing-tiers">
@@ -879,104 +660,29 @@
                     <span>RM230<br><small>Free 3 Games</small></span>
                 </div>
             </div>
->>>>>>> 900c39a (merge)
 
-        <!-- Left Column: Configurations & Inputs (2 Spans) -->
-        <div class="lg:col-span-2 space-y-6">
-
-<<<<<<< HEAD
-            <!-- Step 1: Console & Service -->
-            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-sm">
-                <h2 class="text-lg font-bold text-red-400 mb-4 flex items-center gap-2">
-                    <span class="bg-red-500/10 border border-red-500/20 text-red-400 text-xs px-2.5 py-1 rounded-full">Step 1</span> 
-                    Console & Service Type
-                </h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Console Model</label>
-                        <select id="consoleModel" onchange="calculatePricing()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:ring-2 focus:ring-red-500 focus:outline-none">
-                            <option value="OLED">Switch OLED (Triple Mode: OFW+CFW+Android) - RM300</option>
-                            <option value="V1_V2">Switch V1 / V2 (Dual Mode: OFW+CFW) - RM190</option>
-                            <option value="LITE">Switch Lite (Dual Mode: OFW+CFW) - RM230</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Service Package</label>
-                        <select id="serviceType" onchange="calculatePricing()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:ring-2 focus:ring-red-500 focus:outline-none">
-                            <option value="jailbreak_games">Full Jailbreak + Free 3 Games Selection</option>
-                            <option value="games_only">Games Loading Only (Already Jailbroken)</option>
-                        </select>
-=======
-            <p style="font-size: 11.5px; color: #888; margin-top: 10px; margin-bottom: 0; text-align: center;">
-<<<<<<< HEAD
-                * Android/Linux system modes require 128GB+ cards (+RM30 each). Full jailbreak includes your first 3 games free! Want a 10-game addon package? Choose 13 games total.
-            </p>
-        </details>
-        
-        <!-- Top Configuration Control Center -->
-        <div class="config-card">
-            <div class="config-row">
-                <!-- Service Type Selector -->
-                <select id="serviceTypeSelect" class="service-select" onchange="toggleServiceFields()">
-                    <option value="jailbreak">Full Jailbreak (Free 3 Games)</option>
-                    <option value="games_only">Games Only</option>
-                </select>
-
-                <!-- Console Model Selector -->
-                <select id="consoleModelSelect" class="model-select" onchange="updateSdLimit()">
-                    <option value="OLED">OLED (RM300)</option>
-                    <option value="V1_V2">V1/V2 (RM190)</option>
-                    <option value="LITE">LITE (RM230)</option>
-                </select>
-
-                <!-- SD Card Source Selector -->
-                <select id="sdSourceSelect" class="sd-source-select" onchange="updateSdLimit()">
-                    <option value="own">Bring Own SD Card</option>
-                    <option value="buy">Purchase New SD Card</option>
-                </select>
-
-                <!-- SD Card Size Selector -->
-                <select id="sdCardSelect" class="sd-select" onchange="updateSdLimit()">
-                    <option value="64">64 GB Card</option>
-                    <option value="128">128 GB Card</option>
-                    <option value="256" selected>256 GB Card</option>
-                    <option value="512">512 GB Card</option>
-                    <option value="1024">1 TB Card</option>
-                    <option value="2048">2 TB Card</option>
-                </select>
-
-                <div class="phone-group">
-                    <input type="text" id="phoneInput" class="phone-input" maxlength="4" placeholder="e.g. 5678" oninput="savePhone()">
-                    <span class="input-hint">Last 4 digits phone no</span>
+            <div class="pricing-details-grid">
+                <div class="pricing-col">
+                    <h4>🎮 Game Count Tiers (Baseline)</h4>
+                    <ul>
+                        <li><strong>1 - 10 games:</strong> RM3 / game (Up to ~125 GB)</li>
+                        <li><strong>11 - 20 games:</strong> RM50 flat (Up to ~240 GB)</li>
+                        <li><strong>21 - 40 games:</strong> RM80 flat (Up to ~460 GB)</li>
+                        <li><strong>40+ games:</strong> RM80 base + RM2 per extra game</li>
+                    </ul>
                 </div>
-
-                <div class="btn-group">
-                    <button class="lookup-btn" onclick="fetchExistingOrder()" title="Load Saved Order">Load</button>
-                    <button class="clear-btn" onclick="clearAllSelections()" title="Clear All Games">Clear</button>
+                <div class="pricing-col">
+                    <h4>📊 Game Size Volume Override</h4>
+                    <ul>
+                        <li><strong>Up to 100 GB:</strong> RM30 equivalent</li>
+                        <li><strong>Up to 200 GB:</strong> RM50 equivalent</li>
+                        <li><strong>Up to 400 GB:</strong> RM80 equivalent</li>
+                        <li><em>Note: If total storage size exceeds standard count limits due to massive game files, pricing automatically scales based on total GB volume.</em></li>
+                    </ul>
                 </div>
             </div>
 
-            <!-- Mode Selection Checkboxes with Tooltips -->
-            <div id="jailbreakModesContainer" class="modes-container">
-                <span class="addon-label-title">Addon:</span>
-                <div class="mode-wrapper">
-                    <label class="mode-checkbox-label">
-                        <input type="checkbox" id="androidModeCheck" onchange="updateSdLimit()"> 
-                        <span>🤖 Android Mode (+RM30)</span>
-                    </label>
-                    <div class="mode-tooltip">
-                        <strong>Android (LineageOS):</strong> Turns your Switch into an Android tablet. Great for native Android games, Xbox Game Pass cloud streaming, Netflix, and emulators (PS2, GameCube, Wii).
-                    </div>
-                </div>
-
-                <div class="mode-wrapper">
-                    <label class="mode-checkbox-label">
-                        <input type="checkbox" id="linuxModeCheck" onchange="updateSdLimit()"> 
-                        <span>🐧 Linux Mode (+RM30)</span>
-                    </label>
-                    <div class="mode-tooltip">
-                        <strong>Ubuntu Linux:</strong> Gives you a full desktop environment on your Switch. Perfect for lightweight productivity, retro PC gaming via PortProton, and custom media center setups.
-=======
+            <p style="font-size: 11.5px; color: #888; margin-top: 10px; margin-bottom: 0; text-align: center;">
                 * Android/Linux system modes require 128GB+ cards (+RM30 each). Full jailbreak includes your first 3 games free!
             </p>
         </details>
@@ -1062,162 +768,15 @@
                             <span>🐧 Linux Mode (+RM30)</span>
                         </label>
                         <span class="field-hint">Runs Ubuntu Linux desktop for retro emulation & lightweight PC apps</span>
->>>>>>> parent of c4ed9bd (Update index.html)
->>>>>>> 900c39a (merge)
                     </div>
                 </div>
             </div>
 
-            <!-- Step 2: SD Card Configuration -->
-            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-sm">
-                <h2 class="text-lg font-bold text-red-400 mb-4 flex items-center gap-2">
-                    <span class="bg-red-500/10 border border-red-500/20 text-red-400 text-xs px-2.5 py-1 rounded-full">Step 2</span> 
-                    MicroSD Card Selection
-                </h2>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Source</label>
-                        <select id="sdSource" onchange="toggleSdSource()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:ring-2 focus:ring-red-500 focus:outline-none">
-                            <option value="shop">Buy New SD Card from Shop</option>
-                            <option value="own">Bring Own SD Card</option>
-                        </select>
-                    </div>
-                    <div id="sdSizeContainer" class="sm:col-span-2">
-                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Capacity</label>
-                        <select id="sdCardSize" onchange="calculatePricing()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:ring-2 focus:ring-red-500 focus:outline-none">
-                            <option value="64">64GB (Retail: RM35)</option>
-                            <option value="128">128GB (Retail: RM60)</option>
-                            <option value="256" selected>256GB (Retail: RM110)</option>
-                            <option value="512">512GB (Retail: RM220)</option>
-                            <option value="1024">1TB / 1024GB (Retail: RM450)</option>
-                        </select>
-                    </div>
-                </div>
-                <!-- Dynamic Storage Meter -->
-                <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-700/60 text-xs flex flex-col sm:flex-row justify-between items-center gap-2">
-                    <span class="text-slate-400">Usable Space Approximation: <strong id="usableStorageText" class="text-slate-200">230 GB</strong> available after partitions.</span>
-                    <span id="storageWarning" class="text-emerald-400 font-medium">Storage capacity optimal</span>
-                </div>
-            </div>
-
-            <!-- Step 3: Optional Add-ons -->
-            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-sm">
-                <h2 class="text-lg font-bold text-red-400 mb-4 flex items-center gap-2">
-                    <span class="bg-red-500/10 border border-red-500/20 text-red-400 text-xs px-2.5 py-1 rounded-full">Step 3</span> 
-                    Extra Add-on Modes
-                </h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <label class="flex items-center space-x-3 bg-slate-900/60 border border-slate-700/60 p-3.5 rounded-xl cursor-pointer hover:border-slate-600 transition">
-                        <input type="checkbox" id="androidMode" onchange="calculatePricing()" class="w-4 h-4 text-red-600 rounded bg-slate-900 border-slate-700 focus:ring-red-500">
-                        <div>
-                            <span class="text-sm font-medium text-white block">Android Dual/Triple Boot</span>
-                            <span class="text-xs text-slate-400">+RM30 installation fee</span>
-                        </div>
-                    </label>
-                    <label class="flex items-center space-x-3 bg-slate-900/60 border border-slate-700/60 p-3.5 rounded-xl cursor-pointer hover:border-slate-600 transition">
-                        <input type="checkbox" id="linuxMode" onchange="calculatePricing()" class="w-4 h-4 text-red-600 rounded bg-slate-900 border-slate-700 focus:ring-red-500">
-                        <div>
-                            <span class="text-sm font-medium text-white block">Linux Partition</span>
-                            <span class="text-xs text-slate-400">+RM30 installation fee</span>
-                        </div>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Step 4: Game Selections & Remarks -->
-            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-sm">
-                <h2 class="text-lg font-bold text-red-400 mb-4 flex items-center gap-2">
-                    <span class="bg-red-500/10 border border-red-500/20 text-red-400 text-xs px-2.5 py-1 rounded-full">Step 4</span> 
-                    Game List / Custom Requests
-                </h2>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Selected Games / Wishlist (Comma Separated or List)</label>
-                        <textarea id="gameListInput" rows="4" placeholder="e.g. Zelda Tears of the Kingdom, Mario Kart 8 Deluxe, Super Mario Odyssey..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:ring-2 focus:ring-red-500 focus:outline-none custom-scrollbar"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Customer Phone Number (Last 4 Digits for Tracking)</label>
-                        <input type="text" id="phoneEnding" maxlength="4" placeholder="e.g. 5689" class="w-full sm:w-1/2 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:ring-2 focus:ring-red-500 focus:outline-none font-mono">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Additional Remarks / Notes</label>
-                        <input type="text" id="remarksInput" placeholder="e.g. Prefer pickup on Saturday evening" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:ring-2 focus:ring-red-500 focus:outline-none">
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Right Column: Summary & Immediate WhatsApp Action (1 Span) -->
-        <div class="space-y-6">
-            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-lg sticky top-24">
-                <h2 class="text-lg font-bold text-white mb-4 border-b border-slate-700 pb-3 flex justify-between items-center">
-                    <span>Order Breakdown</span>
-                    <span class="text-xs bg-red-600/20 text-red-400 px-2 py-0.5 rounded border border-red-500/30">Live Quote</span>
-                </h2>
-
-                <div class="space-y-3 text-sm mb-6">
-                    <div class="flex justify-between text-slate-300">
-                        <span>Console / Service:</span>
-                        <span id="summaryService" class="font-medium text-white text-right">Switch OLED Jailbreak</span>
-                    </div>
-                    <div class="flex justify-between text-slate-300">
-                        <span>SD Card Option:</span>
-                        <span id="summarySd" class="font-medium text-white text-right">256GB (New)</span>
-                    </div>
-                    <div class="flex justify-between text-slate-300">
-                        <span>Add-on Modes:</span>
-                        <span id="summaryAddons" class="font-medium text-white text-right">None</span>
-                    </div>
-                    <div class="flex justify-between text-slate-300">
-                        <span>Estimated Size / Games:</span>
-                        <span id="summarySize" class="font-medium text-white text-right">0 GB</span>
-                    </div>
-                    <div class="border-t border-slate-700 pt-3 flex justify-between items-center">
-                        <span class="text-base font-bold text-white">Estimated Total:</span>
-                        <span id="summaryPrice" class="text-2xl font-black text-red-400">RM300</span>
-                    </div>
-                </div>
-
-                <!-- Immediate WhatsApp Trigger Button -->
-                <button onclick="saveAndDispatchWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-base">
-                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-                    Confirm & Send via WhatsApp
-                </button>
-                <p class="text-xs text-slate-400 text-center mt-3">Clicking this will automatically save your specification to our system and open WhatsApp.</p>
+            <div id="storageBreakdown" class="storage-breakdown">
+                Usable Space: <span id="maxUsableLabel">--</span> GB
             </div>
         </div>
 
-<<<<<<< HEAD
-    </main>
-
-    <!-- Notification Toast Popup -->
-    <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-800 border border-slate-700 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3">
-        <span id="toastIcon">✅</span>
-        <span id="toastMessage" class="text-sm font-medium">Notification message</span>
-    </div>
-
-    <!-- Script Logic Integration -->
-    <script>
-        // REPLACE WITH YOUR ACTUAL SUPABASE CONFIGURATION OR LOAD VIA config.js
-        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-=======
-<<<<<<< HEAD
-        <!-- Jailbreak Notice Card -->
-        <div id="jailbreakNoticeCard" class="jailbreak-notice-card">
-            <h3>🎁 You get 3 Free Games with your Full Jailbreak!</h3>
-            <p>Your jailbreak service package includes your first 3 games free. For example, if you want a 10-game addon package, you pick 3 free games + 10 addon games = 13 games total!</p>
-            <button class="browse-games-btn" onclick="revealGameSection()">Browse & Choose Games</button>
-        </div>
-
-        <!-- Game Section Wrapper -->
-        <div id="gameSectionWrapper" class="game-section-wrapper" style="display: none;">
-            <!-- Search Bar Section -->
-            <div class="search-container">
-                <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search games in library..." onkeyup="filterGames()">
-                <button id="clearSearchBtn" class="clear-search-btn" onclick="clearSearch()" title="Clear search">&times;</button>
-=======
         <div id="storageWarningBanner" class="storage-warning-banner">
             <span class="warning-icon">⚠️</span>
             <span id="storageWarningText">Please enter your <strong>Phone ID (4 digits)</strong> and storage capacity to unlock game selection.</span>
@@ -1241,7 +800,6 @@
                     <button id="clearSearchBtn" class="clear-search-btn" onclick="clearSearch()" title="Clear search">&times;</button>
                 </div>
                 <span class="field-hint" style="margin-left: 2px;">Type game title or keyword to filter the game list</span>
->>>>>>> parent of c4ed9bd (Update index.html)
             </div>
 
             <div id="statusMsg" class="status-msg"></div>
@@ -1250,10 +808,6 @@
         </div>
     </div>
 
-<<<<<<< HEAD
-    <!-- Sticky Bottom Checkout Bar -->
-=======
->>>>>>> parent of c4ed9bd (Update index.html)
     <div class="checkout-bar">
         <div class="checkout-info" onclick="openCartModal()">
             🛒 <span id="selectedCount" style="color: #00e676; font-weight: bold;">0</span> games 
@@ -1262,16 +816,9 @@
             <span id="selectedPrice" style="color: #00e676; font-weight: bold;">RM0</span>
             <br><span id="checkoutSubtext" style="font-size: 11px; color: #aaa;">Tap here to review & add remarks</span>
         </div>
-<<<<<<< HEAD
-        <button class="submit-btn" onclick="openCartModal()">Review & Submit</button>
-    </div>
-
-    <!-- Cart Review / Edit Modal -->
-=======
         <button id="mainSubmitBtn" class="submit-btn" onclick="openCartModal()">Review & Submit</button>
     </div>
 
->>>>>>> parent of c4ed9bd (Update index.html)
     <div id="cartModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1279,47 +826,29 @@
                 <button class="close-modal" onclick="closeCartModal()">&times;</button>
             </div>
             <div id="cartModalBody" class="modal-body"></div>
-<<<<<<< HEAD
-            
-            <div id="sizeWarningBox" class="warning-box">
-                ⚠️ <strong>Size Tolerance Alert:</strong> Your total storage size has exceeded the standard buffer limit for this game count tier. Pricing has adjusted accordingly.
-=======
 
             <div id="modalTierWarning" class="modal-tier-warning"></div>
             
             <div id="sizeWarningBox" class="warning-box">
                 ⚠️ <strong>Size Tolerance Alert:</strong> Your total storage size has exceeded standard buffer limits for this tier. Pricing has adjusted accordingly.
->>>>>>> parent of c4ed9bd (Update index.html)
             </div>
 
             <div class="remarks-container">
                 <label for="orderRemarks">Remarks / Notes (Optional):</label>
-<<<<<<< HEAD
-                <textarea id="orderRemarks" class="remarks-input" placeholder="e.g. mention trilogies, specific requests..."></textarea>
-=======
                 <textarea id="orderRemarks" class="remarks-input" placeholder="e.g. mention specific game DLCs, trilogies, or special requests..."></textarea>
                 <span class="field-hint">Add special notes, preferred game versions, or custom requests</span>
->>>>>>> parent of c4ed9bd (Update index.html)
             </div>
 
             <div class="modal-footer">
                 <span id="modalTotal" style="color: #aaa; font-size: 12px; line-height: 1.4;">0 games total</span>
-<<<<<<< HEAD
-                <button class="submit-btn" onclick="submitOrUpdateOrder()">Save Changes</button>
-=======
                 <div style="display: flex; gap: 8px;">
                     <button class="submit-btn" onclick="submitOrUpdateOrder()">Save Changes</button>
                     <button id="whatsappShareBtn" class="submit-btn" style="background-color: #25D366; color: #fff; display: none;" onclick="shareOrderViaWhatsApp()">📱 Send to WhatsApp</button>
                 </div>
->>>>>>> parent of c4ed9bd (Update index.html)
             </div>
         </div>
     </div>
 
-<<<<<<< HEAD
-    <!-- Load external config.js containing prices, game list, and credentials -->
-=======
->>>>>>> parent of c4ed9bd (Update index.html)
     <script src="config.js"></script>
 
     <script>
@@ -1327,11 +856,6 @@
 
     let selectedGames = new Map(); 
     let maxSdSize = 256; 
-<<<<<<< HEAD
-    let usableStorageLimit = 240; 
-
-    window.onload = function() {
-=======
     let usableStorageLimit = 0; 
     let isStorageConfigured = false;
 
@@ -1343,268 +867,10 @@
 
         populateSdCardOptions();
 
->>>>>>> parent of c4ed9bd (Update index.html)
         const savedPhone = localStorage.getItem('userPhone4');
         if (savedPhone) {
             document.getElementById('phoneInput').value = savedPhone;
         }
-<<<<<<< HEAD
->>>>>>> 900c39a (merge)
-        
-        // Initialize Supabase client if configured properly
-        let supabaseClient = null;
-        if (typeof SUPABASE_URL !== 'undefined' && SUPABASE_URL !== 'YOUR_SUPABASE_URL') {
-            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        }
-
-        // Pricing Rules Dictionary
-        const prices = {
-            jailbreak: { OLED: 300, V1_V2: 190, LITE: 230 },
-            sdRetail: { 64: 35, 128: 60, 256: 110, 512: 220, 1024: 450 },
-            addons: { android: 30, linux: 30 }
-        };
-
-        function toggleSdSource() {
-            const source = document.getElementById('sdSource').value;
-            const sizeContainer = document.getElementById('sdSizeContainer');
-            if (source === 'own') {
-                sizeContainer.style.opacity = '0.5';
-            } else {
-                sizeContainer.style.opacity = '1';
-            }
-            calculatePricing();
-        }
-
-        function calculatePricing() {
-            const consoleModel = document.getElementById('consoleModel').value;
-            const serviceType = document.getElementById('serviceType').value;
-            const sdSource = document.getElementById('sdSource').value;
-            const sdSize = parseInt(document.getElementById('sdCardSize').value);
-            const hasAndroid = document.getElementById('androidMode').checked;
-            const hasLinux = document.getElementById('linuxMode').checked;
-
-            let total = 0;
-            let serviceLabel = "";
-
-            // Base Service Pricing
-            if (serviceType === 'jailbreak_games') {
-                total += prices.jailbreak[consoleModel] || 0;
-                serviceLabel = `${consoleModel === 'OLED' ? 'Switch OLED' : consoleModel === 'V1_V2' ? 'Switch V1/V2' : 'Switch Lite'} Jailbreak`;
-            } else {
-                serviceLabel = `${consoleModel} Games Loading Only`;
-            }
-
-            // SD Card Pricing
-            let sdLabel = "";
-            if (sdSource === 'shop') {
-                total += prices.sdRetail[sdSize] || 0;
-                sdLabel = `${sdSize}GB (New Card)`;
-            } else {
-                sdLabel = `${sdSize}GB (Own Card)`;
-            }
-
-            // Addons Pricing
-            let addonsText = [];
-            if (hasAndroid) {
-                total += prices.addons.android;
-                addonsText.push("Android");
-            }
-            if (hasLinux) {
-                total += prices.addons.linux;
-                addonsText.push("Linux");
-            }
-
-            // Storage capacity simulation & usable space calculation
-            let overhead = 15; // System partition and atmosphere overhead
-            if (hasAndroid) overhead += 15;
-            if (hasLinux) overhead += 10;
-            let usable = Math.max(0, sdSize - overhead);
-
-            document.getElementById('usableStorageText').innerText = `${usable} GB`;
-            
-            // UI text sync
-            document.getElementById('summaryService').innerText = serviceLabel;
-            document.getElementById('summarySd').innerText = sdLabel;
-            document.getElementById('summaryAddons').innerText = addonsText.length > 0 ? addonsText.join(', ') : 'None';
-            document.getElementById('summaryPrice').innerText = `RM${total}`;
-
-            // Count rough game selections from textarea
-            const gamesText = document.getElementById('gameListInput').value.trim();
-            const gamesCount = gamesText ? gamesText.split(',').length : 0;
-            document.getElementById('summarySize').innerText = `${gamesCount} titles selected`;
-
-            return {
-                consoleModel,
-                serviceType,
-                sdSource,
-                sdCardSize: sdSize,
-                androidMode: hasAndroid,
-                linuxMode: hasLinux,
-                estimatedPrice: total,
-                totalGames: gamesCount,
-                freeStorageGb: usable
-            };
-        }
-
-        // Show toast popup helper
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toastNotification');
-            const msgEl = document.getElementById('toastMessage');
-            const iconEl = document.getElementById('toastIcon');
-
-            msgEl.innerText = message;
-            iconEl.innerText = type === 'success' ? '✅' : '⚠️';
-
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3500);
-        }
-
-        // Save to Database and Trigger WhatsApp Immediately
-        async function saveAndDispatchWhatsApp() {
-            const phoneEnding = document.getElementById('phoneEnding').value.trim();
-            if (!phoneEnding || phoneEnding.length !== 4) {
-                showToast('Please enter the last 4 digits of your phone number for tracking!', 'error');
-                document.getElementById('phoneEnding').focus();
-                return;
-            }
-
-            const data = calculatePricing();
-            data.phone_ending = phoneEnding;
-            data.games = document.getElementById('gameListInput').value;
-            data.remarks = document.getElementById('remarksInput').value;
-            data.status = 'pending_submission';
-
-            // Save to Supabase if connected
-            if (supabaseClient) {
-                try {
-                    const { error } = await supabaseClient.from('orders').insert([data]);
-                    if (error) console.warn('Cloud sync warning:', error.message);
-                } catch (err) {
-                    console.error('Supabase error:', err);
-                }
-            }
-
-            showToast('Order recorded! Launching WhatsApp...', 'success');
-
-            // Construct WhatsApp Message payload
-            const businessPhone = "601165676869";
-            let msg = `*🎮 New Pulai PC Switch Order*\n\n`;
-            msg += `📱 *Console:* ${data.consoleModel}\n`;
-            msg += `🛠️ *Service:* ${data.serviceType}\n`;
-            msg += `💾 *SD Card:* ${data.sdCardSize}GB (${data.sdSource})\n`;
-            if (data.androidMode || data.linuxMode) {
-                msg += `⚙️ *Add-ons:* ${data.androidMode ? 'Android ' : ''}${data.linuxMode ? 'Linux' : ''}\n`;
-            }
-            msg += `📦 *Games Listed:* ${data.totalGames || 'Custom Wishlist'}\n`;
-            if (data.games) {
-                msg += `📋 *List:* ${data.games}\n`;
-            }
-            if (data.remarks) {
-                msg += `📝 *Remarks:* ${data.remarks}\n`;
-            }
-            msg += `💰 *Estimated Total:* RM${data.estimatedPrice}\n`;
-            msg += `📞 *Customer Phone (Last 4):* ${data.phone_ending}`;
-
-            // Open WhatsApp immediately
-            const url = `https://wa.me/${businessPhone}?text=${encodeURIComponent(msg)}`;
-            setTimeout(() => {
-                window.open(url, '_blank');
-            }, 500);
-        }
-
-        // Load existing customer profile based on last 4 digits
-        async function loadCustomerOrder() {
-            const phone = document.getElementById('lookupPhone').value.trim();
-            if (!phone || phone.length !== 4) {
-                showToast('Please input 4 digits to search', 'error');
-                return;
-            }
-
-            if (!supabaseClient) {
-                showToast('Supabase not connected. Config missing.', 'error');
-                return;
-            }
-
-            try {
-                const { data, error } = await supabaseClient
-                    .from('orders')
-                    .select('*')
-                    .eq('phone_ending', phone)
-                    .order('created_at', { ascending: false })
-                    .limit(1);
-
-                if (error) throw error;
-
-                if (data && data.length > 0) {
-                    const ord = data[0];
-                    document.getElementById('consoleModel').value = ord.console_model || 'OLED';
-                    document.getElementById('serviceType').value = ord.service_type || 'jailbreak_games';
-                    document.getElementById('sdSource').value = ord.sd_source || 'shop';
-                    document.getElementById('sdCardSize').value = ord.sd_card_size || '256';
-                    document.getElementById('androidMode').checked = !!ord.android_mode;
-                    document.getElementById('linuxMode').checked = !!ord.linux_mode;
-                    document.getElementById('gameListInput').value = ord.games || '';
-                    document.getElementById('phoneEnding').value = ord.phone_ending || '';
-                    document.getElementById('remarksInput').value = ord.remarks || '';
-                    
-                    toggleSdSource();
-                    calculatePricing();
-                    showToast('Previous order loaded successfully!', 'success');
-                } else {
-                    showToast('No saved orders found for ending #' + phone, 'error');
-                }
-            } catch (err) {
-                console.error('Fetch error:', err);
-                showToast('Error retrieving order records.', 'error');
-            }
-        }
-
-<<<<<<< HEAD
-        // Run calculation once on page load
-        window.onload = () => {
-            calculatePricing();
-        };
-=======
-        if (count <= 0) {
-            return { price: serviceBasePrice + sdCardPrice + baseOnlyPrice, exceeded: false };
-        }
-
-        let chargeableCount = count;
-        if (serviceType === 'jailbreak') {
-            chargeableCount = Math.max(0, count - 3);
-        }
-
-        let countTierPrice = 0;
-        let targetGbLimit = 100;
-
-        if (chargeableCount <= 10) {
-            countTierPrice = chargeableCount * 3.0; 
-            targetGbLimit = 125; 
-        } else if (chargeableCount <= 20) {
-            countTierPrice = 50; 
-            targetGbLimit = 240; 
-        } else if (chargeableCount <= 40) {
-            countTierPrice = 50 + (chargeableCount - 20) * 1.5; 
-            targetGbLimit = 460; 
-        } else {
-            countTierPrice = 80 + (chargeableCount - 40) * 2.0;
-            targetGbLimit = totalGameSizeGb;
-        }
-
-        let sizeTierPrice = 0;
-        if (totalGameSizeGb <= 100) {
-            sizeTierPrice = (totalGameSizeGb / 100) * 30;
-        } else if (totalGameSizeGb <= 200) {
-            sizeTierPrice = 30 + ((totalGameSizeGb - 100) / 100) * 20; 
-        } else if (totalGameSizeGb <= 400) {
-            sizeTierPrice = 50 + ((totalGameSizeGb - 200) / 200) * 30; 
-        } else {
-            sizeTierPrice = 80 + ((totalGameSizeGb - 400) / 100) * 20;
-        }
-
-=======
 
         const savedService = localStorage.getItem('userServiceType');
         if (savedService) {
@@ -2128,7 +1394,6 @@
             sizeTierPrice = 80 + ((totalGameSizeGb - 400) / 100) * 20;
         }
 
->>>>>>> parent of c4ed9bd (Update index.html)
         let gamesPrice = countTierPrice;
         let isExceeded = false;
 
@@ -2137,11 +1402,6 @@
             isExceeded = true;
         }
 
-<<<<<<< HEAD
-        let finalPrice = serviceBasePrice + sdCardPrice + gamesPrice + baseOnlyPrice;
-
-        return { price: finalPrice, exceeded: isExceeded };
-=======
         let finalPrice = Math.round(serviceBasePrice + sdCardPrice + gamesPrice + baseOnlyPrice);
 
         return { 
@@ -2210,7 +1470,6 @@
         }
 
         return { hasWarning: false, targetCount: 0, remaining: 0, msg: '' };
->>>>>>> parent of c4ed9bd (Update index.html)
     }
 
     function updateCartSummary() {
@@ -2227,8 +1486,6 @@
         document.getElementById('remainderSize').innerText = remainderSize.toFixed(1);
         document.getElementById('selectedPrice').innerText = `RM${Math.round(details.price)}`;
 
-<<<<<<< HEAD
-=======
         const tierRec = checkTierRecommendation(count, serviceType);
         const banner = document.getElementById('tierWarningBanner');
         const bannerText = document.getElementById('tierWarningText');
@@ -2240,7 +1497,6 @@
             banner.style.display = 'none';
         }
 
->>>>>>> parent of c4ed9bd (Update index.html)
         const subtext = document.getElementById('checkoutSubtext');
         if (serviceType === 'jailbreak') {
             if (count === 0) {
@@ -2249,35 +1505,14 @@
                 subtext.innerHTML = `(${count} free games selected, ${3 - count} more free available) | Tap to review`;
             } else {
                 const chargeable = count - 3;
-<<<<<<< HEAD
-                let hintText = '';
-                if (count === 10) {
-                    hintText = ' 💡 Note: This is 7 chargeable games. For 10 addon games, pick 13!';
-                } else if (count === 20) {
-                    hintText = ' 💡 Note: For 20 addon games, pick 23!';
-                }
-                subtext.innerHTML = `(3 free + ${chargeable} addon chargeable)${hintText} | Tap to review`;
-            }
-        } else {
-            subtext.innerHTML = 'Tap here to review & add remarks';
-=======
                 subtext.innerHTML = `(3 free + ${chargeable} addon) ${tierRec.hasWarning ? '⚠️ Package limit incomplete' : ''} | Tap to review`;
             }
         } else {
             subtext.innerHTML = `${tierRec.hasWarning ? '⚠️ Tier package limit incomplete | ' : ''}Tap here to review & add remarks`;
->>>>>>> parent of c4ed9bd (Update index.html)
         }
     }
 
     async function fetchExistingOrder() {
-<<<<<<< HEAD
-        const phone = document.getElementById('phoneInput').value.trim();
-        const statusMsg = document.getElementById('statusMsg');
-
-        if (phone.length !== 4) {
-            alert('Please enter the exact last 4 digits of your phone number!');
-            document.getElementById('phoneInput').focus();
-=======
         const phoneInput = document.getElementById('phoneInput');
         const phone = phoneInput.value.trim();
         const statusMsg = document.getElementById('statusMsg');
@@ -2286,17 +1521,12 @@
             alert('ℹ️ "Load Saved Order" is for returning customers who previously submitted an order.\n\nPlease enter the last 4 digits of your phone number in the top field!');
             phoneInput.focus();
             phoneInput.classList.add('required-missing');
->>>>>>> parent of c4ed9bd (Update index.html)
             return;
         }
 
         if (statusMsg) {
             statusMsg.style.color = '#2196F3';
-<<<<<<< HEAD
-            statusMsg.innerText = 'Searching for your order...';
-=======
             statusMsg.innerText = 'Searching for your saved order...';
->>>>>>> parent of c4ed9bd (Update index.html)
         }
 
         try {
@@ -2310,38 +1540,6 @@
             if (error) throw error;
 
             if (data && data.length > 0) {
-<<<<<<< HEAD
-                selectedGames.clear();
-                data[0].games.forEach(gameName => {
-                    const found = games.find(g => g.name === gameName);
-                    const size = found ? found.size : 0;
-                    selectedGames.set(gameName, size);
-                });
-                
-                if (data[0].remarks) {
-                    document.getElementById('orderRemarks').value = data[0].remarks;
-                }
-
-                if (data[0].sd_card_size) {
-                    document.getElementById('sdCardSelect').value = data[0].sd_card_size;
-                    maxSdSize = parseInt(data[0].sd_card_size);
-                }
-
-                if (data[0].service_type) {
-                    document.getElementById('serviceTypeSelect').value = data[0].service_type;
-                }
-
-                if (data[0].sd_source) {
-                    document.getElementById('sdSourceSelect').value = data[0].sd_source;
-                }
-
-                if (data[0].console_model) {
-                    document.getElementById('consoleModelSelect').value = data[0].console_model;
-                }
-
-                document.getElementById('androidModeCheck').checked = !!data[0].android_mode;
-                document.getElementById('linuxModeCheck').checked = !!data[0].linux_mode;
-=======
                 const order = data[0];
                 selectedGames.clear();
                 
@@ -2372,38 +1570,25 @@
 
                 document.getElementById('androidModeCheck').checked = !!order.android_mode;
                 document.getElementById('linuxModeCheck').checked = !!order.linux_mode;
->>>>>>> parent of c4ed9bd (Update index.html)
 
                 toggleServiceFields();
                 updateSdLimit();
                 filterGames();
                 
-<<<<<<< HEAD
-                if (selectedGames.size > 0) {
-                    revealGameSection();
-                }
-=======
                 if (selectedGames.size > 0) revealGameSection();
 
                 // Show WhatsApp button since order exists in system
                 document.getElementById('whatsappShareBtn').style.display = 'block';
->>>>>>> parent of c4ed9bd (Update index.html)
 
                 if (statusMsg) {
                     statusMsg.style.color = '#00e676';
                     statusMsg.innerText = `Loaded previous order! (${selectedGames.size} games found)`;
                 }
             } else {
-<<<<<<< HEAD
-                if (statusMsg) {
-                    statusMsg.style.color = '#ff5252';
-                    statusMsg.innerText = 'No existing order found for this 4-digit ID.';
-=======
                 alert('No previous saved order found for ID "' + phone + '". If this is your first visit, you can start picking games below!');
                 if (statusMsg) {
                     statusMsg.style.color = '#ff9800';
                     statusMsg.innerText = 'No order found. Start picking games below!';
->>>>>>> parent of c4ed9bd (Update index.html)
                 }
             }
         } catch (err) {
@@ -2416,38 +1601,6 @@
     }
 
     function openCartModal() {
-<<<<<<< HEAD
-        const modalBody = document.getElementById('cartModalBody');
-        modalBody.innerHTML = '';
-
-        selectedGames.forEach((size, gameName) => {
-            const item = document.createElement('div');
-            item.className = 'cart-item';
-            item.innerHTML = `
-                <span>${gameName} <span style="color:#00e676; font-size:0.85em;">(${size} GB)</span></span>
-                <button class="remove-btn" onclick="removeGameFromCart('${gameName.replace(/'/g, "\\'")}')">Remove</button>
-            `;
-            modalBody.appendChild(item);
-        });
-
-        if (selectedGames.size === 0) {
-            modalBody.innerHTML = '<p style="text-align:center; color:#888; margin:5px 0;">No individual games selected.</p>';
-        }
-
-        const count = selectedGames.size;
-        const serviceType = document.getElementById('serviceTypeSelect').value;
-        let totalGamesSize = 0;
-        selectedGames.forEach(size => { totalGamesSize += size; });
-        
-        const remainderSize = Math.max(0, usableStorageLimit - totalGamesSize);
-        const details = calculatePriceDetails(count, totalGamesSize);
-        
-        const warningBox = document.getElementById('sizeWarningBox');
-        if (details.exceeded) {
-            warningBox.style.display = 'block';
-        } else {
-            warningBox.style.display = 'none';
-=======
         if (!validatePhoneProvided()) return;
 
         if (!isStorageConfigured) {
@@ -2685,27 +1838,11 @@
             modalTierBox.innerHTML = tierRec.msg;
         } else {
             modalTierBox.style.display = 'none';
->>>>>>> parent of c4ed9bd (Update index.html)
         }
 
         let summaryText = `${count} games total`;
         if (serviceType === 'jailbreak') {
             if (count <= 3) {
-<<<<<<< HEAD
-                summaryText = `${count} games (${count} free, 0 chargeable)`;
-            } else {
-                const chargeable = count - 3;
-                let tierHint = '';
-                if (count === 10) tierHint = ' (Note: 7 chargeable; select 13 for a full 10-game addon)';
-                summaryText = `${count} games (3 free + ${chargeable} addon chargeable)${tierHint}`;
-            }
-        }
-
-        document.getElementById('modalTotal').innerHTML = `${summaryText} (<span style="color:#00e676;">${totalGamesSize.toFixed(1)} GB</span> | <span style="color:#ffb74d;">${remainderSize.toFixed(1)} GB left</span>) | Total: <strong style="color:#00e676;">RM${Math.round(details.price)}</strong>`;
-        document.getElementById('cartModal').style.display = 'flex';
-    }
-
-=======
                 summaryText = `${count} games (${count} free)`;
             } else {
                 const chargeable = count - 3;
@@ -2741,62 +1878,19 @@
         openCartModal();
     }
 
->>>>>>> parent of c4ed9bd (Update index.html)
     function closeCartModal() {
         document.getElementById('cartModal').style.display = 'none';
     }
 
     function removeGameFromCart(gameName) {
-<<<<<<< HEAD
-=======
         // Hiding WhatsApp button until re-saved
         document.getElementById('whatsappShareBtn').style.display = 'none';
->>>>>>> parent of c4ed9bd (Update index.html)
         selectedGames.delete(gameName);
         filterGames();
         openCartModal();
     }
 
     async function submitOrUpdateOrder() {
-<<<<<<< HEAD
-        const phone = document.getElementById('phoneInput').value.trim();
-        if (phone.length !== 4) {
-            alert('Please enter your 4-digit phone ID at the top!');
-            document.getElementById('phoneInput').focus();
-            return;
-        }
-
-        const serviceType = document.getElementById('serviceTypeSelect').value;
-        const count = selectedGames.size;
-
-        // Popup Validation Check for Full Jailbreak
-        if (serviceType === 'jailbreak') {
-            if (count < 3) {
-                const remainingFree = 3 - count;
-                const confirmSave = confirm(`🎁 You have selected only ${count} game(s).\n\nYour Full Jailbreak package includes 3 FREE games! You still have ${remainingFree} free game slot(s) available.\n\nDo you still want to save your order with fewer than 3 games?`);
-                if (!confirmSave) return;
-            } else if (count > 3) {
-                const chargeableCount = count - 3;
-                
-                // Define your actual package milestones
-                const milestones = [10, 20, 40];
-                let matchedMilestone = null;
-                let suggestedTotal = null;
-
-                // Check if they are just 1 to 3 games short of a clean package tier
-                for (let m of milestones) {
-                    if (chargeableCount > m - 3 && chargeableCount < m) {
-                        matchedMilestone = m;
-                        suggestedTotal = m + 3;
-                        break;
-                    }
-                }
-
-                if (matchedMilestone && suggestedTotal) {
-                    const confirmTier = confirm(`⚠️ Package Tier Reminder:\n\nYou selected ${count} games total (${chargeableCount} addon games after your 3 free ones).\n\nSince you're going for the ${matchedMilestone}-game package, did you want to choose ${suggestedTotal} games total (3 free + ${matchedMilestone} addon)?\n\nClick [Cancel] to go back and add more games, or [OK] to save with your current count (${count} games).`);
-                    if (!confirmTier) return;
-                }
-=======
         if (!validatePhoneProvided()) return;
 
         const phone = document.getElementById('phoneInput').value.trim();
@@ -2827,7 +1921,6 @@
                 alert('Please enter your remaining free SD card storage space before submitting!');
                 document.getElementById('userFreeStorageInput').focus();
                 return;
->>>>>>> parent of c4ed9bd (Update index.html)
             }
         }
 
@@ -2838,10 +1931,7 @@
         const gameNamesArray = Array.from(selectedGames.keys());
         const remarksText = document.getElementById('orderRemarks').value.trim();
         const consoleModel = document.getElementById('consoleModelSelect').value;
-<<<<<<< HEAD
-=======
         const freeStorageInput = document.getElementById('userFreeStorageInput').value;
->>>>>>> parent of c4ed9bd (Update index.html)
         
         const sdSource = (serviceType === 'jailbreak') ? document.getElementById('sdSourceSelect').value : 'own';
         const androidSelected = (serviceType === 'jailbreak') ? document.getElementById('androidModeCheck').checked : false;
@@ -2854,36 +1944,22 @@
         const finalPrice = Math.round(details.price);
 
         try {
-<<<<<<< HEAD
-            const { data: existing } = await supabaseClient
-=======
             const { data: existing, error: queryErr } = await supabaseClient
->>>>>>> parent of c4ed9bd (Update index.html)
                 .from('orders')
                 .select('id, created_at')
                 .eq('phone_ending', phone);
 
-<<<<<<< HEAD
-            const nowIso = new Date().toISOString();
-            let error;
-
-=======
             if (queryErr) throw queryErr;
 
             const nowIso = new Date().toISOString();
             
->>>>>>> parent of c4ed9bd (Update index.html)
             const orderData = {
                 phone_ending: phone,
                 games: gameNamesArray,
                 total_games: count,
                 remarks: remarksText,
-<<<<<<< HEAD
-                sd_card_size: maxSdSize,
-=======
                 sd_card_size: serviceType === 'jailbreak' ? maxSdSize : null,
                 free_storage_gb: serviceType === 'games_only' ? parseFloat(freeStorageInput) : null,
->>>>>>> parent of c4ed9bd (Update index.html)
                 sd_source: sdSource,
                 service_type: serviceType,
                 console_model: serviceType === 'jailbreak' ? consoleModel : null,
@@ -2895,25 +1971,6 @@
                 updated_at: nowIso
             };
 
-<<<<<<< HEAD
-            if (existing && existing.length > 0) {
-                const { error: updateError } = await supabaseClient
-                    .from('orders')
-                    .update(orderData)
-                    .eq('phone_ending', phone);
-                error = updateError;
-            } else {
-                orderData.created_at = nowIso;
-                const { error: insertError } = await supabaseClient
-                    .from('orders')
-                    .insert([orderData]);
-                error = insertError;
-            }
-
-            if (error) throw error;
-
-            alert('Order updated and saved successfully!');
-=======
             let saveResult;
             if (existing && existing.length > 0) {
                 saveResult = await supabaseClient
@@ -2934,7 +1991,6 @@
             // Only reveal the WhatsApp share button AFTER successful save
             document.getElementById('whatsappShareBtn').style.display = 'block';
 
->>>>>>> parent of c4ed9bd (Update index.html)
             closeCartModal();
             const statusMsg = document.getElementById('statusMsg');
             if (statusMsg) {
@@ -2943,18 +1999,12 @@
 
         } catch (err) {
             console.error(err);
-<<<<<<< HEAD
-            alert('Failed to save order. Check console for details.');
-=======
             alert('Failed to save order: ' + (err.message || 'Check console details.'));
->>>>>>> parent of c4ed9bd (Update index.html)
         } finally {
             btn.innerText = 'Save Changes';
             btn.disabled = false;
         }
     }
-<<<<<<< HEAD
-=======
 
     function shareOrderViaWhatsApp() {
         const phone = document.getElementById('phoneInput').value.trim();
@@ -3002,8 +2052,6 @@
         
         window.open(whatsappUrl, '_blank');
     }
->>>>>>> parent of c4ed9bd (Update index.html)
->>>>>>> 900c39a (merge)
     </script>
 </body>
 </html>

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pulai PC Admin Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #121212; color: #fff; margin: 0; padding: 20px; }
+        .admin-container { max-width: 1100px; margin: 0 auto; }
+        
+        /* LOGIN OVERLAY */
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #121212; display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .login-card { background: #1a1a1a; border: 1px solid #333; padding: 30px; border-radius: 8px; width: 320px; text-align: center; }
+        .login-card input { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; background: #252525; border: 1px solid #444; color: #fff; border-radius: 4px; }
+        .login-card button { width: 100%; padding: 10px; background: #00e676; border: none; color: #121212; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        
+        /* DASHBOARD STYLES */
+        .header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        h1 { color: #00e676; margin: 0; font-size: 24px; }
+        .stats-overview { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 15px; text-align: center; }
+        .stat-card .val { font-size: 22px; font-weight: bold; color: #00e676; margin-top: 5px; }
+        .stat-card .lbl { font-size: 12px; color: #aaa; text-transform: uppercase; }
+        .controls-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        .search-box { flex: 1; min-width: 200px; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 6px; }
+        .filter-btn { background: #1a1a1a; color: #ccc; border: 1px solid #333; padding: 8px 14px; border-radius: 6px; cursor: pointer; }
+        .filter-btn.active { background: #00e676; color: #121212; font-weight: bold; }
+        .btn-action { background: #2196F3; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-logout { background: #ff5252; }
+        .orders-grid { display: flex; flex-direction: column; gap: 15px; }
+        .order-card { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; border-left: 4px solid #888; transition: transform 0.1s, border-color 0.2s; }
+        .order-card:hover { border-color: #555; }
+        .order-card.status-Pending { border-left-color: #ffb74d; }
+        .order-card.status-In-Progress { border-left-color: #2196F3; }
+        .order-card.status-Completed { border-left-color: #00e676; }
+        .order-card.status-Cancelled { border-left-color: #ff5252; }
+        .order-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .customer-info { font-size: 15px; font-weight: bold; display: flex; flex-direction: column; gap: 4px; }
+        .order-body { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #141414; padding: 12px; border-radius: 6px; }
+        @media (max-width: 700px) { .order-body { grid-template-columns: 1fr; } }
+        .status-select { padding: 8px; border-radius: 6px; background: #252525; color: #fff; border: 1px solid #444; cursor: pointer; }
+        .delete-btn { background: transparent; color: #ff5252; border: 1px solid #ff5252; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+        .view-btn { background: #00e676; color: #121212; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 8px; }
+        .edit-wa-btn { background: #25D366; border: none; color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .edit-wa-btn:hover { opacity: 0.9; }
+        .no-orders { text-align: center; padding: 40px; color: #666; background: #1a1a1a; border-radius: 8px; }
+
+        /* FULL ORDER DETAILS MODAL */
+        #orderModalOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 99999; padding: 20px; box-sizing: border-box; }
+        .modal-card { background: #1e1e1e; border: 1px solid #444; border-radius: 12px; width: 100%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .modal-header { padding: 18px 24px; background: #252525; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { margin: 0; color: #00e676; font-size: 20px; }
+        .close-modal-btn { background: transparent; border: none; color: #aaa; font-size: 24px; cursor: pointer; line-height: 1; }
+        .close-modal-btn:hover { color: #fff; }
+        .modal-body { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+        
+        .modal-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; background: #141414; padding: 16px; border-radius: 8px; border: 1px solid #333; }
+        .modal-info-item .lbl { font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 4px; }
+        .modal-info-item .val { font-size: 15px; font-weight: 500; color: #fff; }
+
+        .game-list-container { background: #141414; border: 1px solid #333; border-radius: 8px; padding: 16px; }
+        .game-list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #2a2a2a; }
+        .game-list-header h3 { margin: 0; font-size: 16px; color: #00e676; }
+
+        .modal-game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; max-height: 350px; overflow-y: auto; padding-right: 5px; }
+        .game-item { background: #222; border: 1px solid #333; padding: 10px 12px; border-radius: 6px; font-size: 14px; display: flex; align-items: center; gap: 10px; word-break: break-word; }
+        .game-num { background: #00e676; color: #121212; font-weight: bold; font-size: 11px; padding: 2px 6px; border-radius: 4px; min-width: 20px; text-align: center; flex-shrink: 0; }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginOverlay">
+        <div class="login-card">
+            <h2 style="color:#00e676; margin-top:0;">Admin Login</h2>
+            <p style="font-size:13px; color:#aaa;">Enter your admin email and password</p>
+            <input type="email" id="adminEmail" placeholder="Email">
+            <input type="password" id="adminPassword" placeholder="Password">
+            <button onclick="login()">Log In</button>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div class="admin-container" id="adminDashboard" style="display:none;">
+        <div class="header-bar">
+            <h1>⚙️ Admin Dashboard</h1>
+            <div>
+                <button class="btn-action" onclick="loadOrders()">🔄 Refresh</button>
+                <button class="btn-action btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="stats-overview">
+            <div class="stat-card"><div class="lbl">Total Orders</div><div class="val" id="statTotal">0</div></div>
+            <div class="stat-card"><div class="lbl">Pending</div><div class="val" id="statPending" style="color:#ffb74d;">0</div></div>
+            <div class="stat-card"><div class="lbl">In Progress</div><div class="val" id="statInProgress" style="color:#2196F3;">0</div></div>
+            <div class="stat-card"><div class="lbl">Est. Revenue</div><div class="val" id="statRevenue">RM0</div></div>
+        </div>
+
+        <div class="controls-row">
+            <input type="text" id="adminSearchInput" class="search-box" placeholder="🔍 Search phone, WhatsApp, or game..." onkeyup="filterAndRenderOrders()">
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="filter-btn active" data-status="ALL" onclick="setStatusFilter('ALL', this)">All</button>
+                <button class="filter-btn" data-status="Pending" onclick="setStatusFilter('Pending', this)">Pending</button>
+                <button class="filter-btn" data-status="In Progress" onclick="setStatusFilter('In Progress', this)">In Progress</button>
+                <button class="filter-btn" data-status="Completed" onclick="setStatusFilter('Completed', this)">Completed</button>
+                <button class="filter-btn" data-status="Cancelled" onclick="setStatusFilter('Cancelled', this)">Cancelled</button>
+            </div>
+        </div>
+
+        <div id="ordersContainer" class="orders-grid"></div>
+    </div>
+
+    <!-- FULL ORDER DETAILS MODAL POPUP -->
+    <div id="orderModalOverlay" onclick="closeModalOnBackdrop(event)">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2 id="modalTitle">📱 Order Details</h2>
+                <button class="close-modal-btn" onclick="closeOrderModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-info-grid">
+                    <div class="modal-info-item"><div class="lbl">Inputted Phone / ID</div><div class="val" id="modalPhoneVal">-</div></div>
+                    <div class="modal-info-item"><div class="lbl">WhatsApp Username</div><div class="val" id="modalWaVal" style="color:#25D366;">-</div></div>
+                    <div class="modal-info-item"><div class="lbl">Service Type</div><div class="val" id="modalServiceVal">-</div></div>
+                    <div class="modal-info-item"><div class="lbl">Storage Size</div><div class="val" id="modalStorageVal">-</div></div>
+                    <div class="modal-info-item"><div class="lbl">Total Estimated Price</div><div class="val" id="modalPriceVal" style="color:#00e676;">-</div></div>
+                    <div class="modal-info-item"><div class="lbl">Date Created</div><div class="val" id="modalDateVal">-</div></div>
+                    <div class="modal-info-item" style="grid-column: 1 / -1;"><div class="lbl">Remarks</div><div class="val" id="modalRemarksVal">-</div></div>
+                </div>
+
+                <div class="game-list-container">
+                    <div class="game-list-header">
+                        <h3>Selected Games</h3>
+                        <span id="modalGameCount" style="font-size:13px; color:#aaa;">0 Games</span>
+                    </div>
+                    <div id="modalGameGrid" class="modal-game-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        const supabaseClient = supabase.createClient(APP_CONFIG.supabaseUrl, APP_CONFIG.supabaseAnonKey);
+        let allOrders = [];
+        let currentStatusFilter = 'ALL';
+
+        window.onload = async function() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('adminDashboard').style.display = 'block';
+                loadOrders();
+            }
+        };
+
+        // Event listener delegation for buttons
+        document.addEventListener('click', function(e) {
+            if (e.target) {
+                if (e.target.classList.contains('view-btn')) {
+                    const id = e.target.getAttribute('data-order-id');
+                    openOrderModal(id);
+                } else if (e.target.classList.contains('delete-btn')) {
+                    const id = e.target.getAttribute('data-order-id');
+                    deleteOrder(id);
+                } else if (e.target.classList.contains('edit-wa-btn')) {
+                    const id = e.target.getAttribute('data-order-id');
+                    editWhatsappUsername(id);
+                }
+            }
+        });
+
+        async function login() {
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) alert('Login failed: ' + error.message);
+            else location.reload();
+        }
+
+        async function logout() {
+            await supabaseClient.auth.signOut();
+            location.reload();
+        }
+
+        async function loadOrders() {
+            const container = document.getElementById('ordersContainer');
+            container.innerHTML = '<div class="no-orders">Loading orders...</div>';
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('orders')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                allOrders = data || [];
+                updateStats();
+                filterAndRenderOrders();
+            } catch (err) {
+                alert('Error loading orders: ' + err.message);
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('statTotal').innerText = allOrders.length;
+            document.getElementById('statPending').innerText = allOrders.filter(o => (o.status || 'Pending') === 'Pending').length;
+            document.getElementById('statInProgress').innerText = allOrders.filter(o => o.status === 'In Progress').length;
+            
+            const totalRev = allOrders
+                .filter(o => o.status !== 'Cancelled')
+                .reduce((sum, o) => sum + (Number(o.estimated_price) || 0), 0);
+            document.getElementById('statRevenue').innerText = `RM${Math.round(totalRev)}`;
+        }
+
+        function setStatusFilter(status, btn) {
+            currentStatusFilter = status;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filterAndRenderOrders();
+        }
+
+        async function updateStatus(orderId, newStatus) {
+            const order = allOrders.find(item => String(item.id) === String(orderId) || String(item.order_id) === String(orderId));
+            if (!order) return;
+
+            const oldStatus = order.status;
+            order.status = newStatus;
+
+            const idField = order.id ? 'id' : 'order_id';
+            const { error } = await supabaseClient
+                .from('orders')
+                .update({ status: newStatus })
+                .eq(idField, orderId);
+
+            if (error) {
+                alert('Failed to update status in Supabase: ' + error.message);
+                order.status = oldStatus;
+            }
+
+            updateStats();
+            filterAndRenderOrders();
+        }
+
+        // Add or edit WhatsApp Username
+        async function editWhatsappUsername(orderId) {
+            const order = allOrders.find(o => String(o.id) === String(orderId) || String(o.order_id) === String(orderId));
+            if (!order) return;
+
+            const currentWa = order.whatsapp_username || '';
+            const newWa = prompt("Enter WhatsApp Username or Contact Name:", currentWa);
+            
+            if (newWa === null) return; // Cancelled
+
+            const trimmedWa = newWa.trim();
+            const oldWa = order.whatsapp_username;
+            order.whatsapp_username = trimmedWa;
+
+            const idField = order.id ? 'id' : 'order_id';
+            const { error } = await supabaseClient
+                .from('orders')
+                .update({ whatsapp_username: trimmedWa })
+                .eq(idField, orderId);
+
+            if (error) {
+                alert('Failed to update WhatsApp username: ' + error.message);
+                order.whatsapp_username = oldWa;
+            }
+
+            filterAndRenderOrders();
+        }
+
+        function filterAndRenderOrders() {
+            const query = document.getElementById('adminSearchInput').value.toLowerCase().trim();
+            const container = document.getElementById('ordersContainer');
+
+            let filtered = allOrders.filter(order => {
+                const orderStatus = order.status || 'Pending';
+                if (currentStatusFilter !== 'ALL' && orderStatus !== currentStatusFilter) return false;
+                if (query) {
+                    const phoneMatch = order.phone_ending && order.phone_ending.toLowerCase().includes(query);
+                    const waMatch = order.whatsapp_username && order.whatsapp_username.toLowerCase().includes(query);
+                    
+                    let gameList = [];
+                    if (Array.isArray(order.games)) gameList = order.games;
+                    else if (typeof order.games === 'string') {
+                        try { gameList = JSON.parse(order.games); } catch(e) { gameList = order.games.split(','); }
+                    }
+                    const gameMatch = gameList.some(g => String(g).toLowerCase().includes(query));
+                    return phoneMatch || waMatch || gameMatch;
+                }
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="no-orders">No matching orders found.</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            filtered.forEach(order => {
+                const card = document.createElement('div');
+                const orderId = order.id || order.order_id;
+                
+                const currentStatus = order.status || 'Pending';
+                const statusClass = currentStatus.replace(/\s+/g, '-');
+                
+                card.className = `order-card status-${statusClass}`;
+
+                let gameList = [];
+                if (Array.isArray(order.games)) gameList = order.games;
+                else if (typeof order.games === 'string') {
+                    try { gameList = JSON.parse(order.games); } catch(e) { gameList = order.games.split(','); }
+                }
+
+                const gamesPreview = (gameList && gameList.length > 0) 
+                    ? gameList.slice(0, 3).map((g, i) => `<div>${i + 1}. ${g}</div>`).join('') + (gameList.length > 3 ? `<div style="color:#00e676; margin-top:4px;">+ ${gameList.length - 3} more games...</div>` : '')
+                    : '<em>No games selected</em>';
+
+                const waDisplay = order.whatsapp_username 
+                    ? `<span style="color:#25D366;">💬 WA: ${order.whatsapp_username}</span>` 
+                    : `<span style="color:#777; font-style:italic;">💬 WA: Not assigned</span>`;
+
+                card.innerHTML = `
+                    <div class="order-header">
+                        <div class="customer-info">
+                            <div>📱 Phone Input: ${order.phone_ending || 'N/A'}</div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                ${waDisplay}
+                                <button class="edit-wa-btn" data-order-id="${orderId}">✏️ Edit WA</button>
+                            </div>
+                        </div>
+                        <div style="font-size:12px; color:#888;">${order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}</div>
+                    </div>
+                    <div class="order-body">
+                        <div>
+                            <strong>Service:</strong> ${order.service_type || 'N/A'}<br>
+                            <strong>Storage:</strong> ${order.sd_card_size || order.free_storage_gb || 0} GB<br>
+                            <strong>Remarks:</strong> ${order.remarks || 'None'}
+                        </div>
+                        <div>
+                            <strong>Games (${gameList.length}):</strong>
+                            <div style="max-height:80px; overflow-y:auto; font-size:12px; margin-top:4px;">${gamesPreview}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <div>
+                            <span style="font-size:12px; color:#aaa;">Status: </span>
+                            <select class="status-select" onchange="updateStatus('${orderId}', this.value)">
+                                <option value="Pending" ${currentStatus === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
+                                <option value="In Progress" ${currentStatus === 'In Progress' ? 'selected' : ''}>🔧 In Progress</option>
+                                <option value="Completed" ${currentStatus === 'Completed' ? 'selected' : ''}>✅ Completed</option>
+                                <option value="Cancelled" ${currentStatus === 'Cancelled' ? 'selected' : ''}>❌ Cancelled</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button class="view-btn" data-order-id="${orderId}">🔍 View Full Order</button>
+                            <button class="delete-btn" data-order-id="${orderId}">Delete</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // OPEN MODAL POPUP
+        function openOrderModal(orderId) {
+            const order = allOrders.find(o => String(o.id) === String(orderId) || String(o.order_id) === String(orderId));
+            if (!order) {
+                alert("Could not load order details.");
+                return;
+            }
+
+            document.getElementById('modalTitle').innerText = `📱 Order Details: ${order.phone_ending || 'N/A'}`;
+            document.getElementById('modalPhoneVal').innerText = order.phone_ending || 'N/A';
+            document.getElementById('modalWaVal').innerText = order.whatsapp_username || 'Not assigned';
+            document.getElementById('modalServiceVal').innerText = order.service_type || 'N/A';
+            document.getElementById('modalStorageVal').innerText = `${order.sd_card_size || order.free_storage_gb || 0} GB`;
+            document.getElementById('modalPriceVal').innerText = `RM${Math.round(order.estimated_price || 0)}`;
+            document.getElementById('modalDateVal').innerText = order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A';
+            document.getElementById('modalRemarksVal').innerText = order.remarks || 'None';
+
+            const gameGrid = document.getElementById('modalGameGrid');
+            gameGrid.innerHTML = '';
+
+            let gameList = [];
+            if (Array.isArray(order.games)) {
+                gameList = order.games;
+            } else if (typeof order.games === 'string') {
+                try {
+                    gameList = JSON.parse(order.games);
+                } catch(e) {
+                    gameList = order.games.split(',').map(g => g.trim());
+                }
+            }
+
+            if (gameList && gameList.length > 0) {
+                document.getElementById('modalGameCount').innerText = `${gameList.length} Games Total`;
+                gameList.forEach((game, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'game-item';
+                    item.innerHTML = `<span class="game-num">${index + 1}</span> <span>${game}</span>`;
+                    gameGrid.appendChild(item);
+                });
+            } else {
+                document.getElementById('modalGameCount').innerText = '0 Games';
+                gameGrid.innerHTML = '<div style="color:#777; grid-column:1/-1;">No games selected for this order.</div>';
+            }
+
+            document.getElementById('orderModalOverlay').style.display = 'flex';
+        }
+
+        function closeOrderModal() {
+            document.getElementById('orderModalOverlay').style.display = 'none';
+        }
+
+        function closeModalOnBackdrop(event) {
+            if (event.target.id === 'orderModalOverlay') {
+                closeOrderModal();
+            }
+        }
+
+        async function deleteOrder(orderId) {
+            if (!confirm('Are you sure you want to delete this order?')) return;
+            const order = allOrders.find(o => String(o.id) === String(orderId) || String(o.order_id) === String(orderId));
+            const idField = (order && order.id) ? 'id' : 'order_id';
+
+            const { error } = await supabaseClient.from('orders').delete().eq(idField, orderId);
+            if (error) {
+                alert('Delete failed: ' + error.message);
+            } else {
+                allOrders = allOrders.filter(o => String(o.id) !== String(orderId) && String(o.order_id) !== String(orderId));
+                updateStats();
+                filterAndRenderOrders();
+            }
+        }
+    </script>
+</body>
+</html>
