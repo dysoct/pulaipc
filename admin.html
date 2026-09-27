@@ -366,7 +366,7 @@
             });
         }
 
-        // OPEN MODAL POPUP (Fetches fresh data and sorts games by config.js order)
+        // OPEN MODAL POPUP (Robust sorting: Config order first, alphabetical fallback)
         async function openOrderModal(orderId) {
             const idField = String(orderId).length > 10 ? 'id' : 'order_id';
             
@@ -411,16 +411,25 @@
                 }
             }
 
-            // Sort games by config.js master list order if available
-            const masterList = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.gamesList) ? APP_CONFIG.gamesList : [];
+            // Locate master games list from config.js using common naming conventions
+            let masterList = [];
+            if (typeof APP_CONFIG !== 'undefined') {
+                masterList = APP_CONFIG.gamesList || APP_CONFIG.games || APP_CONFIG.allGames || [];
+            }
+
             if (masterList.length > 0) {
                 gameList.sort((a, b) => {
                     const indexA = masterList.indexOf(a);
                     const indexB = masterList.indexOf(b);
-                    if (indexA === -1) return 1;
-                    if (indexB === -1) return -1;
-                    return indexA - indexB;
+                    
+                    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+                    if (indexA === -1 && indexB !== -1) return 1;
+                    if (indexA !== -1 && indexB === -1) return -1;
+                    
+                    return String(a).localeCompare(String(b), undefined, { sensitivity: 'accent', numeric: true });
                 });
+            } else {
+                gameList.sort((a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: 'accent', numeric: true }));
             }
 
             if (gameList && gameList.length > 0) {
