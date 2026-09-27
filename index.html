@@ -691,7 +691,7 @@
             <div class="config-row">
                 <div class="field-group">
                     <input type="text" id="phoneInput" class="phone-input" maxlength="4" placeholder="e.g. 5678" oninput="savePhone()">
-                    <span class="field-hint">Last 4 digits phone no (Required ID)</span>
+                    <span class="field-hint">Last 4 digits of phone number (Required ID)</span>
                 </div>
 
                 <div class="field-group">
@@ -700,7 +700,7 @@
                         <option value="system_setup">System Setup</option>
                         <option value="games_only">Games Only</option>
                     </select>
-                    <span class="field-hint">Choose full modding setup, system setup, or game installs only</span>
+                    <span class="field-hint">Choose full jailbreak, system setup, or a games-only install</span>
                 </div>
 
                 <div class="field-group" id="consoleModelGroup">
@@ -1532,7 +1532,7 @@
                 subtext.innerHTML = `(${count} free games selected, ${3 - count} more free available) | Tap to review`;
             } else {
                 const chargeable = count - 3;
-                subtext.innerHTML = `(3 free + ${chargeable} addon) ${tierRec.hasWarning ? '⚠️ Package limit incomplete' : ''} | Tap to review`;
+                subtext.innerHTML = `(3 free + ${chargeable} addon${chargeable !== 1 ? 's' : ''}) ${tierRec.hasWarning ? '⚠️ Package limit incomplete' : ''} | Tap to review`;
             }
         } else {
             subtext.innerHTML = `${tierRec.hasWarning ? '⚠️ Tier package limit incomplete | ' : ''}Tap here to review & add remarks`;
@@ -1735,7 +1735,7 @@
             serviceItem.innerHTML = `
                 <div class="cart-item-details">
                     <span class="cart-item-title">System Setup</span>
-                    <span class="cart-item-sub">Console system setup service</span>
+                    <span class="cart-item-sub">Console modding & configuration service</span>
                 </div>
                 <div style="display:flex; align-items:center; gap:8px;">
                     <span style="font-weight:bold; color:#00e676;">RM${details.serviceBasePrice}</span>
@@ -1810,7 +1810,7 @@
             gamesOnlyItem.innerHTML = `
                 <div class="cart-item-details">
                     <span class="cart-item-title">Games Installation Service</span>
-                    <span class="cart-item-sub">Client Stated Free Space: ${freeStorageInput || 0} GB</span>
+                    <span class="cart-item-sub">Client-Stated Free Space: ${freeStorageInput || 0} GB</span>
                 </div>
                 <span class="lock-badge">🔒 Games Only</span>
             `;
@@ -1903,7 +1903,7 @@
             const chargeableCount = Math.max(0, count - 3);
             breakdownHtml += `
                 <div class="price-breakdown-row">
-                    <span>Games Price (${count} games: 3 Free + ${chargeableCount} Addon):</span>
+                    <span>Games Price (${count} games: 3 Free + ${chargeableCount} Addon${chargeableCount !== 1 ? 's' : ''}):</span>
                     <span>RM${Math.round(details.gamesPrice)}</span>
                 </div>
             `;
