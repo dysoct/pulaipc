@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pulai PC Jailbreak Service</title>
+    <title>Pulai PC Jailbreak & Game Service</title>
     <!-- Include Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -117,7 +117,7 @@
             flex-wrap: wrap;
             align-items: center;
         }
-        .phone-input, .sd-select, .service-select, .model-select, .sd-source-select {
+        .phone-input, .sd-select, .service-select, .model-select, .sd-source-select, .free-storage-input {
             padding: 12px;
             font-size: 15px;
             border-radius: 6px;
@@ -130,6 +130,46 @@
             flex: 1;
             min-width: 130px;
             cursor: pointer;
+        }
+        .free-storage-container {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 180px;
+        }
+        .free-storage-input {
+            width: 100%;
+        }
+        .guide-btn {
+            background: #2a2a2a;
+            color: #00e676;
+            border: 1px solid #00e676;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 11.5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 2px;
+        }
+        .guide-btn:hover {
+            background: #00e676;
+            color: #121212;
+        }
+        .storage-guide-box {
+            display: none;
+            background: #15221a;
+            border: 1px solid #00e676;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 12.5px;
+            color: #ddd;
+            line-height: 1.5;
+            margin-top: 5px;
+        }
+        .storage-guide-box h4 {
+            margin: 0 0 8px 0;
+            color: #00e676;
         }
         .phone-group {
             flex: 1;
@@ -554,10 +594,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>Pulai PC Jailbreak Service</h1>
+        <h1>Pulai PC Jailbreak & Game Service</h1>
         <div class="instructions">
-            1. Choose your <strong>Service Type, Console Model & SD Card Size</strong> upfront.<br>
-            2. Select your games if needed, then review and save!
+            1. Select your <strong>Service Type</strong> (Jailbreak Package or Games Only).<br>
+            2. Choose your games, then review and submit!
         </div>
 
         <!-- Pricing Guide Dropdown -->
@@ -600,7 +640,7 @@
             </div>
 
             <p style="font-size: 11.5px; color: #888; margin-top: 10px; margin-bottom: 0; text-align: center;">
-                * Android/Linux system modes require 128GB+ cards (+RM30 each). Full jailbreak includes your first 3 games free! Want a 10-game addon package? Choose 13 games total.
+                * Android/Linux system modes require 128GB+ cards (+RM30 each). Full jailbreak includes your first 3 games free!
             </p>
         </details>
         
@@ -613,20 +653,20 @@
                     <option value="games_only">Games Only</option>
                 </select>
 
-                <!-- Console Model Selector -->
+                <!-- Console Model Selector (Jailbreak Only) -->
                 <select id="consoleModelSelect" class="model-select" onchange="updateSdLimit()">
                     <option value="OLED">OLED (RM300)</option>
                     <option value="V1_V2">V1/V2 (RM190)</option>
                     <option value="LITE">LITE (RM230)</option>
                 </select>
 
-                <!-- SD Card Source Selector -->
+                <!-- SD Card Source Selector (Jailbreak Only) -->
                 <select id="sdSourceSelect" class="sd-source-select" onchange="updateSdLimit()">
                     <option value="own">Bring Own SD Card</option>
                     <option value="buy">Purchase New SD Card</option>
                 </select>
 
-                <!-- SD Card Size Selector -->
+                <!-- SD Card Size Selector (Jailbreak Only) -->
                 <select id="sdCardSelect" class="sd-select" onchange="updateSdLimit()">
                     <option value="64">64 GB Card</option>
                     <option value="128">128 GB Card</option>
@@ -635,6 +675,12 @@
                     <option value="1024">1 TB Card</option>
                     <option value="2048">2 TB Card</option>
                 </select>
+
+                <!-- Free Storage Input (Games Only) -->
+                <div id="freeStorageContainer" class="free-storage-container">
+                    <input type="number" id="userFreeStorageInput" class="free-storage-input" placeholder="Free Storage Space (GB)" min="1" step="1" oninput="updateSdLimit()">
+                    <button type="button" class="guide-btn" onclick="toggleStorageGuide()">❓ How to check free storage?</button>
+                </div>
 
                 <div class="phone-group">
                     <input type="text" id="phoneInput" class="phone-input" maxlength="4" placeholder="e.g. 5678" oninput="savePhone()">
@@ -647,6 +693,18 @@
                 </div>
             </div>
 
+            <!-- Expandable How-To Guide for Storage Space -->
+            <div id="storageGuideBox" class="storage-guide-box">
+                <h4>📱 How to check your remaining microSD card free space:</h4>
+                <p><strong>Method 1: Official Switch Settings</strong><br>
+                1. Go to Home Menu → <strong>System Settings</strong> (gear icon).<br>
+                2. Scroll down to <strong>Data Management</strong>.<br>
+                3. Look under <strong>microSD Card</strong> on the right for <strong>Free Space</strong> (e.g. 145 GB).</p>
+                <p style="margin-bottom:0;"><strong>Method 2: Via DBI App (Modded Console)</strong><br>
+                1. Launch <strong>DBI</strong> app on your Switch.<br>
+                2. Check the bottom-left text: <em>Free: XX.X GB</em> and enter that number above.</p>
+            </div>
+
             <!-- Mode Selection Checkboxes with Tooltips -->
             <div id="jailbreakModesContainer" class="modes-container">
                 <span class="addon-label-title">Addon:</span>
@@ -656,7 +714,7 @@
                         <span>🤖 Android Mode (+RM30)</span>
                     </label>
                     <div class="mode-tooltip">
-                        <strong>Android (LineageOS):</strong> Turns your Switch into an Android tablet. Great for native Android games, Xbox Game Pass cloud streaming, Netflix, and emulators (PS2, GameCube, Wii).
+                        <strong>Android (LineageOS):</strong> Turns your Switch into an Android tablet. Great for native Android games, Xbox Game Pass cloud streaming, Netflix, and emulators.
                     </div>
                 </div>
 
@@ -666,7 +724,7 @@
                         <span>🐧 Linux Mode (+RM30)</span>
                     </label>
                     <div class="mode-tooltip">
-                        <strong>Ubuntu Linux:</strong> Gives you a full desktop environment on your Switch. Perfect for lightweight productivity, retro PC gaming via PortProton, and custom media center setups.
+                        <strong>Ubuntu Linux:</strong> Gives you a full desktop environment on your Switch for lightweight productivity, retro PC gaming, and custom media center setups.
                     </div>
                 </div>
             </div>
@@ -679,7 +737,7 @@
         <!-- Jailbreak Notice Card -->
         <div id="jailbreakNoticeCard" class="jailbreak-notice-card">
             <h3>🎁 You get 3 Free Games with your Full Jailbreak!</h3>
-            <p>Your jailbreak service package includes your first 3 games free. For example, if you want a 10-game addon package, you pick 3 free games + 10 addon games = 13 games total!</p>
+            <p>Your jailbreak service package includes your first 3 games free. Pick 3 free games + additional addon games if desired!</p>
             <button class="browse-games-btn" onclick="revealGameSection()">Browse & Choose Games</button>
         </div>
 
@@ -719,7 +777,7 @@
             <div id="cartModalBody" class="modal-body"></div>
             
             <div id="sizeWarningBox" class="warning-box">
-                ⚠️ <strong>Size Tolerance Alert:</strong> Your total storage size has exceeded the standard buffer limit for this game count tier. Pricing has adjusted accordingly.
+                ⚠️ <strong>Size Tolerance Alert:</strong> Your total storage size has exceeded standard buffer limits for this tier. Pricing has adjusted accordingly.
             </div>
 
             <div class="remarks-container">
@@ -749,21 +807,26 @@
         if (savedPhone) {
             document.getElementById('phoneInput').value = savedPhone;
         }
-        
+
+        const savedService = localStorage.getItem('userServiceType');
+        if (savedService) {
+            document.getElementById('serviceTypeSelect').value = savedService;
+        }
+
         const savedSd = localStorage.getItem('userSdSelect');
         if (savedSd) {
             document.getElementById('sdCardSelect').value = savedSd;
             maxSdSize = parseInt(savedSd);
         }
 
+        const savedFreeStorage = localStorage.getItem('userFreeStorage');
+        if (savedFreeStorage) {
+            document.getElementById('userFreeStorageInput').value = savedFreeStorage;
+        }
+
         const savedSdSource = localStorage.getItem('userSdSource');
         if (savedSdSource) {
             document.getElementById('sdSourceSelect').value = savedSdSource;
-        }
-
-        const savedService = localStorage.getItem('userServiceType');
-        if (savedService) {
-            document.getElementById('serviceTypeSelect').value = savedService;
         }
 
         const savedModel = localStorage.getItem('userConsoleModel');
@@ -781,10 +844,17 @@
         localStorage.setItem('userPhone4', phone);
     }
 
+    function toggleStorageGuide() {
+        const guideBox = document.getElementById('storageGuideBox');
+        guideBox.style.display = (guideBox.style.display === 'block') ? 'none' : 'block';
+    }
+
     function toggleServiceFields() {
         const serviceType = document.getElementById('serviceTypeSelect').value;
         const modelSelect = document.getElementById('consoleModelSelect');
         const sdSourceSelect = document.getElementById('sdSourceSelect');
+        const sdSelect = document.getElementById('sdCardSelect');
+        const freeStorageContainer = document.getElementById('freeStorageContainer');
         const jailbreakModesContainer = document.getElementById('jailbreakModesContainer');
         const jailbreakNoticeCard = document.getElementById('jailbreakNoticeCard');
         const gameSectionWrapper = document.getElementById('gameSectionWrapper');
@@ -792,6 +862,8 @@
         if (serviceType === 'jailbreak') {
             modelSelect.style.display = 'block';
             sdSourceSelect.style.display = 'block';
+            sdSelect.style.display = 'block';
+            freeStorageContainer.style.display = 'none';
             jailbreakModesContainer.style.display = 'flex';
             
             if (selectedGames.size === 0) {
@@ -802,9 +874,13 @@
                 gameSectionWrapper.style.display = 'block';
             }
         } else {
+            // Games Only Flow
             modelSelect.style.display = 'none';
             sdSourceSelect.style.display = 'none';
+            sdSelect.style.display = 'none';
+            freeStorageContainer.style.display = 'flex';
             jailbreakModesContainer.style.display = 'none';
+            
             document.getElementById('androidModeCheck').checked = false;
             document.getElementById('linuxModeCheck').checked = false;
             
@@ -820,83 +896,93 @@
     }
 
     function updateSdLimit() {
-        const select = document.getElementById('sdCardSelect');
-        maxSdSize = parseInt(select.value);
-        localStorage.setItem('userSdSelect', maxSdSize);
-
         const serviceType = document.getElementById('serviceTypeSelect').value;
-        const consoleModel = document.getElementById('consoleModelSelect').value;
-        
-        let sdSource = 'own';
-        if (serviceType === 'jailbreak') {
-            sdSource = document.getElementById('sdSourceSelect').value;
-            localStorage.setItem('userSdSource', sdSource);
-        }
-
         localStorage.setItem('userServiceType', serviceType);
-        localStorage.setItem('userConsoleModel', consoleModel);
 
-        const androidChecked = document.getElementById('androidModeCheck');
-        const linuxChecked = document.getElementById('linuxModeCheck');
-
-        if (serviceType === 'jailbreak' && maxSdSize < 128) {
-            if (androidChecked.checked) {
-                androidChecked.checked = false;
-                alert('Android Mode requires an SD card of 128GB or larger.');
-            }
-            if (linuxChecked.checked) {
-                linuxChecked.checked = false;
-                alert('Linux Mode requires an SD card of 128GB or larger.');
-            }
-            androidChecked.disabled = true;
-            linuxChecked.disabled = true;
-        } else {
-            androidChecked.disabled = false;
-            linuxChecked.disabled = false;
-        }
-
-        let baseSystemOverhead = 0;
-        let partitionPerMode = 0;
-
-        if (maxSdSize === 64) {
-            baseSystemOverhead = 8;
-        } else if (maxSdSize === 128) {
-            baseSystemOverhead = 10;
-            partitionPerMode = 10;
-        } else if (maxSdSize === 256) {
-            baseSystemOverhead = 16;
-            partitionPerMode = 16;
-        } else if (maxSdSize >= 512) {
-            baseSystemOverhead = 20;
-            partitionPerMode = 20;
-        }
-
-        let totalDeduction = (serviceType === 'jailbreak') ? baseSystemOverhead : 2;
         if (serviceType === 'jailbreak') {
+            const select = document.getElementById('sdCardSelect');
+            maxSdSize = parseInt(select.value);
+            localStorage.setItem('userSdSelect', maxSdSize);
+
+            const consoleModel = document.getElementById('consoleModelSelect').value;
+            const sdSource = document.getElementById('sdSourceSelect').value;
+            localStorage.setItem('userSdSource', sdSource);
+            localStorage.setItem('userConsoleModel', consoleModel);
+
+            const androidChecked = document.getElementById('androidModeCheck');
+            const linuxChecked = document.getElementById('linuxModeCheck');
+
+            if (maxSdSize < 128) {
+                if (androidChecked.checked) {
+                    androidChecked.checked = false;
+                    alert('Android Mode requires an SD card of 128GB or larger.');
+                }
+                if (linuxChecked.checked) {
+                    linuxChecked.checked = false;
+                    alert('Linux Mode requires an SD card of 128GB or larger.');
+                }
+                androidChecked.disabled = true;
+                linuxChecked.disabled = true;
+            } else {
+                androidChecked.disabled = false;
+                linuxChecked.disabled = false;
+            }
+
+            let baseSystemOverhead = 0;
+            let partitionPerMode = 0;
+
+            if (maxSdSize === 64) {
+                baseSystemOverhead = 8;
+            } else if (maxSdSize === 128) {
+                baseSystemOverhead = 10;
+                partitionPerMode = 10;
+            } else if (maxSdSize === 256) {
+                baseSystemOverhead = 16;
+                partitionPerMode = 16;
+            } else if (maxSdSize >= 512) {
+                baseSystemOverhead = 20;
+                partitionPerMode = 20;
+            }
+
+            let totalDeduction = baseSystemOverhead;
             if (androidChecked.checked) totalDeduction += partitionPerMode;
             if (linuxChecked.checked) totalDeduction += partitionPerMode;
-        }
 
-        usableStorageLimit = maxSdSize - totalDeduction;
-        document.getElementById('maxUsableLabel').innerText = usableStorageLimit;
+            usableStorageLimit = maxSdSize - totalDeduction;
+
+            let cardSourceDesc = sdSource === 'buy' ? 'New SD Card' : 'Own SD Card';
+            let breakdownText = `Service: Full Jailbreak (${consoleModel}) | SD: ${maxSdSize}GB (${cardSourceDesc}) | System OS: -${baseSystemOverhead}GB`;
+            if (androidChecked.checked) breakdownText += ` | Android: -${partitionPerMode}GB`;
+            if (linuxChecked.checked) breakdownText += ` | Linux: -${partitionPerMode}GB`;
+
+            let currentGamesSize = 0;
+            selectedGames.forEach(size => { currentGamesSize += size; });
+
+            breakdownText += `<br>📊 <strong>Selected Games: ${currentGamesSize.toFixed(1)} GB</strong> / Usable Limit: <strong>${usableStorageLimit} GB</strong>`;
+            document.getElementById('storageBreakdown').innerHTML = breakdownText;
+
+        } else {
+            // Games Only Calculation
+            const freeStorageInput = document.getElementById('userFreeStorageInput').value;
+            const userSpace = parseFloat(freeStorageInput) || 0;
+            localStorage.setItem('userFreeStorage', userSpace);
+
+            usableStorageLimit = userSpace > 0 ? userSpace : 0;
+
+            let currentGamesSize = 0;
+            selectedGames.forEach(size => { currentGamesSize += size; });
+
+            let breakdownText = `Service: Games Only | Stated Free Storage: <strong>${userSpace} GB</strong>`;
+            breakdownText += `<br>📊 <strong>Selected Games: ${currentGamesSize.toFixed(1)} GB</strong> / Available Balance: <strong>${(usableStorageLimit - currentGamesSize).toFixed(1)} GB</strong>`;
+            
+            document.getElementById('storageBreakdown').innerHTML = breakdownText;
+        }
 
         let currentGamesSize = 0;
         selectedGames.forEach(size => { currentGamesSize += size; });
 
-        let serviceDesc = serviceType === 'jailbreak' ? `Full Jailbreak (${consoleModel}, Free 3 Games)` : 'Games Only';
-        let breakdownText = `Service: ${serviceDesc} | SD Size: ${maxSdSize}GB`;
-        if (serviceType === 'jailbreak') {
-            let cardSourceDesc = sdSource === 'buy' ? 'New SD Card' : 'Own SD Card';
-            breakdownText += ` | Source: ${cardSourceDesc} | OS: -${baseSystemOverhead}GB`;
-            if (androidChecked.checked) breakdownText += ` | Android: -${partitionPerMode}GB`;
-            if (linuxChecked.checked) breakdownText += ` | Linux: -${partitionPerMode}GB`;
-        }
-        breakdownText += `<br>📊 <strong>Selected Games: ${currentGamesSize.toFixed(1)} GB</strong> / Usable Limit: <strong><span id="maxUsableLabel">${usableStorageLimit}</span> GB</strong>`;
-        
-        document.getElementById('storageBreakdown').innerHTML = breakdownText;
-
-        if (currentGamesSize > usableStorageLimit) {
-            alert(`Warning: Your selected games total (${currentGamesSize.toFixed(1)} GB) exceeds your updated usable game storage (${usableStorageLimit} GB). Please remove some games.`);
+        if (usableStorageLimit > 0 && currentGamesSize > usableStorageLimit) {
+            alert(`Warning: Selected games (${currentGamesSize.toFixed(1)} GB) exceed available limit (${usableStorageLimit} GB)!`);
         }
         
         updateCartSummary();
@@ -939,8 +1025,8 @@
                     let currentGamesSize = 0;
                     selectedGames.forEach(s => { currentGamesSize += s; });
                     
-                    if (!isSelected && (currentGamesSize + game.size > usableStorageLimit)) {
-                        alert(`Cannot add "${game.name}" (${game.size} GB). It exceeds your remaining usable game storage (${usableStorageLimit} GB)!`);
+                    if (!isSelected && usableStorageLimit > 0 && (currentGamesSize + game.size > usableStorageLimit)) {
+                        alert(`Cannot add "${game.name}" (${game.size} GB). It exceeds your available remaining space (${usableStorageLimit} GB)!`);
                         return;
                     }
 
@@ -965,8 +1051,8 @@
         let currentGamesSize = 0;
         selectedGames.forEach(s => { currentGamesSize += s; });
 
-        if (checkbox.checked && (currentGamesSize + size > usableStorageLimit)) {
-            alert(`Cannot add "${name}" (${size} GB). It exceeds your remaining usable game storage (${usableStorageLimit} GB)!`);
+        if (checkbox.checked && usableStorageLimit > 0 && (currentGamesSize + size > usableStorageLimit)) {
+            alert(`Cannot add "${name}" (${size} GB). It exceeds your remaining usable storage (${usableStorageLimit} GB)!`);
             checkbox.checked = false;
             event.preventDefault();
             return;
@@ -1128,13 +1214,7 @@
                 subtext.innerHTML = `(${count} free games selected, ${3 - count} more free available) | Tap to review`;
             } else {
                 const chargeable = count - 3;
-                let hintText = '';
-                if (count === 10) {
-                    hintText = ' 💡 Note: This is 7 chargeable games. For 10 addon games, pick 13!';
-                } else if (count === 20) {
-                    hintText = ' 💡 Note: For 20 addon games, pick 23!';
-                }
-                subtext.innerHTML = `(3 free + ${chargeable} addon chargeable)${hintText} | Tap to review`;
+                subtext.innerHTML = `(3 free + ${chargeable} addon chargeable) | Tap to review`;
             }
         } else {
             subtext.innerHTML = 'Tap here to review & add remarks';
@@ -1178,13 +1258,17 @@
                     document.getElementById('orderRemarks').value = data[0].remarks;
                 }
 
+                if (data[0].service_type) {
+                    document.getElementById('serviceTypeSelect').value = data[0].service_type;
+                }
+
                 if (data[0].sd_card_size) {
                     document.getElementById('sdCardSelect').value = data[0].sd_card_size;
                     maxSdSize = parseInt(data[0].sd_card_size);
                 }
 
-                if (data[0].service_type) {
-                    document.getElementById('serviceTypeSelect').value = data[0].service_type;
+                if (data[0].free_storage_gb) {
+                    document.getElementById('userFreeStorageInput').value = data[0].free_storage_gb;
                 }
 
                 if (data[0].sd_source) {
@@ -1232,6 +1316,7 @@
         const serviceType = document.getElementById('serviceTypeSelect').value;
         const consoleModel = document.getElementById('consoleModelSelect').value;
         const sdSource = document.getElementById('sdSourceSelect').value;
+        const freeStorageInput = document.getElementById('userFreeStorageInput').value;
         const androidChecked = document.getElementById('androidModeCheck').checked;
         const linuxChecked = document.getElementById('linuxModeCheck').checked;
 
@@ -1241,20 +1326,19 @@
 
         const details = calculatePriceDetails(count, totalGamesSize);
 
-        // --- Section 1: Services & Addons ---
+        // --- Section 1: Services & Options ---
         const serviceSectionTitle = document.createElement('div');
         serviceSectionTitle.className = 'modal-section-title';
-        serviceSectionTitle.innerText = '1. Service Package & Hardware Options';
+        serviceSectionTitle.innerText = '1. Service & Hardware Configuration';
         modalBody.appendChild(serviceSectionTitle);
 
         if (serviceType === 'jailbreak') {
-            // Main Jailbreak Service (Fixed)
             const serviceItem = document.createElement('div');
             serviceItem.className = 'cart-item fixed-item';
             serviceItem.innerHTML = `
                 <div class="cart-item-details">
                     <span class="cart-item-title">Full Jailbreak (${consoleModel})</span>
-                    <span class="cart-item-sub">Includes console modification + 3 FREE Games</span>
+                    <span class="cart-item-sub">Console modification + 3 FREE Games</span>
                 </div>
                 <div style="display:flex; align-items:center; gap:8px;">
                     <span style="font-weight:bold; color:#00e676;">RM${details.serviceBasePrice}</span>
@@ -1263,7 +1347,6 @@
             `;
             modalBody.appendChild(serviceItem);
 
-            // SD Card Purchased Addon (Removable)
             if (sdSource === 'buy') {
                 const sdItem = document.createElement('div');
                 sdItem.className = 'cart-item';
@@ -1280,7 +1363,6 @@
                 modalBody.appendChild(sdItem);
             }
 
-            // Android Mode Addon (Removable)
             if (androidChecked) {
                 const androidItem = document.createElement('div');
                 androidItem.className = 'cart-item';
@@ -1297,7 +1379,6 @@
                 modalBody.appendChild(androidItem);
             }
 
-            // Linux Mode Addon (Removable)
             if (linuxChecked) {
                 const linuxItem = document.createElement('div');
                 linuxItem.className = 'cart-item';
@@ -1318,8 +1399,8 @@
             gamesOnlyItem.className = 'cart-item fixed-item';
             gamesOnlyItem.innerHTML = `
                 <div class="cart-item-details">
-                    <span class="cart-item-title">Games Installation Only</span>
-                    <span class="cart-item-sub">Game flashing on existing jailbroken console</span>
+                    <span class="cart-item-title">Games Installation Service</span>
+                    <span class="cart-item-sub">Client Stated Free Space: ${freeStorageInput || 0} GB</span>
                 </div>
                 <span class="lock-badge">🔒 Games Only</span>
             `;
@@ -1407,7 +1488,7 @@
             const chargeableCount = Math.max(0, count - 3);
             breakdownHtml += `
                 <div class="price-breakdown-row">
-                    <span>Games Price (${count} games total: 3 Free + ${chargeableCount} Addon):</span>
+                    <span>Games Price (${count} games: 3 Free + ${chargeableCount} Addon):</span>
                     <span>RM${Math.round(details.gamesPrice)}</span>
                 </div>
             `;
@@ -1430,7 +1511,6 @@
         breakdownBox.innerHTML = breakdownHtml;
         modalBody.appendChild(breakdownBox);
 
-        // Warning & Footer updates
         const remainderSize = Math.max(0, usableStorageLimit - totalGamesSize);
         const warningBox = document.getElementById('sizeWarningBox');
         if (details.exceeded) {
@@ -1442,7 +1522,7 @@
         let summaryText = `${count} games total`;
         if (serviceType === 'jailbreak') {
             if (count <= 3) {
-                summaryText = `${count} games (${count} free, 0 chargeable)`;
+                summaryText = `${count} games (${count} free)`;
             } else {
                 const chargeable = count - 3;
                 summaryText = `${count} games (3 free + ${chargeable} addon)`;
@@ -1492,40 +1572,17 @@
         const serviceType = document.getElementById('serviceTypeSelect').value;
         const count = selectedGames.size;
 
-        // Popup Validation Check for Full Jailbreak
         if (serviceType === 'jailbreak') {
             if (count < 3) {
-                const remainingFree = 3 - count;
-                const confirmSave = confirm(`🎁 You have selected only ${count} game(s).\n\nYour Full Jailbreak package includes 3 FREE games! You still have ${remainingFree} free game slot(s) available.\n\nDo you still want to save your order with fewer than 3 games?`);
+                const confirmSave = confirm(` You have selected only ${count} game(s).\n\nYour Full Jailbreak package includes 3 FREE games! Do you still want to save your order with fewer than 3 games?`);
                 if (!confirmSave) return;
-            } else {
-                const chargeableCount = Math.max(0, count - 3);
-                
-                // Package tiers based on ADDON count (10, 20, 40)
-                const packageAddons = [10, 20, 40];
-                let matchedAddonTier = null;
-                let targetTotalGames = null;
-
-                // Check if total selection is short of a clean addon package tier
-                for (let addonCount of packageAddons) {
-                    const milestoneTotal = addonCount + 3; // e.g. 13, 23, 43 total games
-                    
-                    if (count >= addonCount && count < milestoneTotal) {
-                        matchedAddonTier = addonCount;
-                        targetTotalGames = milestoneTotal;
-                        break;
-                    }
-                }
-
-                if (matchedAddonTier && targetTotalGames) {
-                    const confirmTier = confirm(
-                        `⚠️ Package Tier Reminder:\n\n` +
-                        `You selected ${count} games total (${chargeableCount} addon games after your 3 free ones).\n\n` +
-                        `Since you are opting for the ${matchedAddonTier}-game package tier, did you want to pick ${targetTotalGames} games total (3 FREE + ${matchedAddonTier} ADDON)?\n\n` +
-                        `Click [Cancel] to go back and select more games, or [OK] to save as-is (${count} games total).`
-                    );
-                    if (!confirmTier) return;
-                }
+            }
+        } else {
+            const freeStorageInput = document.getElementById('userFreeStorageInput').value;
+            if (!freeStorageInput || parseFloat(freeStorageInput) <= 0) {
+                alert('Please enter your remaining free SD card storage space before submitting!');
+                document.getElementById('userFreeStorageInput').focus();
+                return;
             }
         }
 
@@ -1536,6 +1593,7 @@
         const gameNamesArray = Array.from(selectedGames.keys());
         const remarksText = document.getElementById('orderRemarks').value.trim();
         const consoleModel = document.getElementById('consoleModelSelect').value;
+        const freeStorageInput = document.getElementById('userFreeStorageInput').value;
         
         const sdSource = (serviceType === 'jailbreak') ? document.getElementById('sdSourceSelect').value : 'own';
         const androidSelected = (serviceType === 'jailbreak') ? document.getElementById('androidModeCheck').checked : false;
@@ -1554,14 +1612,14 @@
                 .eq('phone_ending', phone);
 
             const nowIso = new Date().toISOString();
-            let error;
-
+            
             const orderData = {
                 phone_ending: phone,
                 games: gameNamesArray,
                 total_games: count,
                 remarks: remarksText,
-                sd_card_size: maxSdSize,
+                sd_card_size: serviceType === 'jailbreak' ? maxSdSize : null,
+                free_storage_gb: serviceType === 'games_only' ? parseFloat(freeStorageInput) : null,
                 sd_source: sdSource,
                 service_type: serviceType,
                 console_model: serviceType === 'jailbreak' ? consoleModel : null,
@@ -1573,21 +1631,30 @@
                 updated_at: nowIso
             };
 
+            let saveResult;
             if (existing && existing.length > 0) {
-                const { error: updateError } = await supabaseClient
+                saveResult = await supabaseClient
                     .from('orders')
                     .update(orderData)
                     .eq('phone_ending', phone);
-                error = updateError;
             } else {
                 orderData.created_at = nowIso;
-                const { error: insertError } = await supabaseClient
+                saveResult = await supabaseClient
                     .from('orders')
                     .insert([orderData]);
-                error = insertError;
             }
 
-            if (error) throw error;
+            // Fallback: If free_storage_gb column missing, strip it and retry so order save never crashes
+            if (saveResult.error && saveResult.error.message.includes('free_storage_gb')) {
+                delete orderData.free_storage_gb;
+                if (existing && existing.length > 0) {
+                    saveResult = await supabaseClient.from('orders').update(orderData).eq('phone_ending', phone);
+                } else {
+                    saveResult = await supabaseClient.from('orders').insert([orderData]);
+                }
+            }
+
+            if (saveResult.error) throw saveResult.error;
 
             alert('Order updated and saved successfully!');
             closeCartModal();
