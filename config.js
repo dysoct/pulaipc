@@ -1,4 +1,4 @@
-// config.js - Central configuration for pricing, games, and backend credentials
+﻿// config.js - Central configuration for pricing, games, and backend credentials
 
 const APP_CONFIG = {
     // Supabase Backend Credentials
@@ -91,6 +91,8 @@ const games = [
       { name: "Disney Dreamlight Valley", size: 15.8 },
       { name: "Disney Epic Mickey Rebrushed", size: 11.66 },
       { name: "Disney Illusion Island", size: 5.83 },
+      { name: "Disney Speedstorm", size: 3.26 },
+      { name: "Disney Tsum Tsum Festival", size: 2.1 },
       { name: "Donkey Kong Country Returns HD", size: 8.31 },
       { name: "Donkey Kong Country Tropical Freeze", size: 6.69 },
       { name: "DOOM Eternal", size: 25.57 },
