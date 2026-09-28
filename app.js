@@ -79,23 +79,12 @@
     const isSystemSetup = service === 'system_setup';
     const is64GB = card === 64;
 
-    // Console model selection (Jailbreak pricing)
-    if ($('consoleModelGroup')) {$('consoleModelGroup').style.display = isJailbreak ? 'flex' : 'none';
-    }
+    if ($('consoleModelGroup'))$('consoleModelGroup').style.display = isJailbreak ? 'flex' : 'none';
+    if ($('sdSourceGroup'))$('sdSourceGroup').style.display = (isJailbreak || isSystemSetup) ? 'flex' : 'none';
+    if ($('sdCardGroup'))$('sdCardGroup').style.display = (isJailbreak || isSystemSetup) ? 'flex' : 'none';
+    if ($('jailbreakModesContainer'))$('jailbreakModesContainer').style.display = isJailbreak ? 'flex' : 'none';
 
-    // SD source selection (Bring Own vs Purchase New)
-    if ($('sdSourceGroup')) {$('sdSourceGroup').style.display = (isJailbreak || isSystemSetup) ? 'flex' : 'none';
-    }
-
-    // SD Card capacity selection (For Jailbreak and System Setup)
-    if ($('sdCardGroup')) {$('sdCardGroup').style.display = (isJailbreak || isSystemSetup) ? 'flex' : 'none';
-    }
-
-    // Addon modes (Android / Linux)
-    if ($('jailbreakModesContainer')) {$('jailbreakModesContainer').style.display = isJailbreak ? 'flex' : 'none';
-    }
-
-    // Restrict addons for 64GB cards
+    // Disable and uncheck addons for 64GB cards
     ['androidModeCheck', 'linuxModeCheck'].forEach((id) => {
       const checkbox = $(id);
       if (checkbox) {
@@ -108,9 +97,7 @@
       }
     });
 
-    // Free Storage input container - ONLY visible for Games Only
-    if ($('freeStorageContainer')) {$('freeStorageContainer').style.display = isGamesOnly ? 'flex' : 'none';
-    }
+    if ($('freeStorageContainer'))$('freeStorageContainer').style.display = isGamesOnly ? 'flex' : 'none';
 
     updateStorage();
   }
@@ -119,12 +106,12 @@
     const service = $('serviceTypeSelect')?.value || 'jailbreak';
     const card = Number($('sdCardSelect')?.value || 0);
     const free = Number($('userFreeStorageInput')?.value || 0);
+    let hintText = '';
 
     if (service === 'jailbreak') {
       const perSystemSize = getSystemPartitionSize(card);
-      let systemCount = 1; // Base EmuMMC / CFW partition
+      let systemCount = 1; // CFW / Base EmuMMC
 
-      // 64GB cards do not support addons
       if (card > 64) {
         if ($('androidModeCheck')?.checked) systemCount += 1;
         if ($('linuxModeCheck')?.checked) systemCount += 1;
@@ -132,15 +119,26 @@
 
       const totalSystemOverhead = systemCount * perSystemSize;
       usableStorageLimit = Math.max(0, card - totalSystemOverhead);
+
+      if (card === 64) {
+        hintText = `64GB Card: 8 GB system overhead reserved (Addons disabled).`;
+      } else {
+        hintText = `${card}GB Card: ${perSystemSize} GB reserved per system (${systemCount} system${systemCount > 1 ? 's' : ''} active = ${totalSystemOverhead} GB total reserved space).`;
+      }
     } else if (service === 'system_setup') {
       const perSystemSize = getSystemPartitionSize(card);
       usableStorageLimit = Math.max(0, card - perSystemSize);
+      hintText = `${card}GB Card: ${perSystemSize} GB system setup overhead reserved.`;
     } else {
-      // Games Only service uses customer's remaining free storage input directly
       usableStorageLimit = Math.max(0, free);
+      hintText = `Games-only service: Usable storage based on your entered free space.`;
     }
 
     if ($('maxUsableLabel')) {$('maxUsableLabel').textContent = Number.isFinite(usableStorageLimit) ? usableStorageLimit.toFixed(1) : 'Unlimited';
+    }
+
+    // Display storage breakdown hint if element exists
+    if ($('storageBreakdownHint')) {$('storageBreakdownHint').textContent = hintText;
     }
 
     const hasStorage = service === 'games_only' ? free > 0 : card > 0;
@@ -257,39 +255,88 @@
   }
 
   async function submitOrder() {
-    if (!validPhone() || !selectedGames.size) { if (!selectedGames.size) alert('Please select at least one game.'); return; }
-    if (!supabaseClient) { alert('The order service is unavailable right now. You can still configure your order locally, but saving to the backend is disabled.'); return; }
-    const button = $('submitOrderBtn'); if (button) { button.disabled = true; button.textContent = 'Saving...'; }
+    if (!validPhone()) { alert('Please enter a valid 4-digit ID.'); return; }
+    if (!selectedGames.size) { alert('Please select at least one game.'); return; }
+    if (!supabaseClient) { alert('The order service is unavailable right now. Missing backend configuration.'); return; }
+
+    const button = $('submitOrderBtn');
+    if (button) { button.disabled = true; button.textContent = 'Saving...'; }
+
     const order = {
-      phone_id: $('phoneInput').value.trim(), service_type:$('serviceTypeSelect').value,
-      console_model: $('consoleModelSelect').value, games: [...selectedGames.keys()], total_size: selectedSize(),
-      total_price: calculatePrice(), android_mode: Boolean($('androidModeCheck')?.checked),
-      linux_mode: Boolean($('linuxModeCheck')?.checked), remarks:$('orderRemarks')?.value.trim() || ''
+      phone_id: $('phoneInput').value.trim(),
+      service_type: $('serviceTypeSelect')?.value,
+      console_model: $('consoleModelSelect')?.value,
+      games: [...selectedGames.keys()],
+      total_size: selectedSize(),
+      total_price: calculatePrice(),
+      android_mode: Boolean($('androidModeCheck')?.checked),
+      linux_mode: Boolean($('linuxModeCheck')?.checked),
+      remarks: $('orderRemarks')?.value.trim() || ''
     };
+
     try {
       const { error } = await supabaseClient.from('orders').insert([order]);
       if (error) throw error;
-      alert(`Order submitted successfully. Total: RM${order.total_price}`);
-      selectedGames.clear(); closeCart(); renderGames(); updateCheckout();
-    } catch (error) { console.error('Order submission failed:', error); alert('Unable to submit the order. Please try again.'); }
-    finally { if (button) { button.disabled = false; button.textContent = 'Save Changes'; } }
+      alert(`Order submitted successfully! ID: ${order.phone_id} | Total: RM${order.total_price}`);
+      selectedGames.clear();
+      closeCart();
+      renderGames();
+      updateCheckout();
+    } catch (error) {
+      console.error('Order submission failed:', error);
+      alert(`Unable to submit order: ${error.message || 'Database error'}`);
+    } finally {
+      if (button) { button.disabled = false; button.textContent = 'Save Changes'; }
+    }
   }
 
   async function loadOrder() {
-    if (!validPhone() || !supabaseClient) return;
-    const button = $('loadOrderBtn'); if (button) { button.disabled = true; button.textContent = 'Loading...'; }
+    if (!validPhone()) { alert('Please enter a valid 4-digit ID to search.'); return; }
+    if (!supabaseClient) { alert('Database service unavailable. Backend config missing.'); return; }
+
+    const phoneId = $('phoneInput').value.trim();
+    const button = $('loadOrderBtn');
+    if (button) { button.disabled = true; button.textContent = 'Loading...'; }
+
     try {
-      const { data, error } = await supabaseClient.from('orders').select('*').eq('phone_id', $('phoneInput').value.trim()).order('created_at', { ascending: false }).limit(1);
+      const { data, error } = await supabaseClient
+        .from('orders')
+        .select('*')
+        .eq('phone_id', phoneId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
       if (error) throw error;
+
       const order = data?.[0];
-      if (!order) { alert('No previous order found.'); return; }
-      selectedGames.clear();
-      (Array.isArray(order.games) ? order.games : []).forEach((name) => { const game = catalog().find((item) => item.name === name); if (game) selectedGames.set(name, game); });
+      if (!order) {
+        alert(`No saved order found for ID: ${phoneId}`);
+        return;
+      }
+
+      // Restore form inputs from saved order
+      if (order.service_type && $('serviceTypeSelect'))$('serviceTypeSelect').value = order.service_type;
+      if (order.console_model && $('consoleModelSelect'))$('consoleModelSelect').value = order.console_model;
       if ($('androidModeCheck'))$('androidModeCheck').checked = Boolean(order.android_mode);
       if ($('linuxModeCheck'))$('linuxModeCheck').checked = Boolean(order.linux_mode);
-      revealGames(); updateCheckout(); alert('Previous order loaded successfully.');
-    } catch (error) { console.error('Load order failed:', error); alert('Unable to load the saved order.'); }
-    finally { if (button) { button.disabled = false; button.textContent = '📂 Load Saved Order'; } }
+
+      // Restore selected games catalog
+      selectedGames.clear();
+      (Array.isArray(order.games) ? order.games : []).forEach((name) => {
+        const game = catalog().find((item) => item.name === name);
+        if (game) selectedGames.set(name, game);
+      });
+
+      toggleServiceFields();
+      revealGames();
+      updateCheckout();
+      alert(`Loaded saved order for ID: ${phoneId}`);
+    } catch (error) {
+      console.error('Load order failed:', error);
+      alert(`Unable to load saved order: ${error.message || 'Ensure table SELECT permissions (RLS) are granted in Supabase.'}`);
+    } finally {
+      if (button) { button.disabled = false; button.textContent = '📂 Load Saved Order'; }
+    }
   }
 
   function bindEvents() {
