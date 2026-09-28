@@ -10,6 +10,13 @@
   const appConfig = () => (typeof window !== 'undefined' && window.APP_CONFIG) ? window.APP_CONFIG : {};
   const catalog = () => (typeof games !== 'undefined' && Array.isArray(games)) ? games : [];
 
+  function getSystemPartitionSize(cardCapacity) {
+    if (cardCapacity <= 64) return 8;
+    if (cardCapacity <= 128) return 10;
+    if (cardCapacity <= 256) return 16;
+    return 20; // 512GB, 1TB, 2TB
+  }
+
   function showConfigError(message) {
     const banner = $('configErrorBanner');
     if (banner) banner.style.display = 'flex';
@@ -65,11 +72,12 @@
 
   function toggleServiceFields() {
     const service = $('serviceTypeSelect')?.value || 'jailbreak';
-    const source = $('sdSourceSelect')?.value || 'own';
+    const card = Number($('sdCardSelect')?.value || 0);
 
     const isJailbreak = service === 'jailbreak';
     const isGamesOnly = service === 'games_only';
     const isSystemSetup = service === 'system_setup';
+    const is64GB = card === 64;
 
     // Console model selection (Jailbreak pricing)
     if ($('consoleModelGroup')) {$('consoleModelGroup').style.display = isJailbreak ? 'flex' : 'none';
@@ -79,18 +87,29 @@
     if ($('sdSourceGroup')) {$('sdSourceGroup').style.display = (isJailbreak || isSystemSetup) ? 'flex' : 'none';
     }
 
-    // SD Card capacity selection
-    if ($('sdCardGroup')) {$('sdCardGroup').style.display = (isJailbreak || isSystemSetup || isGamesOnly) ? 'flex' : 'none';
+    // SD Card capacity selection (For Jailbreak and System Setup)
+    if ($('sdCardGroup')) {$('sdCardGroup').style.display = (isJailbreak || isSystemSetup) ? 'flex' : 'none';
     }
 
     // Addon modes (Android / Linux)
     if ($('jailbreakModesContainer')) {$('jailbreakModesContainer').style.display = isJailbreak ? 'flex' : 'none';
     }
 
-    // Free Storage input container
-    if ($('freeStorageContainer')) {
-      const showFreeStorage = isGamesOnly || ((isJailbreak || isSystemSetup) && source === 'own');
-      $('freeStorageContainer').style.display = showFreeStorage ? 'flex' : 'none';
+    // Restrict addons for 64GB cards
+    ['androidModeCheck', 'linuxModeCheck'].forEach((id) => {
+      const checkbox = $(id);
+      if (checkbox) {
+        if (is64GB) {
+          checkbox.checked = false;
+          checkbox.disabled = true;
+        } else {
+          checkbox.disabled = false;
+        }
+      }
+    });
+
+    // Free Storage input container - ONLY visible for Games Only
+    if ($('freeStorageContainer')) {$('freeStorageContainer').style.display = isGamesOnly ? 'flex' : 'none';
     }
 
     updateStorage();
@@ -98,28 +117,33 @@
 
   function updateStorage() {
     const service = $('serviceTypeSelect')?.value || 'jailbreak';
-    const source = $('sdSourceSelect')?.value || 'own';
     const card = Number($('sdCardSelect')?.value || 0);
-    let free = Number($('userFreeStorageInput')?.value || 0);
-
-    // If buying a new card, set free storage equal to full card capacity
-    if (source === 'buy' && service !== 'games_only') {
-      free = card;
-    }
+    const free = Number($('userFreeStorageInput')?.value || 0);
 
     if (service === 'jailbreak') {
-      // Deduct 50 GB for EmuMMC/sys partition, plus 50 GB per additional system mode
-      const addons = ($('androidModeCheck')?.checked ? 50 : 0) + ($('linuxModeCheck')?.checked ? 50 : 0);
-      usableStorageLimit = Math.max(0, free - 50 - addons);
+      const perSystemSize = getSystemPartitionSize(card);
+      let systemCount = 1; // Base EmuMMC / CFW partition
+
+      // 64GB cards do not support addons
+      if (card > 64) {
+        if ($('androidModeCheck')?.checked) systemCount += 1;
+        if ($('linuxModeCheck')?.checked) systemCount += 1;
+      }
+
+      const totalSystemOverhead = systemCount * perSystemSize;
+      usableStorageLimit = Math.max(0, card - totalSystemOverhead);
+    } else if (service === 'system_setup') {
+      const perSystemSize = getSystemPartitionSize(card);
+      usableStorageLimit = Math.max(0, card - perSystemSize);
     } else {
-      // For 'games_only' or 'system_setup', usable storage is directly the free space on the card
+      // Games Only service uses customer's remaining free storage input directly
       usableStorageLimit = Math.max(0, free);
     }
 
     if ($('maxUsableLabel')) {$('maxUsableLabel').textContent = Number.isFinite(usableStorageLimit) ? usableStorageLimit.toFixed(1) : 'Unlimited';
     }
 
-    const hasStorage = (source === 'buy' && service !== 'games_only') || free > 0;
+    const hasStorage = service === 'games_only' ? free > 0 : card > 0;
     const ready = validPhone(false) && hasStorage;
 
     if ($('storageWarningBanner')) {$('storageWarningBanner').style.display = ready ? 'none' : 'flex';
@@ -159,12 +183,12 @@
   }
 
   function revealGames() {
-    const service = $('serviceTypeSelect')?.value;
-    const source = $('sdSourceSelect')?.value;
+    const service = $('serviceTypeSelect')?.value || 'jailbreak';
     const free = Number($('userFreeStorageInput')?.value || 0);
-    const isBuying = (source === 'buy' && service !== 'games_only');
+    const card = Number($('sdCardSelect')?.value || 0);
+    const hasStorage = service === 'games_only' ? free > 0 : card > 0;
 
-    if (!validPhone() || (!isBuying && free <= 0)) return;
+    if (!validPhone() || !hasStorage) return;
 
     if ($('jailbreakNoticeCard'))$('jailbreakNoticeCard').style.display = 'none';
     if ($('gameSectionWrapper'))$('gameSectionWrapper').style.display = 'block';
@@ -175,14 +199,17 @@
 
   function calculatePrice() {
     const service = $('serviceTypeSelect')?.value;
+    const card = Number($('sdCardSelect')?.value || 0);
     const count = selectedGames.size;
     const size = selectedSize();
     let total = service === 'jailbreak' ? Number(appConfig().jailbreakPrices?.[$('consoleModelSelect')?.value] || 0) : service === 'system_setup' ? Number(appConfig().systemSetupPrice || 50) : 0;
     if (service === 'games_only') total = count <= 10 ? 30 : count <= 20 ? 50 : 80;
     if (service === 'jailbreak' && count > 3) total += count <= 13 ? 30 : count <= 23 ? 50 : 80;
     if (service === 'jailbreak' && size > 100) total += size <= 200 ? 20 : size <= 400 ? 50 : 80;
-    if ($('androidModeCheck')?.checked) total += Number(appConfig().addonPrices?.android || 30);
-    if ($('linuxModeCheck')?.checked) total += Number(appConfig().addonPrices?.linux || 30);
+    if (card > 64) {
+      if ($('androidModeCheck')?.checked) total += Number(appConfig().addonPrices?.android || 30);
+      if ($('linuxModeCheck')?.checked) total += Number(appConfig().addonPrices?.linux || 30);
+    }
     return total;
   }
 
@@ -266,9 +293,10 @@
   }
 
   function bindEvents() {
-    $('phoneInput')?.addEventListener('input', () => { $('phoneInput').value =$('phoneInput').value.replace(/\D/g, '').slice(0, 4); localStorage.setItem('userPhone4', $('phoneInput').value); updateStorage(); });$('phoneInput')?.addEventListener('blur', () => validPhone());
-    $('serviceTypeSelect')?.addEventListener('change', () => { save('serviceTypeSelect', 'userServiceType'); toggleServiceFields(); });$('sdSourceSelect')?.addEventListener('change', () => { save('sdSourceSelect', 'userSdSource'); populateSdCards(); toggleServiceFields(); });
-    ['sdCardSelect', 'consoleModelSelect', 'androidModeCheck', 'linuxModeCheck'].forEach((id) => $(id)?.addEventListener('change', updateStorage));$('userFreeStorageInput')?.addEventListener('input', () => { localStorage.setItem('userFreeStorage', $('userFreeStorageInput').value); updateStorage(); });$('browseGamesBtn')?.addEventListener('click', revealGames); $('searchInput')?.addEventListener('input', renderGames);$('clearSearchBtn')?.addEventListener('click', () => { $('searchInput').value = ''; renderGames(); });$('mainSubmitBtn')?.addEventListener('click', openCart); $('checkoutInfo')?.addEventListener('click', openCart);$('closeCartModal')?.addEventListener('click', closeCart); $('modalBackdrop')?.addEventListener('click', closeCart);$('submitOrderBtn')?.addEventListener('click', submitOrder); $('loadOrderBtn')?.addEventListener('click', loadOrder);$('clearGamesBtn')?.addEventListener('click', () => { if (confirm('Are you sure you want to clear all selected games and addons?')) { selectedGames.clear(); renderGames(); updateCheckout(); } });
+    $('phoneInput')?.addEventListener('input', () => {$('phoneInput').value = $('phoneInput').value.replace(/\D/g, '').slice(0, 4); localStorage.setItem('userPhone4',$('phoneInput').value); updateStorage(); });
+    $('phoneInput')?.addEventListener('blur', () => validPhone());$('serviceTypeSelect')?.addEventListener('change', () => { save('serviceTypeSelect', 'userServiceType'); toggleServiceFields(); });
+    $('sdSourceSelect')?.addEventListener('change', () => { save('sdSourceSelect', 'userSdSource'); populateSdCards(); toggleServiceFields(); });$('sdCardSelect')?.addEventListener('change', () => { save('sdCardSelect', 'userSdSelect'); toggleServiceFields(); });
+    ['consoleModelSelect', 'androidModeCheck', 'linuxModeCheck'].forEach((id) => $(id)?.addEventListener('change', updateStorage));$('userFreeStorageInput')?.addEventListener('input', () => { localStorage.setItem('userFreeStorage', $('userFreeStorageInput').value); updateStorage(); });$('browseGamesBtn')?.addEventListener('click', revealGames); $('searchInput')?.addEventListener('input', renderGames);$('clearSearchBtn')?.addEventListener('click', () => { $('searchInput').value = ''; renderGames(); });$('mainSubmitBtn')?.addEventListener('click', openCart); $('checkoutInfo')?.addEventListener('click', openCart);$('closeCartModal')?.addEventListener('click', closeCart); $('modalBackdrop')?.addEventListener('click', closeCart);$('submitOrderBtn')?.addEventListener('click', submitOrder); $('loadOrderBtn')?.addEventListener('click', loadOrder);$('clearGamesBtn')?.addEventListener('click', () => { if (confirm('Are you sure you want to clear all selected games and addons?')) { selectedGames.clear(); renderGames(); updateCheckout(); } });
     $('storageGuideToggle')?.addEventListener('click', () => { const box =$('storageGuideBox'); const open = box.style.display === 'block'; box.style.display = open ? 'none' : 'block'; box.setAttribute('aria-hidden', String(open)); $('storageGuideToggle').setAttribute('aria-expanded', String(!open)); });
     document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && $('cartModal')?.classList.contains('active')) closeCart(); });
   }
