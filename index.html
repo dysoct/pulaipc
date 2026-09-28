@@ -1,293 +1,273 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Pulai PC Jailbreak & Game Service - Configure your Nintendo Switch with jailbreak, games, and system addons.">
-    <meta name="theme-color" content="#00e676">
-    <title>Pulai PC Jailbreak & Game Service</title>
-    
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Pulai PC Jailbreak & Game Service" />
+  <meta name="theme-color" content="#00e676" />
+  <title>Pulai PC Jailbreak & Game Service</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <div class="container">
-        <h1>Pulai PC Jailbreak & Game Service</h1>
-        <div class="instructions">
-            <ol>
-                <li>Enter the <strong>Last 4 Digits</strong> of your phone number below.</li>
-                <li>Select your <strong>Service Type</strong> and specify your <strong>Storage Capacity</strong>.</li>
-                <li>Choose your games, then review and submit!</li>
-            </ol>
-        </div>
+  <div class="container">
+    <h1>Pulai PC Jailbreak & Game Service</h1>
 
-        <div id="configErrorBanner" class="error-banner" style="display: none;">
-            <span class="error-icon">❌</span>
-            <span id="configErrorText">Unable to load configuration. Please refresh the page.</span>
-        </div>
-
-        <details class="pricing-guide">
-            <summary>📦 View Pricing Tiers & Game Size Rates (Tap to expand)</summary>
-            <div class="pricing-tiers">
-                <div class="tier-box">
-                    Jailbreak (OLED)
-                    <span>RM300<br><small>Free 3 Games</small></span>
-                </div>
-                <div class="tier-box">
-                    Jailbreak (V1/V2)
-                    <span>RM190<br><small>Free 3 Games</small></span>
-                </div>
-                <div class="tier-box">
-                    Jailbreak (Lite)
-                    <span>RM230<br><small>Free 3 Games</small></span>
-                </div>
-            </div>
-
-            <div class="pricing-details-grid">
-                <div class="pricing-col">
-                    <h4>🎮 Game Count Pricing</h4>
-                    <ul>
-                        <li><strong>10 Games:</strong> RM30</li>
-                        <li><strong>20 Games:</strong> RM50</li>
-                        <li><strong>40 Games:</strong> RM80</li>
-                    </ul>
-                </div>
-                <div class="pricing-col">
-                    <h4>📊 Game Size Volume Override</h4>
-                    <ul>
-                        <li><strong>Up to 100 GB:</strong> RM30 equivalent</li>
-                        <li><strong>Up to 200 GB:</strong> RM50 equivalent</li>
-                        <li><strong>Up to 400 GB:</strong> RM80 equivalent</li>
-                        <li><em>Note: If total storage size exceeds standard count limits due to massive game files, pricing automatically scales based on total GB volume.</em></li>
-                    </ul>
-                </div>
-            </div>
-
-            <p class="pricing-note">
-                * Android/Linux system modes require 128GB+ cards (+RM30 each). Full jailbreak includes your first 3 games free!
-            </p>
-        </details>
-        
-        <form id="configForm" class="config-card">
-            <fieldset class="config-fieldset">
-                <legend class="sr-only">Jailbreak Configuration</legend>
-                
-                <div class="config-row">
-                    <div class="field-group">
-                        <label for="phoneInput">Phone ID (Last 4 Digits) <span class="required-indicator" aria-label="required">*</span></label>
-                        <input
-                            type="text"
-                            id="phoneInput"
-                            class="phone-input"
-                            maxlength="4"
-                            inputmode="numeric"
-                            pattern="[0-9]{4}"
-                            autocomplete="tel"
-                            placeholder="e.g. 5678"
-                            required
-                            aria-describedby="phoneHint"
-                        >
-                        <span id="phoneHint" class="field-hint">Last 4 digits of phone number (Required ID)</span>
-                        <span id="phoneError" class="field-error" role="alert" aria-live="polite"></span>
-                    </div>
-
-                    <div class="field-group">
-                        <label for="serviceTypeSelect">Service Type <span class="required-indicator" aria-label="required">*</span></label>
-                        <select id="serviceTypeSelect" class="service-select" required aria-describedby="serviceHint">
-                            <option value="jailbreak">Full Jailbreak (Free 3 Games)</option>
-                            <option value="system_setup">System Setup</option>
-                            <option value="games_only">Games Only</option>
-                        </select>
-                        <span id="serviceHint" class="field-hint">Choose full jailbreak, system setup, or a games-only install</span>
-                    </div>
-
-                    <div class="field-group" id="consoleModelGroup">
-                        <label for="consoleModelSelect">Console Model <span class="required-indicator" aria-label="required">*</span></label>
-                        <select id="consoleModelSelect" class="model-select" required aria-describedby="modelHint">
-                            <option value="OLED">OLED (RM300)</option>
-                            <option value="V1_V2">V1/V2 (RM190)</option>
-                            <option value="LITE">LITE (RM230)</option>
-                        </select>
-                        <span id="modelHint" class="field-hint">Select your Nintendo Switch model variant</span>
-                    </div>
-
-                    <div class="field-group" id="sdSourceGroup">
-                        <label for="sdSourceSelect">SD Card Source <span class="required-indicator" aria-label="required">*</span></label>
-                        <select id="sdSourceSelect" class="sd-source-select" required aria-describedby="sourceHint">
-                            <option value="own">Bring Own SD Card</option>
-                            <option value="buy">Purchase New SD Card</option>
-                        </select>
-                        <span id="sourceHint" class="field-hint">Providing your own card or buying a new one</span>
-                    </div>
-
-                    <div class="field-group" id="sdCardGroup">
-                        <label for="sdCardSelect">SD Card Capacity <span class="required-indicator" aria-label="required">*</span></label>
-                        <select id="sdCardSelect" class="sd-select" required aria-describedby="cardHint">
-                        </select>
-                        <span id="cardHint" class="field-hint">Total capacity of memory card used</span>
-                    </div>
-
-                    <div id="freeStorageContainer" class="free-storage-container">
-                        <label for="userFreeStorageInput">Free Storage Space <span class="required-indicator" aria-label="required">*</span></label>
-                        <input
-                            type="number"
-                            id="userFreeStorageInput"
-                            class="free-storage-input"
-                            placeholder="Free Storage Space (GB)"
-                            min="1"
-                            step="1"
-                            required
-                            aria-describedby="freeStorageHint"
-                        >
-                        <button type="button" class="guide-btn" id="storageGuideToggle" aria-expanded="false" aria-controls="storageGuideBox">
-                            ❓ How to check free storage?
-                        </button>
-                        <span id="freeStorageHint" class="field-hint">Remaining GB available on your Switch SD card</span>
-                    </div>
-
-                    <div class="btn-group-wrapper">
-                        <div class="btn-group">
-                            <button type="button" class="lookup-btn" id="loadOrderBtn" title="Returning customer? Load your saved game list">📂 Load Saved Order</button>
-                            <button type="button" class="clear-btn" id="clearGamesBtn" title="Clear selected games & mode addons">Clear Games</button>
-                        </div>
-                        <span class="field-hint">Retrieve existing order or reset game choices</span>
-                    </div>
-                </div>
-
-                <div id="storageGuideBox" class="storage-guide-box" aria-hidden="true">
-                    <h4>📱 How to check your remaining microSD card free space:</h4>
-                    <p><strong>Method 1: Official Switch Settings</strong><br>
-                    1. Go to Home Menu → <strong>System Settings</strong> (gear icon).<br>
-                    2. Scroll down to <strong>Data Management</strong>.<br>
-                    3. Look under <strong>microSD Card</strong> on the right for <strong>Free Space</strong> (e.g. 145 GB).</p>
-                    <p style="margin-bottom:0;"><strong>Method 2: Via DBI App (Modded Console)</strong><br>
-                    1. Launch <strong>DBI</strong> app on your Switch.<br>
-                    2. Check the bottom-left text: <em>Free: XX.X GB</em> and enter that number above.</p>
-                </div>
-
-                <div id="jailbreakModesContainer" class="modes-container" aria-label="Optional system addons">
-                    <span class="addon-label-title">Multi-Boot System Addons:</span>
-                    <div class="mode-options-row">
-                        <div class="mode-wrapper">
-                            <label class="mode-checkbox-label">
-                                <input type="checkbox" id="androidModeCheck" aria-describedby="androidHint"> 
-                                <span>🤖 Android Mode (+RM30)</span>
-                            </label>
-                            <span id="androidHint" class="field-hint">Runs Android OS for cloud gaming (Game Pass), streaming & Android games</span>
-                        </div>
-
-                        <div class="mode-wrapper">
-                            <label class="mode-checkbox-label">
-                                <input type="checkbox" id="linuxModeCheck" aria-describedby="linuxHint"> 
-                                <span>🐧 Linux Mode (+RM30)</span>
-                            </label>
-                            <span id="linuxHint" class="field-hint">Runs Ubuntu Linux desktop for retro emulation & lightweight PC apps</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="storageBreakdown" class="storage-breakdown" role="status" aria-live="polite" aria-atomic="true">
-                    Usable Space: <span id="maxUsableLabel">--</span> GB
-                </div>
-            </fieldset>
-        </form>
-
-        <div id="storageWarningBanner" class="storage-warning-banner" role="alert">
-            <span class="warning-icon" aria-hidden="true">⚠️</span>
-            <span id="storageWarningText">Please enter your <strong>Phone ID (4 digits)</strong> and storage capacity to unlock game selection.</span>
-        </div>
-
-        <div id="tierWarningBanner" class="tier-warning-banner" role="alert" aria-live="polite">
-            <span aria-hidden="true">💡</span>
-            <span id="tierWarningText">You can add more games to reach your package limit at no extra cost!</span>
-        </div>
-
-        <div id="jailbreakNoticeCard" class="jailbreak-notice-card">
-            <h3>🎁 You get 3 Free Games with your Full Jailbreak!</h3>
-            <p>Your jailbreak service package includes your first 3 games free. Pick 3 free games + additional addon games if desired!</p>
-            <button id="browseGamesBtn" class="browse-games-btn" type="button">Browse & Choose Games</button>
-        </div>
-
-        <div id="gameSectionWrapper" class="game-section-wrapper" style="display: none;">
-            <div class="search-container">
-                <div class="search-input-wrapper">
-                    <label for="searchInput" class="sr-only">Search games</label>
-                    <input
-                        type="text"
-                        id="searchInput"
-                        class="search-box"
-                        placeholder="🔍 Search games in library..."
-                        aria-describedby="searchHint"
-                    >
-                    <button id="clearSearchBtn" class="clear-search-btn" type="button" aria-label="Clear search" style="display: none;">
-                        &times;
-                    </button>
-                </div>
-                <span id="searchHint" class="field-hint" style="margin-left: 2px;">Type game title or keyword to filter the game list</span>
-            </div>
-
-            <div id="statusMsg" class="status-msg" role="status" aria-live="polite" aria-atomic="true"></div>
-
-            <div id="gameList" class="game-list" role="region" aria-label="Available games"></div>
-        </div>
+    <div class="instructions">
+      <ol>
+        <li>Enter the <strong>Last 4 Digits</strong> of your phone number below.</li>
+        <li>Select your <strong>Service Type</strong> and specify your <strong>Storage Capacity</strong>.</li>
+        <li>Choose your games, then review and submit.</li>
+      </ol>
     </div>
 
-    <div class="checkout-bar" role="region" aria-label="Order summary">
-        <div class="checkout-info" id="checkoutInfo" role="button" tabindex="0" aria-label="Open cart details">
-            🛒 <span id="selectedCount" style="color: #00e676; font-weight: bold;">0</span> games 
-            (<span id="selectedSize" style="color: #00e676; font-weight: bold;">0</span> GB selected | 
-            <span id="remainderSize" style="color: #ffb74d; font-weight: bold;">0</span> GB left) | 
-            <span id="selectedPrice" style="color: #00e676; font-weight: bold;">RM0</span>
-            <br><span id="checkoutSubtext" style="font-size: 11px; color: #aaa;">Tap here to review & add remarks</span>
-        </div>
-        <button id="mainSubmitBtn" class="submit-btn" type="button" aria-label="Review and submit order">Review & Submit</button>
+    <div id="configErrorBanner" class="error-banner" style="display:none;">
+      <span class="error-icon">❌</span>
+      <span id="configErrorText">Unable to load configuration. Please refresh the page.</span>
     </div>
 
-    <div id="cartModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cartModalTitle" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="cartModalTitle">Your Selected Games & Setup</h2>
-                <button class="close-modal" id="closeCartModal" type="button" aria-label="Close modal">
-                    &times;
-                </button>
-            </div>
-            <div id="cartModalBody" class="modal-body"></div>
+    <details class="pricing-guide">
+      <summary>📦 View Pricing Tiers & Game Size Rates</summary>
 
-            <div id="modalTierWarning" class="modal-tier-warning" role="alert" aria-live="polite"></div>
-            
-            <div id="sizeWarningBox" class="warning-box" role="alert">
-                ⚠️ <strong>Size Tolerance Alert:</strong> Your total storage size has exceeded standard buffer limits for this tier. Pricing has adjusted accordingly.
-            </div>
-
-            <div class="remarks-container">
-                <label for="orderRemarks">Remarks / Notes <span class="optional-indicator">(Optional)</span>:</label>
-                <textarea
-                    id="orderRemarks"
-                    class="remarks-input"
-                    placeholder="e.g. mention specific game DLCs, trilogies, or special requests..."
-                    aria-describedby="remarksHint"
-                ></textarea>
-                <span id="remarksHint" class="field-hint">Add special notes, preferred game versions, or custom requests</span>
-            </div>
-
-            <div class="modal-footer">
-                <span id="modalTotal" style="color: #aaa; font-size: 12px; line-height: 1.4;">0 games total</span>
-                <div>
-                    <button class="submit-btn" id="submitOrderBtn" type="button">Save Changes</button>
-                </div>
-            </div>
+      <div class="pricing-tiers">
+        <div class="tier-box">
+          Jailbreak (OLED)
+          <span>RM300<br><small>Free 3 Games</small></span>
         </div>
+        <div class="tier-box">
+          Jailbreak (V1/V2)
+          <span>RM190<br><small>Free 3 Games</small></span>
+        </div>
+        <div class="tier-box">
+          Jailbreak (Lite)
+          <span>RM230<br><small>Free 3 Games</small></span>
+        </div>
+      </div>
+
+      <div class="pricing-details-grid">
+        <div class="pricing-col">
+          <h4>🎮 Game Count Pricing</h4>
+          <ul>
+            <li><strong>10 Games:</strong> RM30</li>
+            <li><strong>20 Games:</strong> RM50</li>
+            <li><strong>40 Games:</strong> RM80</li>
+          </ul>
+        </div>
+        <div class="pricing-col">
+          <h4>📊 Game Size Volume Override</h4>
+          <ul>
+            <li><strong>Up to 100 GB:</strong> RM30 equivalent</li>
+            <li><strong>Up to 200 GB:</strong> RM50 equivalent</li>
+            <li><strong>Up to 400 GB:</strong> RM80 equivalent</li>
+            <li><em>Pricing scales automatically for very large games and high-volume storage needs.</em></li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="pricing-note">
+        * Android/Linux system modes require 128GB+ cards (+RM30 each). Full jailbreak includes your first 3 games free.
+      </p>
+    </details>
+
+    <form id="configForm" class="config-card" novalidate>
+      <fieldset class="config-fieldset">
+        <legend class="sr-only">Jailbreak Configuration</legend>
+
+        <div class="config-row">
+          <div class="field-group">
+            <label for="phoneInput">Phone ID (Last 4 Digits) <span class="required-indicator">*</span></label>
+            <input
+              id="phoneInput"
+              class="phone-input"
+              type="text"
+              maxlength="4"
+              inputmode="numeric"
+              pattern="[0-9]{4}"
+              autocomplete="tel"
+              placeholder="e.g. 5678"
+              aria-describedby="phoneHint"
+              required
+            />
+            <span id="phoneHint" class="field-hint">Last 4 digits of phone number (Required ID)</span>
+            <span id="phoneError" class="field-error" role="alert" aria-live="polite"></span>
+          </div>
+
+          <div class="field-group">
+            <label for="serviceTypeSelect">Service Type <span class="required-indicator">*</span></label>
+            <select id="serviceTypeSelect" class="service-select" aria-describedby="serviceHint">
+              <option value="jailbreak">Full Jailbreak (Free 3 Games)</option>
+              <option value="system_setup">System Setup</option>
+              <option value="games_only">Games Only</option>
+            </select>
+            <span id="serviceHint" class="field-hint">Choose full jailbreak, system setup, or a games-only install</span>
+          </div>
+
+          <div class="field-group" id="consoleModelGroup">
+            <label for="consoleModelSelect">Console Model <span class="required-indicator">*</span></label>
+            <select id="consoleModelSelect" class="model-select" aria-describedby="modelHint">
+              <option value="OLED">OLED (RM300)</option>
+              <option value="V1_V2">V1/V2 (RM190)</option>
+              <option value="LITE">LITE (RM230)</option>
+            </select>
+            <span id="modelHint" class="field-hint">Select your Nintendo Switch model variant</span>
+          </div>
+
+          <div class="field-group" id="sdSourceGroup">
+            <label for="sdSourceSelect">SD Card Source <span class="required-indicator">*</span></label>
+            <select id="sdSourceSelect" class="sd-source-select" aria-describedby="sourceHint">
+              <option value="own">Bring Own SD Card</option>
+              <option value="buy">Purchase New SD Card</option>
+            </select>
+            <span id="sourceHint" class="field-hint">Providing your own card or buying a new one</span>
+          </div>
+
+          <div class="field-group" id="sdCardGroup">
+            <label for="sdCardSelect">SD Card Capacity <span class="required-indicator">*</span></label>
+            <select id="sdCardSelect" class="sd-select" aria-describedby="cardHint"></select>
+            <span id="cardHint" class="field-hint">Total capacity of memory card used</span>
+          </div>
+
+          <div id="freeStorageContainer" class="free-storage-container">
+            <label for="userFreeStorageInput">Free Storage Space <span class="required-indicator">*</span></label>
+            <input
+              type="number"
+              id="userFreeStorageInput"
+              class="free-storage-input"
+              min="1"
+              step="1"
+              placeholder="Free Storage Space (GB)"
+              aria-describedby="freeStorageHint"
+            />
+            <button type="button" id="storageGuideToggle" class="guide-btn" aria-expanded="false" aria-controls="storageGuideBox">
+              ❓ How to check free storage?
+            </button>
+            <span id="freeStorageHint" class="field-hint">Remaining GB available on your Switch SD card</span>
+          </div>
+
+          <div class="btn-group-wrapper">
+            <div class="btn-group">
+              <button type="button" id="loadOrderBtn" class="lookup-btn">📂 Load Saved Order</button>
+              <button type="button" id="clearGamesBtn" class="clear-btn">Clear Games</button>
+            </div>
+            <span class="field-hint">Retrieve existing order or reset game choices</span>
+          </div>
+        </div>
+
+        <div id="storageGuideBox" class="storage-guide-box" aria-hidden="true">
+          <h4>📱 How to check your remaining microSD card free space:</h4>
+          <p><strong>Method 1: Official Switch Settings</strong><br />
+          1. Go to Home Menu → <strong>System Settings</strong> (gear icon).<br />
+          2. Scroll down to <strong>Data Management</strong>.<br />
+          3. Look under <strong>microSD Card</strong> on the right for <strong>Free Space</strong> (e.g. 145 GB).</p>
+
+          <p style="margin-bottom:0;"><strong>Method 2: Via DBI App (Modded Console)</strong><br />
+          1. Launch <strong>DBI</strong> app on your Switch.<br />
+          2. Check the bottom-left text: <em>Free: XX.X GB</em> and enter that number above.</p>
+        </div>
+
+        <div id="jailbreakModesContainer" class="modes-container" aria-label="Optional system addons">
+          <span class="addon-label-title">Multi-Boot System Addons:</span>
+
+          <div class="mode-options-row">
+            <div class="mode-wrapper">
+              <label class="mode-checkbox-label">
+                <input type="checkbox" id="androidModeCheck" />
+                <span>🤖 Android Mode (+RM30)</span>
+              </label>
+              <span class="field-hint">Runs Android OS for cloud gaming, streaming & Android apps</span>
+            </div>
+
+            <div class="mode-wrapper">
+              <label class="mode-checkbox-label">
+                <input type="checkbox" id="linuxModeCheck" />
+                <span>🐧 Linux Mode (+RM30)</span>
+              </label>
+              <span class="field-hint">Runs Ubuntu Linux desktop for retro emulation and lightweight PC apps</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="storageBreakdown" class="storage-breakdown" role="status" aria-live="polite" aria-atomic="true">
+          Usable Space: <span id="maxUsableLabel">--</span> GB
+        </div>
+
+      </fieldset>
+    </form>
+
+    <div id="storageWarningBanner" class="storage-warning-banner" role="alert">
+      <span class="warning-icon" aria-hidden="true">⚠️</span>
+      <span id="storageWarningText">Please enter your <strong>Phone ID (4 digits)</strong> and storage capacity to unlock game selection.</span>
     </div>
 
-    <!-- Modal Backdrop -->
-    <div id="modalBackdrop" class="modal-backdrop" style="display: none;" role="presentation"></div>
+    <div id="tierWarningBanner" class="tier-warning-banner" role="alert" aria-live="polite">
+      <span aria-hidden="true">💡</span>
+      <span id="tierWarningText">You can add more games to reach your package limit at no extra cost!</span>
+    </div>
 
-    <!-- Load Supabase first -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.46.0"></script>
-    
-    <!-- Then load config with games and prices -->
-    <script src="config.js"></script>
-    
-    <!-- Finally load the app logic -->
-    <script src="app.js"></script>
+    <div id="jailbreakNoticeCard" class="jailbreak-notice-card">
+      <h3>🎁 You get 3 Free Games with your Full Jailbreak!</h3>
+      <p>Your jailbreak service package includes your first 3 games free. Pick 3 free games + additional addon games if desired.</p>
+      <button id="browseGamesBtn" class="browse-games-btn" type="button">Browse & Choose Games</button>
+    </div>
+
+    <div id="gameSectionWrapper" class="game-section-wrapper" style="display:none;">
+      <div class="search-container">
+        <div class="search-input-wrapper">
+          <label class="sr-only" for="searchInput">Search games</label>
+          <input id="searchInput" class="search-box" type="text" placeholder="🔍 Search games in library..." />
+          <button id="clearSearchBtn" class="clear-search-btn" type="button" aria-label="Clear search" style="display:none;">&times;</button>
+        </div>
+        <span class="field-hint" style="margin-left:2px;">Type game title or keyword to filter the game list</span>
+      </div>
+
+      <div id="statusMsg" class="status-msg" role="status" aria-live="polite" aria-atomic="true"></div>
+      <div id="gameList" class="game-list" role="region" aria-label="Available games"></div>
+    </div>
+  </div>
+
+  <div class="checkout-bar" role="region" aria-label="Order summary">
+    <div id="checkoutInfo" class="checkout-info" tabindex="0" role="button" aria-label="Open cart details">
+      🛒 <span id="selectedCount" class="accent-text">0</span> games
+      (<span id="selectedSize" class="accent-text">0</span> GB selected |
+      <span id="remainderSize" class="warn-text">0</span> GB left) |
+      <span id="selectedPrice" class="accent-text">RM0</span>
+      <br />
+      <span id="checkoutSubtext" class="checkout-subtext">Tap here to review & add remarks</span>
+    </div>
+    <button id="mainSubmitBtn" class="submit-btn" type="button">Review & Submit</button>
+  </div>
+
+  <div id="cartModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cartModalTitle" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="cartModalTitle">Your Selected Games & Setup</h2>
+        <button id="closeCartModal" type="button" class="close-modal" aria-label="Close modal">&times;</button>
+      </div>
+
+      <div id="cartModalBody" class="modal-body"></div>
+
+      <div id="modalTierWarning" class="modal-tier-warning" role="alert" aria-live="polite"></div>
+
+      <div id="sizeWarningBox" class="warning-box" role="alert">
+        ⚠️ <strong>Size Tolerance Alert:</strong> Your total storage size has exceeded standard buffer limits for this tier. Pricing has adjusted accordingly.
+      </div>
+
+      <div class="remarks-container">
+        <label for="orderRemarks">Remarks / Notes <span class="optional-indicator">(Optional)</span>:</label>
+        <textarea id="orderRemarks" class="remarks-input" placeholder="e.g. specific game DLCs, trilogies, or custom requests..." aria-describedby="remarksHint"></textarea>
+        <span id="remarksHint" class="field-hint">Add special notes, preferred versions, or custom requests</span>
+      </div>
+
+      <div class="modal-footer">
+        <span id="modalTotal" class="modal-total">0 games total</span>
+        <button id="submitOrderBtn" class="submit-btn" type="button">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalBackdrop" class="modal-backdrop" style="display:none;" role="presentation"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.46.0"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
