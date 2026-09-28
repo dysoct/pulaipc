@@ -64,37 +64,68 @@
   }
 
   function toggleServiceFields() {
-    const visible = $('serviceTypeSelect')?.value === 'jailbreak';
-    const isOwnCard = $('sdSourceSelect')?.value === 'own';
+    const service = $('serviceTypeSelect')?.value || 'jailbreak';
+    const source = $('sdSourceSelect')?.value || 'own';
 
-    ['consoleModelGroup', 'sdSourceGroup', 'sdCardGroup', 'jailbreakModesContainer'].forEach((id) => {
-      if ($(id))$(id).style.display = visible ? 'flex' : 'none';
-    });
+    const isJailbreak = service === 'jailbreak';
+    const isGamesOnly = service === 'games_only';
+    const isSystemSetup = service === 'system_setup';
 
-    if ($('freeStorageContainer')) {$('freeStorageContainer').style.display = (visible && isOwnCard) ? 'flex' : 'none';
+    // Console model selection (Jailbreak pricing)
+    if ($('consoleModelGroup')) {$('consoleModelGroup').style.display = isJailbreak ? 'flex' : 'none';
+    }
+
+    // SD source selection (Bring Own vs Purchase New)
+    if ($('sdSourceGroup')) {$('sdSourceGroup').style.display = (isJailbreak || isSystemSetup) ? 'flex' : 'none';
+    }
+
+    // SD Card capacity selection
+    if ($('sdCardGroup')) {$('sdCardGroup').style.display = (isJailbreak || isSystemSetup || isGamesOnly) ? 'flex' : 'none';
+    }
+
+    // Addon modes (Android / Linux)
+    if ($('jailbreakModesContainer')) {$('jailbreakModesContainer').style.display = isJailbreak ? 'flex' : 'none';
+    }
+
+    // Free Storage input container
+    if ($('freeStorageContainer')) {
+      const showFreeStorage = isGamesOnly || ((isJailbreak || isSystemSetup) && source === 'own');
+      $('freeStorageContainer').style.display = showFreeStorage ? 'flex' : 'none';
     }
 
     updateStorage();
   }
 
   function updateStorage() {
-    const service = $('serviceTypeSelect')?.value;
-    const source = $('sdSourceSelect')?.value;
+    const service = $('serviceTypeSelect')?.value || 'jailbreak';
+    const source = $('sdSourceSelect')?.value || 'own';
     const card = Number($('sdCardSelect')?.value || 0);
     let free = Number($('userFreeStorageInput')?.value || 0);
 
-    if (source === 'buy') {
+    // If buying a new card, set free storage equal to full card capacity
+    if (source === 'buy' && service !== 'games_only') {
       free = card;
     }
 
-    const addons = ($('androidModeCheck')?.checked ? 50 : 0) + ($('linuxModeCheck')?.checked ? 50 : 0);
-    usableStorageLimit = service === 'jailbreak' ? Math.max(0, Math.min(free, card - 50) - addons) : Infinity;
+    if (service === 'jailbreak') {
+      // Deduct 50 GB for EmuMMC/sys partition, plus 50 GB per additional system mode
+      const addons = ($('androidModeCheck')?.checked ? 50 : 0) + ($('linuxModeCheck')?.checked ? 50 : 0);
+      usableStorageLimit = Math.max(0, free - 50 - addons);
+    } else {
+      // For 'games_only' or 'system_setup', usable storage is directly the free space on the card
+      usableStorageLimit = Math.max(0, free);
+    }
 
-    if ($('maxUsableLabel'))$('maxUsableLabel').textContent = Number.isFinite(usableStorageLimit) ? usableStorageLimit.toFixed(1) : 'Unlimited';
+    if ($('maxUsableLabel')) {$('maxUsableLabel').textContent = Number.isFinite(usableStorageLimit) ? usableStorageLimit.toFixed(1) : 'Unlimited';
+    }
 
-    const ready = validPhone(false) && (service !== 'jailbreak' || free > 0);
-    if ($('storageWarningBanner'))$('storageWarningBanner').style.display = ready ? 'none' : 'flex';
+    const hasStorage = (source === 'buy' && service !== 'games_only') || free > 0;
+    const ready = validPhone(false) && hasStorage;
+
+    if ($('storageWarningBanner')) {$('storageWarningBanner').style.display = ready ? 'none' : 'flex';
+    }
     $('gameSectionWrapper')?.classList.toggle('locked', !ready);
+
     updateCheckout();
   }
 
@@ -128,7 +159,13 @@
   }
 
   function revealGames() {
-    if (!validPhone() || ($('serviceTypeSelect')?.value === 'jailbreak' && !Number($('userFreeStorageInput')?.value))) return;
+    const service = $('serviceTypeSelect')?.value;
+    const source = $('sdSourceSelect')?.value;
+    const free = Number($('userFreeStorageInput')?.value || 0);
+    const isBuying = (source === 'buy' && service !== 'games_only');
+
+    if (!validPhone() || (!isBuying && free <= 0)) return;
+
     if ($('jailbreakNoticeCard'))$('jailbreakNoticeCard').style.display = 'none';
     if ($('gameSectionWrapper'))$('gameSectionWrapper').style.display = 'block';
     renderGames();
