@@ -7,9 +7,6 @@
     <meta name="theme-color" content="#00e676">
     <title>Pulai PC Jailbreak & Game Service</title>
     
-    <!-- Supabase JS SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.46.0"></script>
-    
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -284,7 +281,13 @@
     <!-- Modal Backdrop -->
     <div id="modalBackdrop" class="modal-backdrop" style="display: none;" role="presentation"></div>
 
+    <!-- Load Supabase first -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.46.0"></script>
+    
+    <!-- Then load config with games and prices -->
     <script src="config.js"></script>
+    
+    <!-- Finally load the app logic -->
     <script src="app.js"></script>
 </body>
 </html>
