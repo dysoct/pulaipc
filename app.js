@@ -7,7 +7,7 @@
   let usableStorageLimit = 0;
   let modalTrigger = null;
   const $ = (id) => document.getElementById(id);
-  const appConfig = () => window.APP_CONFIG || {};
+  const appConfig = () => (typeof window !== 'undefined' && window.APP_CONFIG) ? window.APP_CONFIG : {};
   const catalog = () => (typeof games !== 'undefined' && Array.isArray(games)) ? games : [];
 
   function showConfigError(message) {
@@ -180,7 +180,7 @@
 
   async function submitOrder() {
     if (!validPhone() || !selectedGames.size) { if (!selectedGames.size) alert('Please select at least one game.'); return; }
-    if (!supabaseClient) { alert('The order service is unavailable. Please try again later.'); return; }
+    if (!supabaseClient) { alert('The order service is unavailable right now. You can still configure your order locally, but saving to the backend is disabled.'); return; }
     const button = $('submitOrderBtn'); if (button) { button.disabled = true; button.textContent = 'Saving...'; }
     const order = {
       phone_id: $('phoneInput').value.trim(), service_type: $('serviceTypeSelect').value,
@@ -232,8 +232,30 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     restoreSettings();
-    if (typeof window.supabase === 'undefined' || typeof window.APP_CONFIG === 'undefined') { showConfigError('Required configuration failed to load.'); return; }
-    try { supabaseClient = window.supabase.createClient(appConfig().supabaseUrl, appConfig().supabaseAnonKey); } catch (error) { showConfigError('Supabase could not be initialized.'); console.error(error); }
-    bindEvents(); populateSdCards(); toggleServiceFields(); renderGames(); updateCheckout();
+
+    if (typeof window.APP_CONFIG !== 'undefined') {
+      try {
+        supabaseClient = window.supabase && typeof window.supabase.createClient === 'function'
+          ? window.supabase.createClient(appConfig().supabaseUrl, appConfig().supabaseAnonKey)
+          : null;
+      } catch (error) {
+        console.error('Supabase init failed:', error);
+        supabaseClient = null;
+      }
+    }
+
+    if (!supabaseClient && typeof window.APP_CONFIG !== 'undefined') {
+      console.warn('Supabase is not available; continuing in local-only mode.');
+    }
+
+    if (typeof window.APP_CONFIG === 'undefined') {
+      showConfigError('Config is not available yet. The page will still render locally, but backend saving is disabled.');
+    }
+
+    bindEvents();
+    populateSdCards();
+    toggleServiceFields();
+    renderGames();
+    updateCheckout();
   });
 })();
