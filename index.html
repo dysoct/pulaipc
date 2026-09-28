@@ -3,645 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Pulai PC Jailbreak & Game Service - Configure your Nintendo Switch with jailbreak, games, and system addons.">
+    <meta name="theme-color" content="#00e676">
     <title>Pulai PC Jailbreak & Game Service</title>
-    <!-- Include Supabase JS SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            margin: 0;
-            padding: 20px;
-            padding-bottom: 110px;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        h1 {
-            text-align: center;
-            color: #00e676;
-            margin-bottom: 5px;
-        }
-        .instructions {
-            text-align: center;
-            color: #aaa;
-            font-size: 14px;
-            margin-bottom: 15px;
-            line-height: 1.5;
-        }
-        .pricing-guide {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 12px 15px;
-            margin-bottom: 20px;
-            font-size: 13px;
-            color: #ccc;
-        }
-        .pricing-guide summary {
-            color: #00e676;
-            font-weight: bold;
-            cursor: pointer;
-            outline: none;
-        }
-        .pricing-tiers {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 10px;
-            gap: 10px;
-            flex-wrap: wrap;
-            text-align: center;
-        }
-        .tier-box {
-            background: #222;
-            padding: 8px 12px;
-            border-radius: 6px;
-            flex: 1;
-            min-width: 110px;
-            border: 1px solid #333;
-        }
-        .tier-box span {
-            display: block;
-            color: #00e676;
-            font-weight: bold;
-            margin-top: 2px;
-        }
-        .pricing-details-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 12px;
-            border-top: 1px solid #2a2a2a;
-            padding-top: 10px;
-        }
-        @media (max-width: 600px) {
-            .pricing-details-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        .pricing-col {
-            background: #161616;
-            padding: 8px 10px;
-            border-radius: 6px;
-            border: 1px solid #222;
-        }
-        .pricing-col h4 {
-            margin: 0 0 5px 0;
-            color: #00e676;
-            font-size: 12.5px;
-        }
-        .pricing-col ul {
-            margin: 0;
-            padding-left: 15px;
-            font-size: 11.5px;
-            color: #bbb;
-            line-height: 1.4;
-        }
-        .config-card {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .config-row {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            align-items: flex-start;
-        }
-        .field-group {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            min-width: 140px;
-        }
-        .phone-input, .sd-select, .service-select, .model-select, .sd-source-select, .free-storage-input {
-            width: 100%;
-            padding: 12px;
-            font-size: 14.5px;
-            border-radius: 6px;
-            border: 1px solid #333;
-            background: #1e1e1e;
-            color: #fff;
-            box-sizing: border-box;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .sd-select, .service-select, .model-select, .sd-source-select {
-            cursor: pointer;
-        }
-        .free-storage-container {
-            display: none;
-            flex-direction: column;
-            gap: 4px;
-            width: 100%;
-        }
-        .free-storage-input.required-missing, .phone-input.required-missing {
-            border: 2px solid #ff5252 !important;
-            background-color: #2c1a1a !important;
-        }
-        .guide-btn {
-            background: #2a2a2a;
-            color: #00e676;
-            border: 1px solid #00e676;
-            padding: 6px 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 4px;
-        }
-        .guide-btn:hover {
-            background: #00e676;
-            color: #121212;
-        }
-        .storage-guide-box {
-            display: none;
-            background: #15221a;
-            border: 1px solid #00e676;
-            border-radius: 6px;
-            padding: 12px;
-            font-size: 12.5px;
-            color: #ddd;
-            line-height: 1.5;
-            margin-top: 5px;
-        }
-        .storage-guide-box h4 {
-            margin: 0 0 8px 0;
-            color: #00e676;
-        }
-        .phone-input {
-            text-align: center;
-        }
-        .field-hint {
-            font-size: 11px;
-            color: #888;
-            margin-top: 4px;
-            line-height: 1.3;
-        }
-        .btn-group-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        .btn-group {
-            display: flex;
-            gap: 6px;
-        }
-        .lookup-btn {
-            background-color: #2a2a2a;
-            color: #2196F3;
-            border: 1px solid #2196F3;
-            padding: 10px 12px;
-            font-size: 13px;
-            font-weight: 600;
-            border-radius: 6px;
-            cursor: pointer;
-            height: 45px;
-            white-space: nowrap;
-        }
-        .lookup-btn:hover {
-            background-color: #2196F3;
-            color: #ffffff;
-        }
-        .clear-btn {
-            background-color: #424242;
-            color: #ff5252;
-            border: 1px solid #ff5252;
-            padding: 10px 12px;
-            font-size: 13px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            height: 45px;
-            white-space: nowrap;
-        }
-        .clear-btn:hover {
-            background-color: #ff5252;
-            color: white;
-        }
-        .storage-warning-banner {
-            background: #3a1c00;
-            border: 1px solid #ff9800;
-            color: #ffe0b2;
-            padding: 12px 16px;
-            border-radius: 6px;
-            font-size: 13.5px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            line-height: 1.4;
-        }
-        .storage-warning-banner .warning-icon {
-            font-size: 20px;
-        }
-        .tier-warning-banner {
-            background: #2d2612;
-            border: 1px solid #ffca28;
-            color: #fff8e1;
-            padding: 10px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            margin-bottom: 15px;
-            display: none;
-            align-items: center;
-            gap: 10px;
-            line-height: 1.4;
-        }
-        .search-container {
-            margin-bottom: 15px;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
-        .search-input-wrapper {
-            position: relative;
-            width: 100%;
-            display: flex;
-            align-items: center;
-        }
-        .search-box {
-            width: 100%;
-            padding: 12px 38px 12px 15px;
-            font-size: 16px;
-            border-radius: 6px;
-            border: 1px solid #333;
-            background: #1a1a1a;
-            color: #fff;
-            box-sizing: border-box;
-            outline: none;
-        }
-        .clear-search-btn {
-            position: absolute;
-            right: 12px;
-            background: none;
-            border: none;
-            color: #aaa;
-            font-size: 20px;
-            cursor: pointer;
-            display: none;
-            padding: 0;
-            line-height: 1;
-        }
-        .clear-search-btn:hover {
-            color: #fff;
-        }
-        .modes-container {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            padding-top: 10px;
-            border-top: 1px solid #2a2a2a;
-        }
-        .addon-label-title {
-            font-size: 13px;
-            color: #888;
-            font-weight: bold;
-        }
-        .mode-options-row {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .mode-wrapper {
-            display: flex;
-            flex-direction: column;
-        }
-        .mode-checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13.5px;
-            color: #ccc;
-            cursor: pointer;
-        }
-        .storage-breakdown {
-            font-size: 12px;
-            color: #00e676;
-            width: 100%;
-            background: #141414;
-            padding: 8px 10px;
-            border-radius: 4px;
-            border: 1px solid #222;
-            line-height: 1.5;
-            box-sizing: border-box;
-        }
-        .status-msg {
-            text-align: center;
-            font-size: 14px;
-            color: #00e676;
-            margin-bottom: 15px;
-            min-height: 20px;
-        }
-        .jailbreak-notice-card {
-            background: #1a2e22;
-            border: 1px solid #00e676;
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .jailbreak-notice-card h3 {
-            margin-top: 0;
-            color: #00e676;
-            font-size: 18px;
-        }
-        .jailbreak-notice-card p {
-            color: #ccc;
-            font-size: 14px;
-            line-height: 1.5;
-            margin-bottom: 15px;
-        }
-        .browse-games-btn {
-            background-color: #00e676;
-            color: #121212;
-            border: none;
-            padding: 10px 20px;
-            font-size: 15px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        .browse-games-btn:hover {
-            background-color: #00c853;
-        }
-        .game-section-wrapper {
-            display: block;
-            position: relative;
-        }
-        .game-section-wrapper.locked {
-            opacity: 0.4;
-            pointer-events: none;
-            user-select: none;
-        }
-        .game-list {
-            display: grid;
-            gap: 10px;
-        }
-        .game-card {
-            background: #1e1e1e;
-            padding: 15px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid #2a2a2a;
-            cursor: pointer;
-            transition: border-color 0.2s, background-color 0.2s;
-        }
-        .game-card.selected {
-            border-color: #00e676;
-            background: #1a2e22;
-        }
-        .game-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .game-title {
-            font-weight: 600;
-        }
-        .game-size {
-            color: #00e676;
-            font-size: 0.9em;
-        }
-        input[type="checkbox"] {
-            transform: scale(1.3);
-            accent-color: #00e676;
-            cursor: pointer;
-        }
-        .checkout-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: #1e1e1e;
-            border-top: 1px solid #333;
-            padding: 12px 20px;
-            box-sizing: border-box;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.5);
-            z-index: 100;
-        }
-        .checkout-info {
-            font-size: 14px;
-            cursor: pointer;
-            line-height: 1.4;
-        }
-        .submit-btn {
-            background-color: #00e676;
-            color: #121212;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        .submit-btn:hover {
-            background-color: #00c853;
-        }
-        .submit-btn:disabled {
-            background-color: #444;
-            color: #888;
-            cursor: not-allowed;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.8);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: #1e1e1e;
-            padding: 20px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 520px;
-            max-height: 85vh;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid #333;
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #333;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-        .modal-header h2 {
-            margin: 0;
-            color: #00e676;
-            font-size: 20px;
-        }
-        .close-modal {
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 24px;
-            cursor: pointer;
-        }
-        .modal-body {
-            overflow-y: auto;
-            flex-grow: 1;
-            margin-bottom: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .modal-section-title {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #888;
-            font-weight: bold;
-            margin-bottom: 4px;
-        }
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #2a2a2a;
-            padding: 10px 12px;
-            border-radius: 6px;
-            font-size: 13.5px;
-        }
-        .cart-item.fixed-item {
-            background: #1a2a20;
-            border: 1px solid #00e676;
-        }
-        .cart-item-details {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        .cart-item-title {
-            font-weight: 600;
-            color: #fff;
-        }
-        .cart-item-sub {
-            font-size: 11.5px;
-            color: #aaa;
-        }
-        .lock-badge {
-            font-size: 11px;
-            color: #00e676;
-            background: rgba(0, 230, 118, 0.1);
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-        .remove-btn {
-            background: #ff5252;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        .remove-btn:hover {
-            background: #ff1744;
-        }
-        .warning-box {
-            background: #2d2212;
-            border: 1px solid #e65100;
-            color: #ffb74d;
-            padding: 10px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            margin-bottom: 10px;
-            display: none;
-        }
-        .modal-tier-warning {
-            background: #2d2612;
-            border: 1px solid #ffca28;
-            color: #fff8e1;
-            padding: 10px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            display: none;
-        }
-        .price-breakdown-box {
-            background: #161616;
-            border: 1px solid #2a2a2a;
-            border-radius: 6px;
-            padding: 10px 12px;
-            font-size: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .price-breakdown-row {
-            display: flex;
-            justify-content: space-between;
-            color: #bbb;
-        }
-        .price-breakdown-row.total-row {
-            border-top: 1px solid #333;
-            padding-top: 6px;
-            margin-top: 2px;
-            color: #fff;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .remarks-container {
-            margin-top: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        .remarks-container label {
-            font-size: 13px;
-            color: #aaa;
-        }
-        .remarks-input {
-            width: 100%;
-            padding: 10px;
-            background: #2a2a2a;
-            border: 1px solid #444;
-            color: #fff;
-            border-radius: 6px;
-            font-size: 14px;
-            box-sizing: border-box;
-            resize: vertical;
-            min-height: 50px;
-        }
-        .modal-footer {
-            border-top: 1px solid #333;
-            padding-top: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-    </style>
+    
+    <!-- Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.46.0"></script>
+    
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <h1>Pulai PC Jailbreak & Game Service</h1>
         <div class="instructions">
-            1. Enter the <strong>Last 4 Digits</strong> of your phone number below.<br>
-            2. Select your <strong>Service Type</strong> and specify your <strong>Storage Capacity</strong>.<br>
-            3. Choose your games, then review and submit!
+            <ol>
+                <li>Enter the <strong>Last 4 Digits</strong> of your phone number below.</li>
+                <li>Select your <strong>Service Type</strong> and specify your <strong>Storage Capacity</strong>.</li>
+                <li>Choose your games, then review and submit!</li>
+            </ol>
+        </div>
+
+        <div id="configErrorBanner" class="error-banner" style="display: none;">
+            <span class="error-icon">❌</span>
+            <span id="configErrorText">Unable to load configuration. Please refresh the page.</span>
         </div>
 
         <details class="pricing-guide">
@@ -681,1515 +65,226 @@
                 </div>
             </div>
 
-            <p style="font-size: 11.5px; color: #888; margin-top: 10px; margin-bottom: 0; text-align: center;">
+            <p class="pricing-note">
                 * Android/Linux system modes require 128GB+ cards (+RM30 each). Full jailbreak includes your first 3 games free!
             </p>
         </details>
         
-        <div class="config-card">
-            <div class="config-row">
-                <div class="field-group">
-                    <input type="text" id="phoneInput" class="phone-input" maxlength="4" placeholder="e.g. 5678" oninput="savePhone()">
-                    <span class="field-hint">Last 4 digits of phone number (Required ID)</span>
-                </div>
-
-                <div class="field-group">
-                    <select id="serviceTypeSelect" class="service-select" onchange="toggleServiceFields()">
-                        <option value="jailbreak">Full Jailbreak (Free 3 Games)</option>
-                        <option value="system_setup">System Setup</option>
-                        <option value="games_only">Games Only</option>
-                    </select>
-                    <span class="field-hint">Choose full jailbreak, system setup, or a games-only install</span>
-                </div>
-
-                <div class="field-group" id="consoleModelGroup">
-                    <select id="consoleModelSelect" class="model-select" onchange="updateSdLimit()">
-                        <option value="OLED">OLED (RM300)</option>
-                        <option value="V1_V2">V1/V2 (RM190)</option>
-                        <option value="LITE">LITE (RM230)</option>
-                    </select>
-                    <span class="field-hint">Select your Nintendo Switch model variant</span>
-                </div>
-
-                <div class="field-group" id="sdSourceGroup">
-                    <select id="sdSourceSelect" class="sd-source-select" onchange="updateSdLimit()">
-                        <option value="own">Bring Own SD Card</option>
-                        <option value="buy">Purchase New SD Card</option>
-                    </select>
-                    <span class="field-hint">Providing your own card or buying a new one</span>
-                </div>
-
-                <div class="field-group" id="sdCardGroup">
-                    <select id="sdCardSelect" class="sd-select" onchange="updateSdLimit()">
-                    </select>
-                    <span class="field-hint">Total capacity of memory card used</span>
-                </div>
-
-                <div id="freeStorageContainer" class="free-storage-container">
-                    <input type="number" id="userFreeStorageInput" class="free-storage-input" placeholder="Free Storage Space (GB)" min="1" step="1" oninput="updateSdLimit()">
-                    <button type="button" class="guide-btn" onclick="toggleStorageGuide()">❓ How to check free storage?</button>
-                    <span class="field-hint">Remaining GB available on your Switch SD card</span>
-                </div>
-
-                <div class="btn-group-wrapper">
-                    <div class="btn-group">
-                        <button class="lookup-btn" onclick="fetchExistingOrder()" title="Returning customer? Load your saved game list">📂 Load Saved Order</button>
-                        <button class="clear-btn" onclick="clearAllSelections()" title="Clear selected games & mode addons">Clear Games</button>
-                    </div>
-                    <span class="field-hint">Retrieve existing order or reset game choices</span>
-                </div>
-            </div>
-
-            <div id="storageGuideBox" class="storage-guide-box">
-                <h4>📱 How to check your remaining microSD card free space:</h4>
-                <p><strong>Method 1: Official Switch Settings</strong><br>
-                1. Go to Home Menu → <strong>System Settings</strong> (gear icon).<br>
-                2. Scroll down to <strong>Data Management</strong>.<br>
-                3. Look under <strong>microSD Card</strong> on the right for <strong>Free Space</strong> (e.g. 145 GB).</p>
-                <p style="margin-bottom:0;"><strong>Method 2: Via DBI App (Modded Console)</strong><br>
-                1. Launch <strong>DBI</strong> app on your Switch.<br>
-                2. Check the bottom-left text: <em>Free: XX.X GB</em> and enter that number above.</p>
-            </div>
-
-            <div id="jailbreakModesContainer" class="modes-container">
-                <span class="addon-label-title">Multi-Boot System Addons:</span>
-                <div class="mode-options-row">
-                    <div class="mode-wrapper">
-                        <label class="mode-checkbox-label">
-                            <input type="checkbox" id="androidModeCheck" onchange="updateSdLimit()"> 
-                            <span>🤖 Android Mode (+RM30)</span>
-                        </label>
-                        <span class="field-hint">Runs Android OS for cloud gaming (Game Pass), streaming & Android games</span>
+        <form id="configForm" class="config-card">
+            <fieldset class="config-fieldset">
+                <legend class="sr-only">Jailbreak Configuration</legend>
+                
+                <div class="config-row">
+                    <div class="field-group">
+                        <label for="phoneInput">Phone ID (Last 4 Digits) <span class="required-indicator" aria-label="required">*</span></label>
+                        <input
+                            type="text"
+                            id="phoneInput"
+                            class="phone-input"
+                            maxlength="4"
+                            inputmode="numeric"
+                            pattern="[0-9]{4}"
+                            autocomplete="tel"
+                            placeholder="e.g. 5678"
+                            required
+                            aria-describedby="phoneHint"
+                        >
+                        <span id="phoneHint" class="field-hint">Last 4 digits of phone number (Required ID)</span>
+                        <span id="phoneError" class="field-error" role="alert" aria-live="polite"></span>
                     </div>
 
-                    <div class="mode-wrapper">
-                        <label class="mode-checkbox-label">
-                            <input type="checkbox" id="linuxModeCheck" onchange="updateSdLimit()"> 
-                            <span>🐧 Linux Mode (+RM30)</span>
-                        </label>
-                        <span class="field-hint">Runs Ubuntu Linux desktop for retro emulation & lightweight PC apps</span>
+                    <div class="field-group">
+                        <label for="serviceTypeSelect">Service Type <span class="required-indicator" aria-label="required">*</span></label>
+                        <select id="serviceTypeSelect" class="service-select" required aria-describedby="serviceHint">
+                            <option value="jailbreak">Full Jailbreak (Free 3 Games)</option>
+                            <option value="system_setup">System Setup</option>
+                            <option value="games_only">Games Only</option>
+                        </select>
+                        <span id="serviceHint" class="field-hint">Choose full jailbreak, system setup, or a games-only install</span>
+                    </div>
+
+                    <div class="field-group" id="consoleModelGroup">
+                        <label for="consoleModelSelect">Console Model <span class="required-indicator" aria-label="required">*</span></label>
+                        <select id="consoleModelSelect" class="model-select" required aria-describedby="modelHint">
+                            <option value="OLED">OLED (RM300)</option>
+                            <option value="V1_V2">V1/V2 (RM190)</option>
+                            <option value="LITE">LITE (RM230)</option>
+                        </select>
+                        <span id="modelHint" class="field-hint">Select your Nintendo Switch model variant</span>
+                    </div>
+
+                    <div class="field-group" id="sdSourceGroup">
+                        <label for="sdSourceSelect">SD Card Source <span class="required-indicator" aria-label="required">*</span></label>
+                        <select id="sdSourceSelect" class="sd-source-select" required aria-describedby="sourceHint">
+                            <option value="own">Bring Own SD Card</option>
+                            <option value="buy">Purchase New SD Card</option>
+                        </select>
+                        <span id="sourceHint" class="field-hint">Providing your own card or buying a new one</span>
+                    </div>
+
+                    <div class="field-group" id="sdCardGroup">
+                        <label for="sdCardSelect">SD Card Capacity <span class="required-indicator" aria-label="required">*</span></label>
+                        <select id="sdCardSelect" class="sd-select" required aria-describedby="cardHint">
+                        </select>
+                        <span id="cardHint" class="field-hint">Total capacity of memory card used</span>
+                    </div>
+
+                    <div id="freeStorageContainer" class="free-storage-container">
+                        <label for="userFreeStorageInput">Free Storage Space <span class="required-indicator" aria-label="required">*</span></label>
+                        <input
+                            type="number"
+                            id="userFreeStorageInput"
+                            class="free-storage-input"
+                            placeholder="Free Storage Space (GB)"
+                            min="1"
+                            step="1"
+                            required
+                            aria-describedby="freeStorageHint"
+                        >
+                        <button type="button" class="guide-btn" id="storageGuideToggle" aria-expanded="false" aria-controls="storageGuideBox">
+                            ❓ How to check free storage?
+                        </button>
+                        <span id="freeStorageHint" class="field-hint">Remaining GB available on your Switch SD card</span>
+                    </div>
+
+                    <div class="btn-group-wrapper">
+                        <div class="btn-group">
+                            <button type="button" class="lookup-btn" id="loadOrderBtn" title="Returning customer? Load your saved game list">📂 Load Saved Order</button>
+                            <button type="button" class="clear-btn" id="clearGamesBtn" title="Clear selected games & mode addons">Clear Games</button>
+                        </div>
+                        <span class="field-hint">Retrieve existing order or reset game choices</span>
                     </div>
                 </div>
-            </div>
 
-            <div id="storageBreakdown" class="storage-breakdown">
-                Usable Space: <span id="maxUsableLabel">--</span> GB
-            </div>
-        </div>
+                <div id="storageGuideBox" class="storage-guide-box" aria-hidden="true">
+                    <h4>📱 How to check your remaining microSD card free space:</h4>
+                    <p><strong>Method 1: Official Switch Settings</strong><br>
+                    1. Go to Home Menu → <strong>System Settings</strong> (gear icon).<br>
+                    2. Scroll down to <strong>Data Management</strong>.<br>
+                    3. Look under <strong>microSD Card</strong> on the right for <strong>Free Space</strong> (e.g. 145 GB).</p>
+                    <p style="margin-bottom:0;"><strong>Method 2: Via DBI App (Modded Console)</strong><br>
+                    1. Launch <strong>DBI</strong> app on your Switch.<br>
+                    2. Check the bottom-left text: <em>Free: XX.X GB</em> and enter that number above.</p>
+                </div>
 
-        <div id="storageWarningBanner" class="storage-warning-banner">
-            <span class="warning-icon">⚠️</span>
+                <div id="jailbreakModesContainer" class="modes-container" aria-label="Optional system addons">
+                    <span class="addon-label-title">Multi-Boot System Addons:</span>
+                    <div class="mode-options-row">
+                        <div class="mode-wrapper">
+                            <label class="mode-checkbox-label">
+                                <input type="checkbox" id="androidModeCheck" aria-describedby="androidHint"> 
+                                <span>🤖 Android Mode (+RM30)</span>
+                            </label>
+                            <span id="androidHint" class="field-hint">Runs Android OS for cloud gaming (Game Pass), streaming & Android games</span>
+                        </div>
+
+                        <div class="mode-wrapper">
+                            <label class="mode-checkbox-label">
+                                <input type="checkbox" id="linuxModeCheck" aria-describedby="linuxHint"> 
+                                <span>🐧 Linux Mode (+RM30)</span>
+                            </label>
+                            <span id="linuxHint" class="field-hint">Runs Ubuntu Linux desktop for retro emulation & lightweight PC apps</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="storageBreakdown" class="storage-breakdown" role="status" aria-live="polite" aria-atomic="true">
+                    Usable Space: <span id="maxUsableLabel">--</span> GB
+                </div>
+            </fieldset>
+        </form>
+
+        <div id="storageWarningBanner" class="storage-warning-banner" role="alert">
+            <span class="warning-icon" aria-hidden="true">⚠️</span>
             <span id="storageWarningText">Please enter your <strong>Phone ID (4 digits)</strong> and storage capacity to unlock game selection.</span>
         </div>
 
-        <div id="tierWarningBanner" class="tier-warning-banner">
-            <span>💡</span>
+        <div id="tierWarningBanner" class="tier-warning-banner" role="alert" aria-live="polite">
+            <span aria-hidden="true">💡</span>
             <span id="tierWarningText">You can add more games to reach your package limit at no extra cost!</span>
         </div>
 
         <div id="jailbreakNoticeCard" class="jailbreak-notice-card">
             <h3>🎁 You get 3 Free Games with your Full Jailbreak!</h3>
             <p>Your jailbreak service package includes your first 3 games free. Pick 3 free games + additional addon games if desired!</p>
-            <button id="browseGamesBtn" class="browse-games-btn" onclick="revealGameSection()">Browse & Choose Games</button>
+            <button id="browseGamesBtn" class="browse-games-btn" type="button">Browse & Choose Games</button>
         </div>
 
         <div id="gameSectionWrapper" class="game-section-wrapper" style="display: none;">
             <div class="search-container">
                 <div class="search-input-wrapper">
-                    <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search games in library..." onkeyup="filterGames()">
-                    <button id="clearSearchBtn" class="clear-search-btn" onclick="clearSearch()" title="Clear search">&times;</button>
+                    <label for="searchInput" class="sr-only">Search games</label>
+                    <input
+                        type="text"
+                        id="searchInput"
+                        class="search-box"
+                        placeholder="🔍 Search games in library..."
+                        aria-describedby="searchHint"
+                    >
+                    <button id="clearSearchBtn" class="clear-search-btn" type="button" aria-label="Clear search" style="display: none;">
+                        &times;
+                    </button>
                 </div>
-                <span class="field-hint" style="margin-left: 2px;">Type game title or keyword to filter the game list</span>
+                <span id="searchHint" class="field-hint" style="margin-left: 2px;">Type game title or keyword to filter the game list</span>
             </div>
 
-            <div id="statusMsg" class="status-msg"></div>
+            <div id="statusMsg" class="status-msg" role="status" aria-live="polite" aria-atomic="true"></div>
 
-            <div id="gameList" class="game-list"></div>
+            <div id="gameList" class="game-list" role="region" aria-label="Available games"></div>
         </div>
     </div>
 
-    <div class="checkout-bar">
-        <div class="checkout-info" onclick="openCartModal()">
+    <div class="checkout-bar" role="region" aria-label="Order summary">
+        <div class="checkout-info" id="checkoutInfo" role="button" tabindex="0" aria-label="Open cart details">
             🛒 <span id="selectedCount" style="color: #00e676; font-weight: bold;">0</span> games 
             (<span id="selectedSize" style="color: #00e676; font-weight: bold;">0</span> GB selected | 
             <span id="remainderSize" style="color: #ffb74d; font-weight: bold;">0</span> GB left) | 
             <span id="selectedPrice" style="color: #00e676; font-weight: bold;">RM0</span>
             <br><span id="checkoutSubtext" style="font-size: 11px; color: #aaa;">Tap here to review & add remarks</span>
         </div>
-        <button id="mainSubmitBtn" class="submit-btn" onclick="openCartModal()">Review & Submit</button>
+        <button id="mainSubmitBtn" class="submit-btn" type="button" aria-label="Review and submit order">Review & Submit</button>
     </div>
 
-    <div id="cartModal" class="modal">
+    <div id="cartModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cartModalTitle" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Your Selected Games & Setup</h2>
-                <button class="close-modal" onclick="closeCartModal()">&times;</button>
+                <h2 id="cartModalTitle">Your Selected Games & Setup</h2>
+                <button class="close-modal" id="closeCartModal" type="button" aria-label="Close modal">
+                    &times;
+                </button>
             </div>
             <div id="cartModalBody" class="modal-body"></div>
 
-            <div id="modalTierWarning" class="modal-tier-warning"></div>
+            <div id="modalTierWarning" class="modal-tier-warning" role="alert" aria-live="polite"></div>
             
-            <div id="sizeWarningBox" class="warning-box">
+            <div id="sizeWarningBox" class="warning-box" role="alert">
                 ⚠️ <strong>Size Tolerance Alert:</strong> Your total storage size has exceeded standard buffer limits for this tier. Pricing has adjusted accordingly.
             </div>
 
             <div class="remarks-container">
-                <label for="orderRemarks">Remarks / Notes (Optional):</label>
-                <textarea id="orderRemarks" class="remarks-input" placeholder="e.g. mention specific game DLCs, trilogies, or special requests..."></textarea>
-                <span class="field-hint">Add special notes, preferred game versions, or custom requests</span>
+                <label for="orderRemarks">Remarks / Notes <span class="optional-indicator">(Optional)</span>:</label>
+                <textarea
+                    id="orderRemarks"
+                    class="remarks-input"
+                    placeholder="e.g. mention specific game DLCs, trilogies, or special requests..."
+                    aria-describedby="remarksHint"
+                ></textarea>
+                <span id="remarksHint" class="field-hint">Add special notes, preferred game versions, or custom requests</span>
             </div>
 
             <div class="modal-footer">
                 <span id="modalTotal" style="color: #aaa; font-size: 12px; line-height: 1.4;">0 games total</span>
                 <div>
-                    <button class="submit-btn" onclick="submitOrUpdateOrder()">Save Changes</button>
+                    <button class="submit-btn" id="submitOrderBtn" type="button">Save Changes</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Modal Backdrop -->
+    <div id="modalBackdrop" class="modal-backdrop" style="display: none;" role="presentation"></div>
+
     <script src="config.js"></script>
-
-    <script>
-    const supabaseClient = supabase.createClient(APP_CONFIG.supabaseUrl, APP_CONFIG.supabaseAnonKey);
-
-    let selectedGames = new Map(); 
-    let maxSdSize = 256; 
-    let usableStorageLimit = 0; 
-    let isStorageConfigured = false;
-
-    window.onload = function() {
-        const savedSdSource = localStorage.getItem('userSdSource');
-        if (savedSdSource) {
-            document.getElementById('sdSourceSelect').value = savedSdSource;
-        }
-
-        populateSdCardOptions();
-
-        const savedPhone = localStorage.getItem('userPhone4');
-        if (savedPhone) {
-            document.getElementById('phoneInput').value = savedPhone;
-        }
-
-        const savedService = localStorage.getItem('userServiceType');
-        if (savedService) {
-            document.getElementById('serviceTypeSelect').value = savedService;
-        }
-
-        const savedSd = localStorage.getItem('userSdSelect');
-        if (savedSd) {
-            const sdCardSelect = document.getElementById('sdCardSelect');
-            if (sdCardSelect.querySelector(`option[value="${savedSd}"]`)) {
-                sdCardSelect.value = savedSd;
-                maxSdSize = parseInt(savedSd);
-            } else if (sdCardSelect.options.length > 0) {
-                maxSdSize = parseInt(sdCardSelect.value);
-            }
-        } else {
-            const sdCardSelect = document.getElementById('sdCardSelect');
-            if (sdCardSelect.options.length > 0) {
-                maxSdSize = parseInt(sdCardSelect.value);
-            }
-        }
-
-        const savedFreeStorage = localStorage.getItem('userFreeStorage');
-        if (savedFreeStorage) {
-            document.getElementById('userFreeStorageInput').value = savedFreeStorage;
-        }
-
-        const savedModel = localStorage.getItem('userConsoleModel');
-        if (savedModel) {
-            document.getElementById('consoleModelSelect').value = savedModel;
-        }
-        
-        toggleServiceFields();
-        updateSdLimit();
-        filterGames();
-    };
-
-    function populateSdCardOptions() {
-        const sdSelect = document.getElementById('sdCardSelect');
-        if (!sdSelect) return;
-
-        const sdSource = document.getElementById('sdSourceSelect') ? document.getElementById('sdSourceSelect').value : 'own';
-        const currentValue = sdSelect.value;
-        
-        sdSelect.innerHTML = '';
-
-        if (sdSource === 'own') {
-            const ownSizes = [
-                { size: '64', label: '64 GB Card' },
-                { size: '128', label: '128 GB Card' },
-                { size: '256', label: '256 GB Card' },
-                { size: '512', label: '512 GB Card' },
-                { size: '1024', label: '1 TB Card' },
-                { size: '2048', label: '2 TB Card' }
-            ];
-
-            ownSizes.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item.size;
-                option.textContent = item.label;
-                if (currentValue ? item.size === currentValue : item.size === '256') {
-                    option.selected = true;
-                }
-                sdSelect.appendChild(option);
-            });
-        } else {
-            if (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.sdCardRetailPrices) {
-                let hasValidOptions = false;
-                Object.entries(APP_CONFIG.sdCardRetailPrices).forEach(([size, price]) => {
-                    const numericPrice = Number(price);
-                    if (numericPrice > 0) {
-                        hasValidOptions = true;
-                        const option = document.createElement('option');
-                        option.value = size;
-                        
-                        let displaySize = size >= 1000 ? `${(size / 1024).toFixed(0)} TB` : `${size} GB`;
-                        option.textContent = `${displaySize} Card (RM${numericPrice})`;
-
-                        if (currentValue ? size === currentValue : size === '256') {
-                            option.selected = true;
-                        }
-                        sdSelect.appendChild(option);
-                    }
-                });
-
-                if (!hasValidOptions) {
-                    const option = document.createElement('option');
-                    option.value = '256';
-                    option.textContent = '256 GB Card';
-                    sdSelect.appendChild(option);
-                }
-            }
-        }
-    }
-
-    function validatePhoneProvided() {
-        const phoneInput = document.getElementById('phoneInput');
-        const phone = phoneInput.value.trim();
-        if (!phone || phone.length < 4) {
-            alert('📱 Please enter the last 4 digits of your phone number first at the top before choosing games!');
-            phoneInput.classList.add('required-missing');
-            phoneInput.focus();
-            return false;
-        }
-        phoneInput.classList.remove('required-missing');
-        return true;
-    }
-
-    function savePhone() {
-        const phone = document.getElementById('phoneInput').value.trim();
-        localStorage.setItem('userPhone4', phone);
-        if (phone.length >= 4) {
-            document.getElementById('phoneInput').classList.remove('required-missing');
-        }
-    }
-
-    function toggleStorageGuide() {
-        const guideBox = document.getElementById('storageGuideBox');
-        guideBox.style.display = (guideBox.style.display === 'block') ? 'none' : 'block';
-    }
-
-    function toggleServiceFields() {
-        const serviceType = document.getElementById('serviceTypeSelect').value;
-        const consoleModelGroup = document.getElementById('consoleModelGroup');
-        const sdSourceGroup = document.getElementById('sdSourceGroup');
-        const sdCardGroup = document.getElementById('sdCardGroup');
-        const freeStorageContainer = document.getElementById('freeStorageContainer');
-        const jailbreakModesContainer = document.getElementById('jailbreakModesContainer');
-        const jailbreakNoticeCard = document.getElementById('jailbreakNoticeCard');
-        const gameSectionWrapper = document.getElementById('gameSectionWrapper');
-        
-        if (serviceType === 'jailbreak') {
-            consoleModelGroup.style.display = 'flex';
-            sdSourceGroup.style.display = 'flex';
-            sdCardGroup.style.display = 'flex';
-            freeStorageContainer.style.display = 'none';
-            jailbreakModesContainer.style.display = 'flex';
-            
-            if (selectedGames.size === 0) {
-                jailbreakNoticeCard.style.display = 'block';
-                gameSectionWrapper.style.display = 'none';
-            } else {
-                jailbreakNoticeCard.style.display = 'none';
-                gameSectionWrapper.style.display = 'block';
-            }
-        } else if (serviceType === 'system_setup') {
-            consoleModelGroup.style.display = 'none';
-            sdSourceGroup.style.display = 'flex';
-            sdCardGroup.style.display = 'flex';
-            freeStorageContainer.style.display = 'none';
-            jailbreakModesContainer.style.display = 'flex';
-
-            jailbreakNoticeCard.style.display = 'none';
-            gameSectionWrapper.style.display = 'block';
-        } else {
-            consoleModelGroup.style.display = 'none';
-            sdSourceGroup.style.display = 'none';
-            sdCardGroup.style.display = 'none';
-            freeStorageContainer.style.display = 'flex';
-            jailbreakModesContainer.style.display = 'none';
-            
-            document.getElementById('androidModeCheck').checked = false;
-            document.getElementById('linuxModeCheck').checked = false;
-            
-            jailbreakNoticeCard.style.display = 'none';
-            gameSectionWrapper.style.display = 'block';
-        }
-        updateSdLimit();
-    }
-
-    function revealGameSection() {
-        if (!validatePhoneProvided()) return;
-
-        if (!isStorageConfigured) {
-            alert('Please enter your available Free Storage Space (GB) first!');
-            document.getElementById('userFreeStorageInput').focus();
-            return;
-        }
-        document.getElementById('jailbreakNoticeCard').style.display = 'none';
-        document.getElementById('gameSectionWrapper').style.display = 'block';
-    }
-
-    function updateSdLimit() {
-        const serviceType = document.getElementById('serviceTypeSelect').value;
-        const warningBanner = document.getElementById('storageWarningBanner');
-        const warningText = document.getElementById('storageWarningText');
-        const freeInput = document.getElementById('userFreeStorageInput');
-        const gameWrapper = document.getElementById('gameSectionWrapper');
-        const browseBtn = document.getElementById('browseGamesBtn');
-        const submitBtn = document.getElementById('mainSubmitBtn');
-
-        localStorage.setItem('userServiceType', serviceType);
-
-        if (serviceType === 'jailbreak' || serviceType === 'system_setup') {
-            const sdSource = document.getElementById('sdSourceSelect').value;
-            localStorage.setItem('userSdSource', sdSource);
-
-            populateSdCardOptions();
-
-            const select = document.getElementById('sdCardSelect');
-            maxSdSize = parseInt(select.value) || 256;
-            localStorage.setItem('userSdSelect', maxSdSize);
-
-            let consoleModel = null;
-            if (serviceType === 'jailbreak') {
-                consoleModel = document.getElementById('consoleModelSelect').value;
-                localStorage.setItem('userConsoleModel', consoleModel);
-            }
-
-            const androidChecked = document.getElementById('androidModeCheck');
-            const linuxChecked = document.getElementById('linuxModeCheck');
-
-            if (maxSdSize < 128) {
-                if (androidChecked.checked) {
-                    androidChecked.checked = false;
-                    alert('Android Mode requires an SD card of 128GB or larger.');
-                }
-                if (linuxChecked.checked) {
-                    linuxChecked.checked = false;
-                    alert('Linux Mode requires an SD card of 128GB or larger.');
-                }
-                androidChecked.disabled = true;
-                linuxChecked.disabled = true;
-            } else {
-                androidChecked.disabled = false;
-                linuxChecked.disabled = false;
-            }
-
-            let baseSystemOverhead = 0;
-            let partitionPerMode = 0;
-
-            if (maxSdSize <= 64) {
-                baseSystemOverhead = 8;
-            } else if (maxSdSize <= 128) {
-                baseSystemOverhead = 10;
-                partitionPerMode = 10;
-            } else if (maxSdSize <= 256) {
-                baseSystemOverhead = 16;
-                partitionPerMode = 16;
-            } else if (maxSdSize <= 512) {
-                baseSystemOverhead = 20;
-                partitionPerMode = 20;
-            } else {
-                baseSystemOverhead = 32;
-                partitionPerMode = 32;
-            }
-
-            let totalDeduction = baseSystemOverhead;
-            if (androidChecked.checked) totalDeduction += partitionPerMode;
-            if (linuxChecked.checked) totalDeduction += partitionPerMode;
-
-            usableStorageLimit = Math.max(0, maxSdSize - totalDeduction);
-            isStorageConfigured = true;
-
-            if (freeInput) freeInput.classList.remove('required-missing');
-            if (warningBanner) warningBanner.style.display = 'none';
-            if (gameWrapper) gameWrapper.classList.remove('locked');
-            if (browseBtn) browseBtn.disabled = false;
-            if (submitBtn) submitBtn.disabled = false;
-
-            let formattedSdSize = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
-            let cardSourceDesc = sdSource === 'buy' ? 'New SD Card' : 'Own SD Card';
-            let serviceLabel = serviceType === 'jailbreak' ? `Full Jailbreak (${consoleModel})` : 'System Setup';
-            let breakdownText = `Service: ${serviceLabel} | SD: ${formattedSdSize} (${cardSourceDesc}) | System OS: -${baseSystemOverhead}GB`;
-
-            if (androidChecked.checked) breakdownText += ` | Android: -${partitionPerMode}GB`;
-            if (linuxChecked.checked) breakdownText += ` | Linux: -${partitionPerMode}GB`;
-
-            let currentGamesSize = 0;
-            selectedGames.forEach(size => { currentGamesSize += size; });
-
-            breakdownText += `<br>📊 <strong>Selected Games: ${currentGamesSize.toFixed(1)} GB</strong> / Usable Limit: <strong>${usableStorageLimit} GB</strong>`;
-            document.getElementById('storageBreakdown').innerHTML = breakdownText;
-
-        } else {
-            const userSpace = parseFloat(freeInput.value);
-
-            if (isNaN(userSpace) || userSpace <= 0) {
-                usableStorageLimit = 0;
-                isStorageConfigured = false;
-
-                if (freeInput) freeInput.classList.add('required-missing');
-                if (warningBanner) {
-                    warningBanner.style.display = 'flex';
-                    warningText.innerHTML = 'Please enter your available <strong>Free Storage Space (GB)</strong> above to unlock game selection.';
-                }
-                if (gameWrapper) gameWrapper.classList.add('locked');
-                if (submitBtn) submitBtn.disabled = true;
-
-                document.getElementById('storageBreakdown').innerHTML = `Service: Games Only | <span style="color:#ff5252;">⚠️ Storage space missing! Enter free GB to continue.</span>`;
-            } else {
-                usableStorageLimit = userSpace;
-                isStorageConfigured = true;
-
-                localStorage.setItem('userFreeStorage', userSpace);
-                if (freeInput) freeInput.classList.remove('required-missing');
-                if (warningBanner) warningBanner.style.display = 'none';
-                if (gameWrapper) gameWrapper.classList.remove('locked');
-                if (submitBtn) submitBtn.disabled = false;
-
-                let currentGamesSize = 0;
-                selectedGames.forEach(size => { currentGamesSize += size; });
-
-                let breakdownText = `Service: Games Only | Stated Free Storage: ${userSpace} GB`;
-                breakdownText += `<br>📊 <strong>Selected Games: ${currentGamesSize.toFixed(1)} GB</strong> / Available Balance: <strong>${(usableStorageLimit - currentGamesSize).toFixed(1)} GB</strong>`;
-                
-                document.getElementById('storageBreakdown').innerHTML = breakdownText;
-            }
-        }
-
-        let currentGamesSize = 0;
-        selectedGames.forEach(size => { currentGamesSize += size; });
-
-        if (isStorageConfigured && usableStorageLimit > 0 && currentGamesSize > usableStorageLimit) {
-            alert(`⚠️ Your new storage limit (${usableStorageLimit} GB) is smaller than your selected games (${currentGamesSize.toFixed(1)} GB). Excess games will be automatically removed.`);
-            
-            let accumulatedSize = 0;
-            const gamesToRemove = [];
-            selectedGames.forEach((size, name) => {
-                accumulatedSize += size;
-                if (accumulatedSize > usableStorageLimit) {
-                    gamesToRemove.push(name);
-                }
-            });
-
-            gamesToRemove.forEach(name => selectedGames.delete(name));
-            filterGames();
-        }
-        
-        updateCartSummary();
-    }
-
-    function clearAllSelections() {
-        if (selectedGames.size === 0 && !document.getElementById('androidModeCheck').checked && !document.getElementById('linuxModeCheck').checked) return;
-        if (confirm('Are you sure you want to clear all selected games and modes?')) {
-            selectedGames.clear();
-            document.getElementById('androidModeCheck').checked = false;
-            document.getElementById('linuxModeCheck').checked = false;
-            toggleServiceFields();
-            updateSdLimit();
-            filterGames();
-            const statusMsg = document.getElementById('statusMsg');
-            if (statusMsg) {
-                statusMsg.style.color = '#ff5252';
-                statusMsg.innerText = 'Selections cleared.';
-            }
-        }
-    }
-
-    function renderGames(list) {
-        const container = document.getElementById('gameList');
-        if (!container) return;
-        container.innerHTML = '';
-
-        if (!list || list.length === 0) {
-            container.innerHTML = '<p style="text-align:center; color:#888;">No games found.</p>';
-            return;
-        }
-
-        list.forEach(game => {
-            const isSelected = selectedGames.has(game.name);
-            const card = document.createElement('div');
-            card.className = `game-card ${isSelected ? 'selected' : ''}`;
-            card.dataset.gameName = game.name;
-            card.dataset.gameSize = game.size;
-
-            card.onclick = (e) => {
-                if (!validatePhoneProvided()) return;
-
-                if (!isStorageConfigured) {
-                    alert('Please enter your available Free Storage Space (GB) at the top before picking games!');
-                    document.getElementById('userFreeStorageInput').focus();
-                    return;
-                }
-
-                const cb = card.querySelector('input');
-                if (e.target !== cb) {
-                    cb.checked = !cb.checked;
-                }
-
-                let currentGamesSize = 0;
-                selectedGames.forEach(s => { currentGamesSize += s; });
-
-                if (cb.checked && usableStorageLimit > 0 && (currentGamesSize + game.size > usableStorageLimit)) {
-                    alert(`Cannot add "${game.name}" (${game.size} GB). It exceeds your available remaining space (${usableStorageLimit} GB)!`);
-                    cb.checked = false;
-                    return;
-                }
-
-                toggleGame(game.name, game.size, cb.checked, card);
-            };
-
-            const cb = document.createElement('input');
-            cb.type = 'checkbox';
-            cb.checked = isSelected;
-            cb.onclick = (e) => e.stopPropagation();
-            cb.onchange = (e) => {
-                if (!validatePhoneProvided()) {
-                    cb.checked = false;
-                    return;
-                }
-                if (!isStorageConfigured) {
-                    alert('Please enter your available Free Storage Space (GB) first!');
-                    cb.checked = false;
-                    document.getElementById('userFreeStorageInput').focus();
-                    return;
-                }
-                let currentGamesSize = 0;
-                selectedGames.forEach(s => { currentGamesSize += s; });
-                if (cb.checked && usableStorageLimit > 0 && (currentGamesSize + game.size > usableStorageLimit)) {
-                    alert(`Cannot add "${game.name}" (${game.size} GB). It exceeds your remaining usable storage (${usableStorageLimit} GB)!`);
-                    cb.checked = false;
-                    return;
-                }
-                toggleGame(game.name, game.size, cb.checked, card);
-            };
-
-            const infoDiv = document.createElement('div');
-            infoDiv.className = 'game-info';
-            infoDiv.appendChild(cb);
-
-            const titleSpan = document.createElement('span');
-            titleSpan.className = 'game-title';
-            titleSpan.textContent = game.name;
-            infoDiv.appendChild(titleSpan);
-
-            const sizeSpan = document.createElement('span');
-            sizeSpan.className = 'game-size';
-            sizeSpan.textContent = `${game.size} GB`;
-
-            card.appendChild(infoDiv);
-            card.appendChild(sizeSpan);
-            container.appendChild(card);
-        });
-        updateSdLimit();
-    }
-
-    function toggleGame(name, size, isChecked, cardElement) {
-        if (isChecked) {
-            selectedGames.set(name, size);
-            if (cardElement) cardElement.classList.add('selected');
-        } else {
-            selectedGames.delete(name);
-            if (cardElement) cardElement.classList.remove('selected');
-        }
-        updateSdLimit();
-    }
-
-    function filterGames() {
-        const searchInput = document.getElementById('searchInput');
-        if (!searchInput) return;
-
-        const query = searchInput.value.toLowerCase();
-        const clearBtn = document.getElementById('clearSearchBtn');
-        
-        clearBtn.style.display = query.length > 0 ? 'block' : 'none';
-
-        const sourceList = typeof games !== 'undefined' ? games : [];
-        const filtered = sourceList.filter(g => g.name.toLowerCase().includes(query));
-
-        filtered.sort((a, b) => {
-            const aSelected = selectedGames.has(a.name) ? 1 : 0;
-            const bSelected = selectedGames.has(b.name) ? 1 : 0;
-            if (aSelected !== bSelected) {
-                return bSelected - aSelected; 
-            }
-            return a.name.localeCompare(b.name); 
-        });
-
-        renderGames(filtered);
-    }
-
-    function clearSearch() {
-        document.getElementById('searchInput').value = '';
-        document.getElementById('clearSearchBtn').style.display = 'none';
-        filterGames();
-    }
-
-    function calculatePriceDetails(count, totalGameSizeGb) {
-        const serviceType = document.getElementById('serviceTypeSelect').value;
-        const consoleModel = document.getElementById('consoleModelSelect').value;
-        
-        let androidPrice = 0;
-        let linuxPrice = 0;
-        let sdCardPrice = 0;
-        let serviceBasePrice = 0;
-
-        if (serviceType === 'jailbreak') {
-            serviceBasePrice = (APP_CONFIG && APP_CONFIG.jailbreakPrices && APP_CONFIG.jailbreakPrices[consoleModel]) || 190;
-        } else if (serviceType === 'system_setup') {
-            serviceBasePrice = (APP_CONFIG && APP_CONFIG.systemSetupPrice) || 50;
-        }
-
-        if (serviceType === 'jailbreak' || serviceType === 'system_setup') {
-            if (document.getElementById('androidModeCheck').checked) androidPrice = APP_CONFIG.addonPrices.android || 30;
-            if (document.getElementById('linuxModeCheck').checked) linuxPrice = APP_CONFIG.addonPrices.linux || 30;
-            
-            const sdSource = document.getElementById('sdSourceSelect').value;
-            if (sdSource === 'buy') {
-                sdCardPrice = (APP_CONFIG && APP_CONFIG.sdCardRetailPrices && APP_CONFIG.sdCardRetailPrices[maxSdSize]) || 0;
-            }
-        }
-
-        let baseOnlyPrice = androidPrice + linuxPrice;
-
-        if (count <= 0) {
-            return { 
-                price: serviceBasePrice + sdCardPrice + baseOnlyPrice, 
-                exceeded: false,
-                serviceBasePrice,
-                sdCardPrice,
-                androidPrice,
-                linuxPrice,
-                gamesPrice: 0
-            };
-        }
-
-        let chargeableCount = count;
-        if (serviceType === 'jailbreak') {
-            chargeableCount = Math.max(0, count - 3);
-        }
-
-        let countTierPrice = 0;
-        let targetGbLimit = 100;
-
-        if (chargeableCount <= 10) {
-            countTierPrice = chargeableCount * 3.0; 
-            targetGbLimit = 125; 
-        } else if (chargeableCount <= 19) {
-            countTierPrice = chargeableCount * 3.0; 
-            targetGbLimit = 240; 
-        } else if (chargeableCount <= 39) {
-            countTierPrice = chargeableCount * 2.5; 
-            targetGbLimit = 460; 
-        } else {
-            countTierPrice = chargeableCount * 2.0;
-            targetGbLimit = totalGameSizeGb;
-        }
-
-        let sizeTierPrice = 0;
-        if (totalGameSizeGb <= 100) {
-            sizeTierPrice = (totalGameSizeGb / 100) * 30;
-        } else if (totalGameSizeGb <= 200) {
-            sizeTierPrice = 30 + ((totalGameSizeGb - 100) / 100) * 20; 
-        } else if (totalGameSizeGb <= 400) {
-            sizeTierPrice = 50 + ((totalGameSizeGb - 200) / 200) * 30; 
-        } else {
-            sizeTierPrice = 80 + ((totalGameSizeGb - 400) / 100) * 20;
-        }
-
-        let gamesPrice = countTierPrice;
-        let isExceeded = false;
-
-        if (totalGameSizeGb > targetGbLimit && sizeTierPrice > countTierPrice) {
-            gamesPrice = sizeTierPrice;
-            isExceeded = true;
-        }
-
-        let finalPrice = Math.round(serviceBasePrice + sdCardPrice + gamesPrice + baseOnlyPrice);
-
-        return { 
-            price: finalPrice, 
-            exceeded: isExceeded,
-            serviceBasePrice,
-            sdCardPrice,
-            androidPrice,
-            linuxPrice,
-            gamesPrice
-        };
-    }
-
-    function checkTierRecommendation(count, serviceType) {
-        let targetCount = 0;
-        let isFreeGamesNotice = false;
-
-        if (serviceType === 'jailbreak') {
-            if (count < 3) {
-                targetCount = 3;
-                isFreeGamesNotice = true;
-            } else if (count > 3 && count <= 13) {
-                targetCount = 13; 
-            } else if (count >= 14 && count <= 23) {
-                targetCount = 23; 
-            } else if (count >= 23 && count <= 43) {
-                targetCount = 43; 
-            }
-        } else {
-            if (count > 0 && count <= 10) {
-                targetCount = 10;
-            } else if (count >= 11 && count <= 20) {
-                targetCount = 20;
-            } else if (count >= 20 && count <= 40) {
-                targetCount = 40;
-            }
-        }
-
-        if (targetCount > 0 && count < targetCount) {
-            let diff = targetCount - count;
-
-            if (serviceType === 'jailbreak') {
-                if (isFreeGamesNotice) {
-                    return {
-                        hasWarning: true,
-                        targetCount: targetCount,
-                        remaining: diff,
-                        msg: `🎁 <strong>Free Games Available:</strong> You selected <strong>${count} game(s)</strong>. Your Full Jailbreak package includes <strong>3 FREE games</strong>—you can select <strong>${diff} more free game(s)</strong>!`
-                    };
-                } else {
-                    return {
-                        hasWarning: true,
-                        targetCount: targetCount,
-                        remaining: diff,
-                        msg: `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong> (${count - 3} paid). You can choose <strong>${diff} more game(s)</strong> (up to ${targetCount} total) to enter a better pricing tier!`
-                    };
-                }
-            } else {
-                return {
-                    hasWarning: true,
-                    targetCount: targetCount,
-                    remaining: diff,
-                    msg: `💡 <strong>Package Opportunity:</strong> You selected <strong>${count} games</strong>. You can choose <strong>${diff} more game(s)</strong> (up to ${targetCount} games) to enjoy a better pricing tier rate!`
-                };
-            }
-        }
-
-        return { hasWarning: false, targetCount: 0, remaining: 0, msg: '' };
-    }
-
-    function updateCartSummary() {
-        const count = selectedGames.size;
-        const serviceType = document.getElementById('serviceTypeSelect').value;
-        let totalGamesSize = 0;
-        selectedGames.forEach(size => { totalGamesSize += size; });
-
-        const remainderSize = Math.max(0, usableStorageLimit - totalGamesSize);
-        const details = calculatePriceDetails(count, totalGamesSize);
-
-        document.getElementById('selectedCount').innerText = count;
-        document.getElementById('selectedSize').innerText = totalGamesSize.toFixed(1);
-        document.getElementById('remainderSize').innerText = remainderSize.toFixed(1);
-        document.getElementById('selectedPrice').innerText = `RM${Math.round(details.price)}`;
-
-        const tierRec = checkTierRecommendation(count, serviceType);
-        const banner = document.getElementById('tierWarningBanner');
-        const bannerText = document.getElementById('tierWarningText');
-
-        if (tierRec.hasWarning) {
-            banner.style.display = 'flex';
-            bannerText.innerHTML = tierRec.msg;
-        } else {
-            banner.style.display = 'none';
-        }
-
-        const subtext = document.getElementById('checkoutSubtext');
-        if (serviceType === 'jailbreak') {
-            if (count === 0) {
-                subtext.innerHTML = '3 free games included! Tap here to review & add remarks';
-            } else if (count <= 3) {
-                subtext.innerHTML = `(${count} free games selected, ${3 - count} more free available) | Tap to review`;
-            } else {
-                const chargeable = count - 3;
-                subtext.innerHTML = `(3 free + ${chargeable} addon${chargeable !== 1 ? 's' : ''}) ${tierRec.hasWarning ? '⚠️ Package limit incomplete' : ''} | Tap to review`;
-            }
-        } else {
-            subtext.innerHTML = `${tierRec.hasWarning ? '⚠️ Tier package limit incomplete | ' : ''}Tap here to review & add remarks`;
-        }
-    }
-
-    async function fetchExistingOrder() {
-        const phoneInput = document.getElementById('phoneInput');
-        const phone = phoneInput.value.trim();
-        const statusMsg = document.getElementById('statusMsg');
-
-        if (phone.length !== 4) {
-            alert('ℹ️ "Load Saved Order" is for returning customers who previously submitted an order.\n\nPlease enter the last 4 digits of your phone number in the top field!');
-            phoneInput.focus();
-            phoneInput.classList.add('required-missing');
-            return;
-        }
-
-        if (statusMsg) {
-            statusMsg.style.color = '#2196F3';
-            statusMsg.innerText = 'Searching for your saved order...';
-        }
-
-        try {
-            const { data, error } = await supabaseClient
-                .from('orders')
-                .select('*')
-                .eq('phone_ending', phone)
-                .order('created_at', { ascending: false })
-                .limit(1);
-
-            if (error) throw error;
-
-            if (data && data.length > 0) {
-                const order = data[0];
-                selectedGames.clear();
-                
-                const sourceGames = typeof games !== 'undefined' ? games : [];
-                if (order.games && Array.isArray(order.games)) {
-                    order.games.forEach(gameName => {
-                        const found = sourceGames.find(g => g.name === gameName);
-                        const size = found ? found.size : 0;
-                        selectedGames.set(gameName, size);
-                    });
-                }
-                
-                if (order.remarks) document.getElementById('orderRemarks').value = order.remarks;
-                if (order.service_type) document.getElementById('serviceTypeSelect').value = order.service_type;
-                if (order.sd_source) document.getElementById('sdSourceSelect').value = order.sd_source;
-                
-                populateSdCardOptions();
-
-                if (order.sd_card_size) {
-                    const sdCardSelect = document.getElementById('sdCardSelect');
-                    if (sdCardSelect.querySelector(`option[value="${order.sd_card_size}"]`)) {
-                        sdCardSelect.value = order.sd_card_size;
-                        maxSdSize = parseInt(order.sd_card_size);
-                    }
-                }
-                if (order.free_storage_gb) document.getElementById('userFreeStorageInput').value = order.free_storage_gb;
-                if (order.console_model) document.getElementById('consoleModelSelect').value = order.console_model;
-
-                document.getElementById('androidModeCheck').checked = !!order.android_mode;
-                document.getElementById('linuxModeCheck').checked = !!order.linux_mode;
-
-                toggleServiceFields();
-                updateSdLimit();
-                filterGames();
-                
-                if (selectedGames.size > 0) revealGameSection();
-
-                if (statusMsg) {
-                    statusMsg.style.color = '#00e676';
-                    statusMsg.innerText = `Loaded previous order! (${selectedGames.size} games found)`;
-                }
-            } else {
-                alert('No previous saved order found for ID "' + phone + '". If this is your first visit, you can start picking games below!');
-                if (statusMsg) {
-                    statusMsg.style.color = '#ff9800';
-                    statusMsg.innerText = 'No order found. Start picking games below!';
-                }
-            }
-        } catch (err) {
-            console.error(err);
-            if (statusMsg) {
-                statusMsg.style.color = '#ff5252';
-                statusMsg.innerText = 'Failed to lookup order.';
-            }
-        }
-    }
-
-    function openCartModal() {
-        if (!validatePhoneProvided()) return;
-
-        if (!isStorageConfigured) {
-            alert('Please specify your free storage space before proceeding!');
-            document.getElementById('userFreeStorageInput').focus();
-            return;
-        }
-
-        const modalBody = document.getElementById('cartModalBody');
-        modalBody.innerHTML = '';
-
-        const serviceType = document.getElementById('serviceTypeSelect').value;
-        const consoleModel = document.getElementById('consoleModelSelect').value;
-        const sdSource = document.getElementById('sdSourceSelect').value;
-        const freeStorageInput = document.getElementById('userFreeStorageInput').value;
-        const androidChecked = document.getElementById('androidModeCheck').checked;
-        const linuxChecked = document.getElementById('linuxModeCheck').checked;
-
-        const count = selectedGames.size;
-        let totalGamesSize = 0;
-        selectedGames.forEach(size => { totalGamesSize += size; });
-
-        const details = calculatePriceDetails(count, totalGamesSize);
-
-        const serviceSectionTitle = document.createElement('div');
-        serviceSectionTitle.className = 'modal-section-title';
-        serviceSectionTitle.innerText = '1. Service & Hardware Configuration';
-        modalBody.appendChild(serviceSectionTitle);
-
-        if (serviceType === 'jailbreak') {
-            const serviceItem = document.createElement('div');
-            serviceItem.className = 'cart-item fixed-item';
-            serviceItem.innerHTML = `
-                <div class="cart-item-details">
-                    <span class="cart-item-title">Full Jailbreak (${consoleModel})</span>
-                    <span class="cart-item-sub">Console modification + 3 FREE Games</span>
-                </div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="font-weight:bold; color:#00e676;">RM${details.serviceBasePrice}</span>
-                    <span class="lock-badge">🔒 Core Service</span>
-                </div>
-            `;
-            modalBody.appendChild(serviceItem);
-
-            if (sdSource === 'buy') {
-                const sdItem = document.createElement('div');
-                sdItem.className = 'cart-item';
-                let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
-                sdItem.innerHTML = `
-                    <div class="cart-item-details">
-                        <span class="cart-item-title">Purchase ${displayCardLabel} SD Card</span>
-                        <span class="cart-item-sub">Brand new pre-configured card</span>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-weight:bold; color:#00e676;">+RM${details.sdCardPrice}</span>
-                        <button class="remove-btn" onclick="removeSdCardFromCart()">Remove</button>
-                    </div>
-                `;
-                modalBody.appendChild(sdItem);
-            } else {
-                const sdItem = document.createElement('div');
-                sdItem.className = 'cart-item';
-                let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
-                sdItem.innerHTML = `
-                    <div class="cart-item-details">
-                        <span class="cart-item-title">Bring Own SD Card (${displayCardLabel})</span>
-                        <span class="cart-item-sub">Provided by customer</span>
-                    </div>
-                    <span class="lock-badge">Free</span>
-                `;
-                modalBody.appendChild(sdItem);
-            }
-
-            if (androidChecked) {
-                const androidItem = document.createElement('div');
-                androidItem.className = 'cart-item';
-                androidItem.innerHTML = `
-                    <div class="cart-item-details">
-                        <span class="cart-item-title">🤖 Android Mode Partition</span>
-                        <span class="cart-item-sub">LineageOS dual-boot setup</span>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-weight:bold; color:#00e676;">+RM${details.androidPrice}</span>
-                        <button class="remove-btn" onclick="removeAndroidFromCart()">Remove</button>
-                    </div>
-                `;
-                modalBody.appendChild(androidItem);
-            }
-
-            if (linuxChecked) {
-                const linuxItem = document.createElement('div');
-                linuxItem.className = 'cart-item';
-                linuxItem.innerHTML = `
-                    <div class="cart-item-details">
-                        <span class="cart-item-title">🐧 Linux Mode Partition</span>
-                        <span class="cart-item-sub">Ubuntu Linux desktop environment</span>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-weight:bold; color:#00e676;">+RM${details.linuxPrice}</span>
-                        <button class="remove-btn" onclick="removeLinuxFromCart()">Remove</button>
-                    </div>
-                `;
-                modalBody.appendChild(linuxItem);
-            }
-        } else if (serviceType === 'system_setup') {
-            const serviceItem = document.createElement('div');
-            serviceItem.className = 'cart-item fixed-item';
-            serviceItem.innerHTML = `
-                <div class="cart-item-details">
-                    <span class="cart-item-title">System Setup</span>
-                    <span class="cart-item-sub">Console modding & configuration service</span>
-                </div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="font-weight:bold; color:#00e676;">RM${details.serviceBasePrice}</span>
-                    <span class="lock-badge">🔒 Core Service</span>
-                </div>
-            `;
-            modalBody.appendChild(serviceItem);
-
-            if (sdSource === 'buy') {
-                const sdItem = document.createElement('div');
-                sdItem.className = 'cart-item';
-                let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
-                sdItem.innerHTML = `
-                    <div class="cart-item-details">
-                        <span class="cart-item-title">Purchase ${displayCardLabel} SD Card</span>
-                        <span class="cart-item-sub">Brand new pre-configured card</span>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-weight:bold; color:#00e676;">+RM${details.sdCardPrice}</span>
-                        <button class="remove-btn" onclick="removeSdCardFromCart()">Remove</button>
-                    </div>
-                `;
-                modalBody.appendChild(sdItem);
-            } else {
-                const sdItem = document.createElement('div');
-                sdItem.className = 'cart-item';
-                let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
-                sdItem.innerHTML = `
-                    <div class="cart-item-details">
-                        <span class="cart-item-title">Bring Own SD Card (${displayCardLabel})</span>
-                        <span class="cart-item-sub">Provided by customer</span>
-                    </div>
-                    <span class="lock-badge">Free</span>
-                `;
-                modalBody.appendChild(sdItem);
-            }
-
-            if (androidChecked) {
-                const androidItem = document.createElement('div');
-                androidItem.className = 'cart-item';
-                androidItem.innerHTML = `
-                    <div class="cart-item-details">
-                        <span class="cart-item-title">🤖 Android Mode Partition</span>
-                        <span class="cart-item-sub">LineageOS dual-boot setup</span>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-weight:bold; color:#00e676;">+RM${details.androidPrice}</span>
-                        <button class="remove-btn" onclick="removeAndroidFromCart()">Remove</button>
-                    </div>
-                `;
-                modalBody.appendChild(androidItem);
-            }
-
-            if (linuxChecked) {
-                const linuxItem = document.createElement('div');
-                linuxItem.className = 'cart-item';
-                linuxItem.innerHTML = `
-                    <div class="cart-item-details">
-                        <span class="cart-item-title">🐧 Linux Mode Partition</span>
-                        <span class="cart-item-sub">Ubuntu Linux desktop environment</span>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-weight:bold; color:#00e676;">+RM${details.linuxPrice}</span>
-                        <button class="remove-btn" onclick="removeLinuxFromCart()">Remove</button>
-                    </div>
-                `;
-                modalBody.appendChild(linuxItem);
-            }
-        } else {
-            const gamesOnlyItem = document.createElement('div');
-            gamesOnlyItem.className = 'cart-item fixed-item';
-            gamesOnlyItem.innerHTML = `
-                <div class="cart-item-details">
-                    <span class="cart-item-title">Games Installation Service</span>
-                    <span class="cart-item-sub">Client-Stated Free Space: ${freeStorageInput || 0} GB</span>
-                </div>
-                <span class="lock-badge">🔒 Games Only</span>
-            `;
-            modalBody.appendChild(gamesOnlyItem);
-        }
-
-        const gamesSectionTitle = document.createElement('div');
-        gamesSectionTitle.className = 'modal-section-title';
-        gamesSectionTitle.style.marginTop = '10px';
-        gamesSectionTitle.innerText = `2. Selected Games (${count} games - ${totalGamesSize.toFixed(1)} GB)`;
-        modalBody.appendChild(gamesSectionTitle);
-
-        if (selectedGames.size === 0) {
-            const emptyGames = document.createElement('p');
-            emptyGames.style.textAlign = 'center';
-            emptyGames.style.color = '#888';
-            emptyGames.style.margin = '5px 0';
-            emptyGames.style.fontSize = '13px';
-            emptyGames.innerText = serviceType === 'jailbreak' ? 'No games selected yet (3 Free Games available!).' : 'No games selected.';
-            modalBody.appendChild(emptyGames);
-        } else {
-            let index = 1;
-            selectedGames.forEach((size, gameName) => {
-                const item = document.createElement('div');
-                item.className = 'cart-item';
-                
-                let gameTag = '';
-                if (serviceType === 'jailbreak') {
-                    gameTag = index <= 3 ? ' <span style="color:#00e676; font-size:10px;">[FREE]</span>' : ' <span style="color:#ffb74d; font-size:10px;">[ADDON]</span>';
-                }
-
-                const titleSpan = document.createElement('span');
-                titleSpan.innerHTML = `${index}. ${gameName} ${gameTag} <span style="color:#00e676; font-size:0.85em;">(${size} GB)</span>`;
-
-                const removeBtn = document.createElement('button');
-                removeBtn.className = 'remove-btn';
-                removeBtn.textContent = 'Remove';
-                removeBtn.onclick = () => removeGameFromCart(gameName);
-
-                item.appendChild(titleSpan);
-                item.appendChild(removeBtn);
-                modalBody.appendChild(item);
-                index++;
-            });
-        }
-
-        const breakdownTitle = document.createElement('div');
-        breakdownTitle.className = 'modal-section-title';
-        breakdownTitle.style.marginTop = '10px';
-        breakdownTitle.innerText = '3. Payment Breakdown';
-        modalBody.appendChild(breakdownTitle);
-
-        const breakdownBox = document.createElement('div');
-        breakdownBox.className = 'price-breakdown-box';
-
-        let breakdownHtml = '';
-        if (serviceType === 'jailbreak') {
-            breakdownHtml += `
-                <div class="price-breakdown-row">
-                    <span>Full Jailbreak Service (${consoleModel}):</span>
-                    <span>RM${details.serviceBasePrice}</span>
-                </div>
-            `;
-            if (sdSource === 'buy') {
-                let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
-                breakdownHtml += `
-                    <div class="price-breakdown-row">
-                        <span>New ${displayCardLabel} SD Card:</span>
-                        <span>RM${details.sdCardPrice}</span>
-                    </div>
-                `;
-            }
-            if (androidChecked) {
-                breakdownHtml += `
-                    <div class="price-breakdown-row">
-                        <span>Android Mode:</span>
-                        <span>RM${details.androidPrice}</span>
-                    </div>
-                `;
-            }
-            if (linuxChecked) {
-                breakdownHtml += `
-                    <div class="price-breakdown-row">
-                        <span>Linux Mode:</span>
-                        <span>RM${details.linuxPrice}</span>
-                    </div>
-                `;
-            }
-            
-            const chargeableCount = Math.max(0, count - 3);
-            breakdownHtml += `
-                <div class="price-breakdown-row">
-                    <span>Games Price (${count} games: 3 Free + ${chargeableCount} Addon${chargeableCount !== 1 ? 's' : ''}):</span>
-                    <span>RM${Math.round(details.gamesPrice)}</span>
-                </div>
-            `;
-        } else if (serviceType === 'system_setup') {
-            breakdownHtml += `
-                <div class="price-breakdown-row">
-                    <span>System Setup Service:</span>
-                    <span>RM${details.serviceBasePrice}</span>
-                </div>
-            `;
-            if (sdSource === 'buy') {
-                let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
-                breakdownHtml += `
-                    <div class="price-breakdown-row">
-                        <span>New ${displayCardLabel} SD Card:</span>
-                        <span>RM${details.sdCardPrice}</span>
-                    </div>
-                `;
-            }
-            if (androidChecked) {
-                breakdownHtml += `
-                    <div class="price-breakdown-row">
-                        <span>Android Mode:</span>
-                        <span>RM${details.androidPrice}</span>
-                    </div>
-                `;
-            }
-            if (linuxChecked) {
-                breakdownHtml += `
-                    <div class="price-breakdown-row">
-                        <span>Linux Mode:</span>
-                        <span>RM${details.linuxPrice}</span>
-                    </div>
-                `;
-            }
-            breakdownHtml += `
-                <div class="price-breakdown-row">
-                    <span>Games Price (${count} games):</span>
-                    <span>RM${Math.round(details.gamesPrice)}</span>
-                </div>
-            `;
-        } else {
-            breakdownHtml += `
-                <div class="price-breakdown-row">
-                    <span>Games Price (${count} games):</span>
-                    <span>RM${Math.round(details.gamesPrice)}</span>
-                </div>
-            `;
-        }
-
-        breakdownHtml += `
-            <div class="price-breakdown-row total-row">
-                <span>Total Estimated Payable:</span>
-                <span style="color:#00e676;">RM${Math.round(details.price)}</span>
-            </div>
-        `;
-
-        breakdownBox.innerHTML = breakdownHtml;
-        modalBody.appendChild(breakdownBox);
-
-        const remainderSize = Math.max(0, usableStorageLimit - totalGamesSize);
-        const warningBox = document.getElementById('sizeWarningBox');
-        warningBox.style.display = details.exceeded ? 'block' : 'none';
-
-        const tierRec = checkTierRecommendation(count, serviceType);
-        const modalTierBox = document.getElementById('modalTierWarning');
-        if (tierRec.hasWarning) {
-            modalTierBox.style.display = 'block';
-            modalTierBox.innerHTML = tierRec.msg;
-        } else {
-            modalTierBox.style.display = 'none';
-            modalTierBox.innerHTML = '';
-        }
-
-        let summaryText = `${count} games total`;
-        if (serviceType === 'jailbreak') {
-            if (count <= 3) {
-                summaryText = `${count} games (${count} free)`;
-            } else {
-                const chargeable = count - 3;
-                summaryText = `${count} games (3 free + ${chargeable} addon)`;
-            }
-        }
-
-        document.getElementById('modalTotal').innerHTML = `${summaryText} (<span style="color:#00e676;">${totalGamesSize.toFixed(1)} GB</span> | <span style="color:#ffb74d;">${remainderSize.toFixed(1)} GB left</span>)<br>Total: <strong style="color:#00e676; font-size:14px;">RM${Math.round(details.price)}</strong>`;
-        document.getElementById('cartModal').style.display = 'flex';
-    }
-
-    function removeSdCardFromCart() {
-        document.getElementById('sdSourceSelect').value = 'own';
-        updateSdLimit();
-        openCartModal();
-    }
-
-    function removeAndroidFromCart() {
-        document.getElementById('androidModeCheck').checked = false;
-        updateSdLimit();
-        openCartModal();
-    }
-
-    function removeLinuxFromCart() {
-        document.getElementById('linuxModeCheck').checked = false;
-        updateSdLimit();
-        openCartModal();
-    }
-
-    function closeCartModal() {
-        document.getElementById('cartModal').style.display = 'none';
-    }
-
-    function removeGameFromCart(gameName) {
-        selectedGames.delete(gameName);
-        filterGames();
-        openCartModal();
-    }
-
-    async function submitOrUpdateOrder() {
-        if (!validatePhoneProvided()) return;
-
-        const phone = document.getElementById('phoneInput').value.trim();
-        const serviceType = document.getElementById('serviceTypeSelect').value;
-        const count = selectedGames.size;
-
-        const tierRec = checkTierRecommendation(count, serviceType);
-        if (tierRec.hasWarning) {
-            const confirmProceed = confirm(
-                `💡 Tier Package Notice:\n\nYou selected ${count} games.\n` +
-                (serviceType === 'jailbreak' 
-                    ? (count < 3
-                        ? `You selected ${count} game(s), but your Jailbreak includes 3 FREE games!\n\nDo you want to save your order now or go back and pick your remaining free games?`
-                        : `Because your Jailbreak includes 3 free games, you can select up to ${tierRec.targetCount} games total (${tierRec.remaining} more games) at no additional tier cost!\n\nDo you still want to save your order now, or go back and add more games?`)
-                    : `You can add ${tierRec.remaining} more game(s) (up to ${tierRec.targetCount} games) to enjoy a better pricing tier!\n\nDo you still want to save your order now, or go back and add more games?`)
-            );
-            if (!confirmProceed) return;
-        }
-
-        if (serviceType === 'jailbreak') {
-            if (count < 3) {
-                const confirmSave = confirm(`You have selected only ${count} game(s).\n\nYour Full Jailbreak package includes 3 FREE games! Do you still want to save your order with fewer than 3 games?`);
-                if (!confirmSave) return;
-            }
-        } else if (serviceType === 'games_only') {
-            const freeStorageInput = document.getElementById('userFreeStorageInput').value;
-            if (!freeStorageInput || parseFloat(freeStorageInput) <= 0) {
-                alert('Please enter your remaining free SD card storage space before submitting!');
-                document.getElementById('userFreeStorageInput').focus();
-                return;
-            }
-        }
-
-        const btn = document.querySelector('#cartModal .submit-btn');
-        btn.innerText = 'Saving...';
-        btn.disabled = true;
-        btn.style.pointerEvents = 'none';
-
-        const gameNamesArray = Array.from(selectedGames.keys());
-        const remarksText = document.getElementById('orderRemarks').value.trim();
-        const consoleModel = document.getElementById('consoleModelSelect').value;
-        const freeStorageInput = document.getElementById('userFreeStorageInput').value;
-        
-        const sdSource = (serviceType === 'jailbreak' || serviceType === 'system_setup') ? document.getElementById('sdSourceSelect').value : 'own';
-        const androidSelected = (serviceType === 'jailbreak' || serviceType === 'system_setup') ? document.getElementById('androidModeCheck').checked : false;
-        const linuxSelected = (serviceType === 'jailbreak' || serviceType === 'system_setup') ? document.getElementById('linuxModeCheck').checked : false;
-        
-        let totalGamesSize = 0;
-        selectedGames.forEach(size => { totalGamesSize += size; });
-        
-        const details = calculatePriceDetails(count, totalGamesSize);
-        const finalPrice = Math.round(details.price);
-
-        try {
-            const { data: existing, error: queryErr } = await supabaseClient
-                .from('orders')
-                .select('id, created_at')
-                .eq('phone_ending', phone);
-
-            if (queryErr) throw queryErr;
-
-            const nowIso = new Date().toISOString();
-            
-            const orderData = {
-                phone_ending: phone,
-                games: gameNamesArray,
-                total_games: count,
-                remarks: remarksText,
-                sd_card_size: (serviceType === 'jailbreak' || serviceType === 'system_setup') ? maxSdSize : null,
-                free_storage_gb: serviceType === 'games_only' ? parseFloat(freeStorageInput) : null,
-                sd_source: sdSource,
-                service_type: serviceType,
-                console_model: serviceType === 'jailbreak' ? consoleModel : null,
-                total_size_gb: totalGamesSize,
-                estimated_price: finalPrice,
-                android_mode: androidSelected,
-                linux_mode: linuxSelected,
-                status: 'Pending',
-                updated_at: nowIso
-            };
-
-            let saveResult;
-            if (existing && existing.length > 0) {
-                saveResult = await supabaseClient
-                    .from('orders')
-                    .update(orderData)
-                    .eq('phone_ending', phone);
-            } else {
-                orderData.created_at = nowIso;
-                saveResult = await supabaseClient
-                    .from('orders')
-                    .insert([orderData]);
-            }
-
-            if (saveResult.error) throw saveResult.error;
-
-            alert('Order updated and saved successfully!');
-            closeCartModal();
-            
-            const statusMsg = document.getElementById('statusMsg');
-            if (statusMsg) {
-                statusMsg.innerText = 'Order successfully updated in system!';
-            }
-
-            shareOrderViaWhatsApp();
-
-        } catch (err) {
-            console.error(err);
-            alert('Failed to save order: ' + (err.message || 'Check console details.'));
-        } finally {
-            btn.innerText = 'Save Changes';
-            btn.disabled = false;
-            btn.style.pointerEvents = 'auto';
-        }
-    }
-
-    function shareOrderViaWhatsApp() {
-        const phone = document.getElementById('phoneInput').value.trim();
-        const serviceType = document.getElementById('serviceTypeSelect').value;
-        const consoleModel = document.getElementById('consoleModelSelect').value;
-        const sdSource = document.getElementById('sdSourceSelect').value;
-        const androidChecked = document.getElementById('androidModeCheck').checked;
-        const linuxChecked = document.getElementById('linuxModeCheck').checked;
-        const remarks = document.getElementById('orderRemarks').value.trim();
-        
-        const count = selectedGames.size;
-        let totalGamesSize = 0;
-        selectedGames.forEach(size => { totalGamesSize += size; });
-        const details = calculatePriceDetails(count, totalGamesSize);
-
-        let message = `🎮 *New Pulai PC Order / Inquiry*\n`;
-        message += `━━━━━━━━━━━━━━━━━━━\n`;
-        message += `📱 *Phone ID (Last 4):* ${phone}\n`;
-
-        let serviceLabel = 'Games Only';
-        if (serviceType === 'jailbreak') serviceLabel = `Full Jailbreak (${consoleModel})`;
-        else if (serviceType === 'system_setup') serviceLabel = 'System Setup';
-        message += `🔧 *Service Type:* ${serviceLabel}\n`;
-
-        if (serviceType === 'jailbreak' || serviceType === 'system_setup') {
-            let displayCardLabel = maxSdSize >= 1000 ? `${(maxSdSize / 1024).toFixed(0)}TB` : `${maxSdSize}GB`;
-            message += `💾 *SD Card:* ${displayCardLabel} (${sdSource === 'buy' ? 'New Purchase' : 'Own Card'})\n`;
-            if (androidChecked) message += `🤖 *Addon:* Android Mode\n`;
-            if (linuxChecked) message += `🐧 *Addon:* Linux Mode\n`;
-        } else {
-            const freeStorageInput = document.getElementById('userFreeStorageInput').value;
-            message += `📊 *Free Storage:* ${freeStorageInput || 0} GB\n`;
-        }
-
-        message += `━━━━━━━━━━━━━━━━━━━\n`;
-        message += `📦 *Selected Games:* ${count} games (${totalGamesSize.toFixed(1)} GB total)\n`;
-
-        if (remarks) {
-            message += `━━━━━━━━━━━━━━━━━━━\n`;
-            message += `📝 *Remarks:* ${remarks}\n`;
-        }
-
-        message += `━━━━━━━━━━━━━━━━━━━\n`;
-        message += `💰 *Total Estimated Price:* RM${Math.round(details.price)}`;
-
-        const businessWhatsAppNumber = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.whatsappNumber) ? APP_CONFIG.whatsappNumber : '';
-        if (!businessWhatsAppNumber) {
-            alert('WhatsApp number is not configured in APP_CONFIG.');
-            return;
-        }
-        const encodedMessage = encodeURIComponent(message);
-        const whatsappUrl = `https://wa.me/${businessWhatsAppNumber}?text=${encodedMessage}`;
-        
-        window.open(whatsappUrl, '_blank');
-    }
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
