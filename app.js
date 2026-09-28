@@ -13,14 +13,14 @@
   function showConfigError(message) {
     const banner = $('configErrorBanner');
     if (banner) banner.style.display = 'flex';
-    if ($('configErrorText')) $('configErrorText').textContent = message;
+    if ($('configErrorText'))$('configErrorText').textContent = message;
   }
 
   function validPhone(showError = true) {
     const input = $('phoneInput');
     const valid = Boolean(input && /^\d{4}$/.test(input.value.trim()));
     input?.classList.toggle('required-missing', !valid);
-    if ($('phoneError')) $('phoneError').textContent = valid || !showError ? '' : 'Enter exactly 4 digits.';
+    if ($('phoneError'))$('phoneError').textContent = valid || !showError ? '' : 'Enter exactly 4 digits.';
     return valid;
   }
 
@@ -37,7 +37,7 @@
     };
     Object.entries(values).forEach(([id, key]) => {
       const value = localStorage.getItem(key);
-      if (value && $(id)) $(id).value = value;
+      if (value && $(id))$(id).value = value;
     });
   }
 
@@ -65,21 +65,35 @@
 
   function toggleServiceFields() {
     const visible = $('serviceTypeSelect')?.value === 'jailbreak';
-    ['consoleModelGroup', 'sdSourceGroup', 'sdCardGroup', 'freeStorageContainer', 'jailbreakModesContainer'].forEach((id) => {
-      if ($(id)) $(id).style.display = visible ? 'flex' : 'none';
+    const isOwnCard = $('sdSourceSelect')?.value === 'own';
+
+    ['consoleModelGroup', 'sdSourceGroup', 'sdCardGroup', 'jailbreakModesContainer'].forEach((id) => {
+      if ($(id))$(id).style.display = visible ? 'flex' : 'none';
     });
+
+    if ($('freeStorageContainer')) {$('freeStorageContainer').style.display = (visible && isOwnCard) ? 'flex' : 'none';
+    }
+
     updateStorage();
   }
 
   function updateStorage() {
     const service = $('serviceTypeSelect')?.value;
+    const source = $('sdSourceSelect')?.value;
     const card = Number($('sdCardSelect')?.value || 0);
-    const free = Number($('userFreeStorageInput')?.value || 0);
+    let free = Number($('userFreeStorageInput')?.value || 0);
+
+    if (source === 'buy') {
+      free = card;
+    }
+
     const addons = ($('androidModeCheck')?.checked ? 50 : 0) + ($('linuxModeCheck')?.checked ? 50 : 0);
     usableStorageLimit = service === 'jailbreak' ? Math.max(0, Math.min(free, card - 50) - addons) : Infinity;
-    if ($('maxUsableLabel')) $('maxUsableLabel').textContent = Number.isFinite(usableStorageLimit) ? usableStorageLimit.toFixed(1) : 'Unlimited';
+
+    if ($('maxUsableLabel'))$('maxUsableLabel').textContent = Number.isFinite(usableStorageLimit) ? usableStorageLimit.toFixed(1) : 'Unlimited';
+
     const ready = validPhone(false) && (service !== 'jailbreak' || free > 0);
-    if ($('storageWarningBanner')) $('storageWarningBanner').style.display = ready ? 'none' : 'flex';
+    if ($('storageWarningBanner'))$('storageWarningBanner').style.display = ready ? 'none' : 'flex';
     $('gameSectionWrapper')?.classList.toggle('locked', !ready);
     updateCheckout();
   }
@@ -90,8 +104,8 @@
     const query = ($('searchInput')?.value || '').trim().toLowerCase();
     const matches = catalog().filter((game) => String(game.name).toLowerCase().includes(query));
     list.replaceChildren();
-    if ($('clearSearchBtn')) $('clearSearchBtn').style.display = query ? 'block' : 'none';
-    if ($('statusMsg')) $('statusMsg').textContent = matches.length ? '' : 'No games found.';
+    if ($('clearSearchBtn'))$('clearSearchBtn').style.display = query ? 'block' : 'none';
+    if ($('statusMsg'))$('statusMsg').textContent = matches.length ? '' : 'No games found.';
 
     matches.forEach((game) => {
       const card = document.createElement('div');
@@ -115,8 +129,8 @@
 
   function revealGames() {
     if (!validPhone() || ($('serviceTypeSelect')?.value === 'jailbreak' && !Number($('userFreeStorageInput')?.value))) return;
-    if ($('jailbreakNoticeCard')) $('jailbreakNoticeCard').style.display = 'none';
-    if ($('gameSectionWrapper')) $('gameSectionWrapper').style.display = 'block';
+    if ($('jailbreakNoticeCard'))$('jailbreakNoticeCard').style.display = 'none';
+    if ($('gameSectionWrapper'))$('gameSectionWrapper').style.display = 'block';
     renderGames();
   }
 
@@ -137,10 +151,10 @@
 
   function updateCheckout() {
     const size = selectedSize();
-    if ($('selectedCount')) $('selectedCount').textContent = selectedGames.size;
-    if ($('selectedSize')) $('selectedSize').textContent = size.toFixed(2);
-    if ($('remainderSize')) $('remainderSize').textContent = Number.isFinite(usableStorageLimit) ? Math.max(0, usableStorageLimit - size).toFixed(2) : '—';
-    if ($('selectedPrice')) $('selectedPrice').textContent = `RM${calculatePrice()}`;
+    if ($('selectedCount'))$('selectedCount').textContent = selectedGames.size;
+    if ($('selectedSize'))$('selectedSize').textContent = size.toFixed(2);
+    if ($('remainderSize'))$('remainderSize').textContent = Number.isFinite(usableStorageLimit) ? Math.max(0, usableStorageLimit - size).toFixed(2) : '—';
+    if ($('selectedPrice'))$('selectedPrice').textContent = `RM${calculatePrice()}`;
   }
 
   function renderCart() {
@@ -158,7 +172,7 @@
       remove.addEventListener('click', () => { selectedGames.delete(name); renderCart(); renderGames(); updateCheckout(); });
       details.append(title, sub); row.append(details, remove); body.append(row);
     });
-    if ($('modalTotal')) $('modalTotal').textContent = `${selectedGames.size} games total — RM${calculatePrice()}`;
+    if ($('modalTotal'))$('modalTotal').textContent = `${selectedGames.size} games total — RM${calculatePrice()}`;
   }
 
   function openCart() {
@@ -166,14 +180,14 @@
     modalTrigger = document.activeElement;
     renderCart();
     $('cartModal')?.classList.add('active');
-    if ($('modalBackdrop')) $('modalBackdrop').style.display = 'block';
+    if ($('modalBackdrop'))$('modalBackdrop').style.display = 'block';
     document.body.style.overflow = 'hidden';
     $('closeCartModal')?.focus();
   }
 
   function closeCart() {
     $('cartModal')?.classList.remove('active');
-    if ($('modalBackdrop')) $('modalBackdrop').style.display = 'none';
+    if ($('modalBackdrop'))$('modalBackdrop').style.display = 'none';
     document.body.style.overflow = '';
     modalTrigger?.focus?.();
   }
@@ -183,10 +197,10 @@
     if (!supabaseClient) { alert('The order service is unavailable right now. You can still configure your order locally, but saving to the backend is disabled.'); return; }
     const button = $('submitOrderBtn'); if (button) { button.disabled = true; button.textContent = 'Saving...'; }
     const order = {
-      phone_id: $('phoneInput').value.trim(), service_type: $('serviceTypeSelect').value,
+      phone_id: $('phoneInput').value.trim(), service_type:$('serviceTypeSelect').value,
       console_model: $('consoleModelSelect').value, games: [...selectedGames.keys()], total_size: selectedSize(),
       total_price: calculatePrice(), android_mode: Boolean($('androidModeCheck')?.checked),
-      linux_mode: Boolean($('linuxModeCheck')?.checked), remarks: $('orderRemarks')?.value.trim() || ''
+      linux_mode: Boolean($('linuxModeCheck')?.checked), remarks:$('orderRemarks')?.value.trim() || ''
     };
     try {
       const { error } = await supabaseClient.from('orders').insert([order]);
@@ -207,26 +221,18 @@
       if (!order) { alert('No previous order found.'); return; }
       selectedGames.clear();
       (Array.isArray(order.games) ? order.games : []).forEach((name) => { const game = catalog().find((item) => item.name === name); if (game) selectedGames.set(name, game); });
-      if ($('androidModeCheck')) $('androidModeCheck').checked = Boolean(order.android_mode);
-      if ($('linuxModeCheck')) $('linuxModeCheck').checked = Boolean(order.linux_mode);
+      if ($('androidModeCheck'))$('androidModeCheck').checked = Boolean(order.android_mode);
+      if ($('linuxModeCheck'))$('linuxModeCheck').checked = Boolean(order.linux_mode);
       revealGames(); updateCheckout(); alert('Previous order loaded successfully.');
     } catch (error) { console.error('Load order failed:', error); alert('Unable to load the saved order.'); }
     finally { if (button) { button.disabled = false; button.textContent = '📂 Load Saved Order'; } }
   }
 
   function bindEvents() {
-    $('phoneInput')?.addEventListener('input', () => { $('phoneInput').value = $('phoneInput').value.replace(/\D/g, '').slice(0, 4); localStorage.setItem('userPhone4', $('phoneInput').value); updateStorage(); });
-    $('phoneInput')?.addEventListener('blur', () => validPhone());
-    $('serviceTypeSelect')?.addEventListener('change', () => { save('serviceTypeSelect', 'userServiceType'); toggleServiceFields(); });
-    $('sdSourceSelect')?.addEventListener('change', () => { save('sdSourceSelect', 'userSdSource'); populateSdCards(); updateStorage(); });
-    ['sdCardSelect', 'consoleModelSelect', 'androidModeCheck', 'linuxModeCheck'].forEach((id) => $(id)?.addEventListener('change', updateStorage));
-    $('userFreeStorageInput')?.addEventListener('input', () => { localStorage.setItem('userFreeStorage', $('userFreeStorageInput').value); updateStorage(); });
-    $('browseGamesBtn')?.addEventListener('click', revealGames); $('searchInput')?.addEventListener('input', renderGames);
-    $('clearSearchBtn')?.addEventListener('click', () => { $('searchInput').value = ''; renderGames(); });
-    $('mainSubmitBtn')?.addEventListener('click', openCart); $('checkoutInfo')?.addEventListener('click', openCart);
-    $('closeCartModal')?.addEventListener('click', closeCart); $('modalBackdrop')?.addEventListener('click', closeCart); $('submitOrderBtn')?.addEventListener('click', submitOrder); $('loadOrderBtn')?.addEventListener('click', loadOrder);
-    $('clearGamesBtn')?.addEventListener('click', () => { if (confirm('Are you sure you want to clear all selected games and addons?')) { selectedGames.clear(); renderGames(); updateCheckout(); } });
-    $('storageGuideToggle')?.addEventListener('click', () => { const box = $('storageGuideBox'); const open = box.style.display === 'block'; box.style.display = open ? 'none' : 'block'; box.setAttribute('aria-hidden', String(open)); $('storageGuideToggle').setAttribute('aria-expanded', String(!open)); });
+    $('phoneInput')?.addEventListener('input', () => { $('phoneInput').value =$('phoneInput').value.replace(/\D/g, '').slice(0, 4); localStorage.setItem('userPhone4', $('phoneInput').value); updateStorage(); });$('phoneInput')?.addEventListener('blur', () => validPhone());
+    $('serviceTypeSelect')?.addEventListener('change', () => { save('serviceTypeSelect', 'userServiceType'); toggleServiceFields(); });$('sdSourceSelect')?.addEventListener('change', () => { save('sdSourceSelect', 'userSdSource'); populateSdCards(); toggleServiceFields(); });
+    ['sdCardSelect', 'consoleModelSelect', 'androidModeCheck', 'linuxModeCheck'].forEach((id) => $(id)?.addEventListener('change', updateStorage));$('userFreeStorageInput')?.addEventListener('input', () => { localStorage.setItem('userFreeStorage', $('userFreeStorageInput').value); updateStorage(); });$('browseGamesBtn')?.addEventListener('click', revealGames); $('searchInput')?.addEventListener('input', renderGames);$('clearSearchBtn')?.addEventListener('click', () => { $('searchInput').value = ''; renderGames(); });$('mainSubmitBtn')?.addEventListener('click', openCart); $('checkoutInfo')?.addEventListener('click', openCart);$('closeCartModal')?.addEventListener('click', closeCart); $('modalBackdrop')?.addEventListener('click', closeCart);$('submitOrderBtn')?.addEventListener('click', submitOrder); $('loadOrderBtn')?.addEventListener('click', loadOrder);$('clearGamesBtn')?.addEventListener('click', () => { if (confirm('Are you sure you want to clear all selected games and addons?')) { selectedGames.clear(); renderGames(); updateCheckout(); } });
+    $('storageGuideToggle')?.addEventListener('click', () => { const box =$('storageGuideBox'); const open = box.style.display === 'block'; box.style.display = open ? 'none' : 'block'; box.setAttribute('aria-hidden', String(open)); $('storageGuideToggle').setAttribute('aria-expanded', String(!open)); });
     document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && $('cartModal')?.classList.contains('active')) closeCart(); });
   }
 
